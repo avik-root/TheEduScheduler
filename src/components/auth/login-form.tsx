@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { Loader2, Mail, Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,13 +18,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { LoginSchema } from '@/lib/validators/auth';
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
+import { loginSuperAdmin } from '@/lib/super-admin';
 
 type FormData = z.infer<typeof LoginSchema>;
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<FormData>({
     resolver: zodResolver(LoginSchema),
@@ -35,14 +38,23 @@ export function LoginForm() {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-    console.log('Login data:', data);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    toast({
-      title: "Login Successful",
-      description: "Welcome back!",
-    })
-    setIsLoading(false);
+    
+    const result = await loginSuperAdmin(data);
+
+    if (result.success) {
+      toast({
+        title: "Login Successful",
+        description: "Welcome back! Redirecting...",
+      });
+      router.push('/super-admin/dashboard');
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: result.message,
+      });
+      setIsLoading(false);
+    }
   }
 
   return (

@@ -3,13 +3,14 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
-import type { SignupSchema } from '@/lib/validators/auth';
+import { LoginSchema, SignupSchema } from '@/lib/validators/auth';
 
 // Define the path to the super admin data file
 const superAdminFilePath = path.join(process.cwd(), 'src', 'data', 'super-admin.json');
 
 // Define the type for the super admin data using the existing Zod schema
 type SuperAdmin = z.infer<typeof SignupSchema>;
+type LoginData = z.infer<typeof LoginSchema>;
 
 // Helper function to read the super admin file
 async function readSuperAdminFile(): Promise<SuperAdmin | null> {
@@ -64,4 +65,23 @@ export async function createSuperAdmin(data: SuperAdmin): Promise<{ success: boo
         console.error('Failed to create super admin:', error);
         return { success: false, message: 'An internal error occurred. Please try again.' };
     }
+}
+
+/**
+ * Logs in a super admin by verifying credentials.
+ * @param credentials The login data containing email and password.
+ * @returns A promise that resolves to an object indicating success and a message.
+ */
+export async function loginSuperAdmin(credentials: LoginData): Promise<{ success: boolean; message: string }> {
+    const admin = await readSuperAdminFile();
+
+    if (!admin || !admin.email) {
+        return { success: false, message: 'No super admin account exists. Please sign up.' };
+    }
+
+    if (admin.email === credentials.email && admin.password === credentials.password) {
+        return { success: true, message: 'Login successful!' };
+    }
+
+    return { success: false, message: 'Invalid email or password.' };
 }
