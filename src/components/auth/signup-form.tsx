@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { SignupSchema } from '@/lib/validators/auth';
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
+import { createSuperAdmin } from '@/lib/super-admin';
 
 
 type FormData = z.infer<typeof SignupSchema>;
@@ -39,14 +40,23 @@ export function SignupForm() {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-    console.log('Signup data:', data);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    toast({
-      title: "Account Created",
-      description: "Welcome! Redirecting you to the dashboard...",
-    })
-    router.push('/super-admin/dashboard');
+    
+    const result = await createSuperAdmin(data);
+
+    if (result.success) {
+      toast({
+        title: "Account Created",
+        description: "Welcome! Redirecting you to the dashboard...",
+      });
+      router.push('/super-admin/dashboard');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: "Sign Up Failed",
+        description: result.message,
+      });
+      setIsLoading(false);
+    }
   }
 
   return (
