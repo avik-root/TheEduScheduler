@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { getAdmins, type Admin } from '@/lib/admin';
 import { CreateAdminDialog } from '@/components/super-admin/create-admin-dialog';
+import { EditAdminDialog } from '@/components/super-admin/edit-admin-dialog';
 
 export default async function SuperAdminDashboardPage() {
   const admins = await getAdmins();
@@ -50,14 +51,17 @@ export default async function SuperAdminDashboardPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {admins.map((admin: Admin) => (
               <Card key={admin.email}>
-                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                  <div className="rounded-full bg-primary/10 p-3">
-                    <UserCog className="h-6 w-6 text-primary" />
+                <CardHeader className="flex flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <UserCog className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">{admin.name}</CardTitle>
+                      <CardDescription>{admin.email}</CardDescription>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-xl">{admin.name}</CardTitle>
-                    <CardDescription>{admin.email}</CardDescription>
-                  </div>
+                  <EditAdminDialog admin={admin} />
                 </CardHeader>
               </Card>
             ))}
