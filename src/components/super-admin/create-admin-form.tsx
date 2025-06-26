@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { Loader2, User, Mail, Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,15 +17,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { SignupSchema } from '@/lib/validators/auth';
-import { useToast } from "@/hooks/use-toast"
-
+import { useToast } from "@/hooks/use-toast";
 
 type FormData = z.infer<typeof SignupSchema>;
 
-export function SignupForm() {
+export function CreateAdminForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const form = useForm<FormData>({
     resolver: zodResolver(SignupSchema),
@@ -39,19 +36,20 @@ export function SignupForm() {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-    console.log('Signup data:', data);
-    // Simulate API call
+    console.log('New Admin data:', data);
+    // Simulate API call to create admin
     await new Promise((resolve) => setTimeout(resolve, 1500));
     toast({
-      title: "Account Created",
-      description: "Welcome! Redirecting you to the dashboard...",
-    })
-    router.push('/super-admin/dashboard');
+      title: "Admin Account Created",
+      description: `An account for ${data.name} has been successfully created.`,
+    });
+    form.reset();
+    setIsLoading(false);
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
@@ -61,7 +59,7 @@ export function SignupForm() {
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} className="pl-10" />
+                  <Input placeholder="Jane Smith" {...field} className="pl-10" />
                 </FormControl>
               </div>
               <FormMessage />
@@ -77,7 +75,7 @@ export function SignupForm() {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
-                  <Input type="email" placeholder="you@example.com" {...field} className="pl-10" />
+                  <Input type="email" placeholder="admin@example.com" {...field} className="pl-10" />
                 </FormControl>
               </div>
               <FormMessage />
@@ -89,7 +87,7 @@ export function SignupForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Temporary Password</FormLabel>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
@@ -102,7 +100,7 @@ export function SignupForm() {
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Create Account
+          Create Admin Account
         </Button>
       </form>
     </Form>
