@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { Loader2, User, Mail, Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,13 +18,19 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { SignupSchema } from '@/lib/validators/auth';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
+import { createAdmin } from '@/lib/admin';
 
 type FormData = z.infer<typeof SignupSchema>;
 
-export function CreateAdminForm() {
+interface CreateAdminFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<FormData>({
     resolver: zodResolver(SignupSchema),
@@ -36,14 +43,25 @@ export function CreateAdminForm() {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-    console.log('New Admin data:', data);
-    // Simulate API call to create admin
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    toast({
-      title: "Admin Account Created",
-      description: `An account for ${data.name} has been successfully created.`,
-    });
-    form.reset();
+
+    const result = await createAdmin(data);
+
+    if (result.success) {
+      toast({
+        title: 'Admin Account Created',
+        description: `An account for ${data.name} has been successfully created.`,
+      });
+      form.reset();
+      router.refresh();
+      onSuccess?.();
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Creation Failed',
+        description: result.message,
+      });
+    }
+
     setIsLoading(false);
   }
 
@@ -75,7 +93,12 @@ export function CreateAdminForm() {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
-                  <Input type="email" placeholder="admin@example.com" {...field} className="pl-10" />
+                  <Input
+                    type="email"
+                    placeholder="admin@example.com"
+                    {...field}
+                    className="pl-10"
+                  />
                 </FormControl>
               </div>
               <FormMessage />
@@ -91,7 +114,12 @@ export function CreateAdminForm() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    {...field}
+                    className="pl-10"
+                  />
                 </FormControl>
               </div>
               <FormMessage />

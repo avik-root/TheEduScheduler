@@ -1,11 +1,19 @@
 import Link from 'next/link';
-import { CalendarCog, LogOut, School, Shield } from 'lucide-react';
+import { CalendarCog, LogOut, School, Shield, UserCog } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreateAdminForm } from '@/components/super-admin/create-admin-form';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { getAdmins, type Admin } from '@/lib/admin';
+import { CreateAdminDialog } from '@/components/super-admin/create-admin-dialog';
 
-export default function SuperAdminDashboardPage() {
+export default async function SuperAdminDashboardPage() {
+  const admins = await getAdmins();
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-950">
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:px-6">
@@ -28,22 +36,44 @@ export default function SuperAdminDashboardPage() {
         </div>
       </header>
       <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
-        <div className="mx-auto grid w-full max-w-6xl gap-2">
-          <h1 className="text-3xl font-semibold">Dashboard</h1>
-          <p className="text-muted-foreground">Manage administrator accounts.</p>
-        </div>
-        <div className="mx-auto mt-6 w-full max-w-6xl">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New Admin Account</CardTitle>
-              <CardDescription>
-                Use this form to create a new administrator account for your institution.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CreateAdminForm />
-            </CardContent>
-          </Card>
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-semibold">Admin Management</h1>
+              <p className="text-muted-foreground">
+                Create and manage administrator accounts.
+              </p>
+            </div>
+            <CreateAdminDialog />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {admins.map((admin: Admin) => (
+              <Card key={admin.email}>
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                  <div className="rounded-full bg-primary/10 p-3">
+                    <UserCog className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">{admin.name}</CardTitle>
+                    <CardDescription>{admin.email}</CardDescription>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+            {admins.length === 0 && (
+              <div className="col-span-1 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 sm:col-span-2 lg:col-span-3">
+                <div className="text-center">
+                  <p className="text-muted-foreground">
+                    No admin accounts found.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Click &apos;Create New Admin&apos; to get started.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
       <footer className="mt-auto border-t bg-white px-4 py-6 dark:border-gray-800 dark:bg-gray-900 md:px-6">
