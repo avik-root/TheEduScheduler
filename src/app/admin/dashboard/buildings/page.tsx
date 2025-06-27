@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarDays, LogOut } from 'lucide-react';
+import { CalendarDays, LogOut, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
@@ -32,8 +32,18 @@ export default async function BuildingsPage({ searchParams }: { searchParams: { 
         <div className="mx-auto grid w-full max-w-6xl gap-6 pt-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Manage Buildings</CardTitle>
-                    <CardDescription>Add, edit, and remove buildings and rooms.</CardDescription>
+                  <div className="flex items-start gap-4">
+                    <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                      <Link href={`/admin/dashboard?email=${searchParams.email}`}>
+                        <ChevronLeft className="h-4 w-4" />
+                        <span className="sr-only">Back to Dashboard</span>
+                      </Link>
+                    </Button>
+                    <div className="grid gap-1">
+                      <CardTitle>Manage Buildings</CardTitle>
+                      <CardDescription>Add, edit, and remove buildings and rooms.</CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                     <p>Building management functionality will be here.</p>
