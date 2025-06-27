@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const LoginSchema = z.object({
@@ -128,4 +129,8 @@ export const DepartmentSchema = z.object({
 
 export const UpdateDepartmentSchema = DepartmentSchema.extend({
   id: z.string(),
+});
+
+export const ProgramSchema = z.object({
+  name: z.string().min(2, { message: 'Program name must be at least 2 characters.' }),
 });

@@ -1,12 +1,11 @@
+
 import Link from 'next/link';
-import { CalendarDays, LogOut, ChevronLeft, Network, PlusCircle } from 'lucide-react';
+import { CalendarDays, LogOut, ChevronLeft, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
 import { getDepartments, type Department } from '@/lib/departments';
 import { CreateDepartmentDialog } from '@/components/admin/departments/create-department-dialog';
-import { EditDepartmentDialog } from '@/components/admin/departments/edit-department-dialog';
-import { DeleteDepartmentDialog } from '@/components/admin/departments/delete-department-dialog';
 
 export default async function DepartmentsPage({ searchParams }: { searchParams: { email?: string } }) {
   const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
@@ -47,7 +46,7 @@ export default async function DepartmentsPage({ searchParams }: { searchParams: 
                       </Button>
                       <div className="grid gap-1">
                         <CardTitle>Manage Departments</CardTitle>
-                        <CardDescription>Add, edit, and remove academic departments.</CardDescription>
+                        <CardDescription>Add, edit, and remove academic departments and their programs.</CardDescription>
                       </div>
                     </div>
                     <CreateDepartmentDialog />
@@ -56,20 +55,24 @@ export default async function DepartmentsPage({ searchParams }: { searchParams: 
                 <CardContent>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {departments.map((department: Department) => (
-                            <Card key={department.id}>
-                                <CardHeader className="flex flex-row items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-full bg-primary/10 p-3">
-                                        <Network className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <CardTitle className="text-xl">{department.name}</CardTitle>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <EditDepartmentDialog department={department} />
-                                    <DeleteDepartmentDialog department={department} />
-                                </div>
-                                </CardHeader>
-                            </Card>
+                           <Link key={department.id} href={`/admin/dashboard/departments/${department.id}?email=${searchParams.email}`}>
+                                <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
+                                    <CardHeader className="flex-row items-center gap-4">
+                                        <div className="rounded-full bg-primary/10 p-3">
+                                            <Network className="h-6 w-6 text-primary" />
+                                        </div>
+                                        <CardTitle className="text-xl">{department.name}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow">
+                                        <p className="text-sm text-muted-foreground">
+                                            {department.programs.length} program(s)
+                                        </p>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <p className="text-xs text-muted-foreground">Click to manage programs</p>
+                                    </CardFooter>
+                                </Card>
+                            </Link>
                         ))}
                         {departments.length === 0 && (
                             <div className="col-span-1 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 sm:col-span-2 lg:col-span-3">
