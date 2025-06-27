@@ -26,14 +26,14 @@ export function AddRoomDialog({ buildingId, floorId }: AddRoomDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Room
+          Add New Room(s)
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Room</DialogTitle>
+          <DialogTitle>Add New Rooms</DialogTitle>
           <DialogDescription>
-            Provide the details for the new room.
+            Create multiple rooms at once using a prefix and a number range.
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">

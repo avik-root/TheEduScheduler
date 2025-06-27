@@ -104,9 +104,16 @@ export const RoomSchema = z.object({
   capacity: z.coerce.number().min(1, { message: 'Capacity must be at least 1.' }),
 });
 
-export const AddRoomSchema = RoomSchema.extend({
+export const BatchAddRoomSchema = z.object({
   buildingId: z.string(),
   floorId: z.string(),
+  prefix: z.string().min(1, { message: 'Room prefix is required.' }),
+  start: z.coerce.number().min(1, { message: 'Start number must be at least 1.' }),
+  end: z.coerce.number().min(1, { message: 'End number must be at least 1.' }),
+  capacity: z.coerce.number().min(1, { message: 'Capacity must be at least 1.' }),
+}).refine(data => data.end >= data.start, {
+  message: 'End number must be greater than or equal to start number.',
+  path: ['end'],
 });
 
 export const UpdateRoomSchema = RoomSchema.extend({

@@ -171,7 +171,7 @@ export async function deleteFloor(buildingId: string, floorId: string): Promise<
     }
 }
 
-export async function addRoom(buildingId: string, floorId: string, data: RoomData): Promise<{ success: boolean; message: string }> {
+export async function addRooms(buildingId: string, floorId: string, rooms: RoomData[]): Promise<{ success: boolean; message: string }> {
     const buildings = await readBuildingsFile();
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
@@ -181,16 +181,21 @@ export async function addRoom(buildingId: string, floorId: string, data: RoomDat
     if (floorIndex === -1) {
         return { success: false, message: 'Floor not found.' };
     }
-    const newRoom: Room = {
-        id: Date.now().toString(),
-        ...data,
-    };
-    buildings[buildingIndex].floors[floorIndex].rooms.push(newRoom);
+
+    rooms.forEach(roomData => {
+         const newRoom: Room = {
+            id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            ...roomData,
+        };
+        buildings[buildingIndex].floors[floorIndex].rooms.push(newRoom);
+    });
+
     try {
         await writeBuildingsFile(buildings);
-        return { success: true, message: 'Room added successfully.' };
+        const plural = rooms.length > 1 ? 's' : '';
+        return { success: true, message: `${rooms.length} room${plural} added successfully.` };
     } catch (error) {
-        console.error('Failed to add room:', error);
+        console.error('Failed to add rooms:', error);
         return { success: false, message: 'An internal error occurred.' };
     }
 }

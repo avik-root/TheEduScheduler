@@ -11,6 +11,52 @@
       {
         "id": "1751050894835",
         "name": "Floor 1",
+        "rooms": [
+          {
+            "id": "1751051149231",
+            "name": "Room 1",
+            "capacity": 60
+          }
+        ]
+      },
+      {
+        "id": "1751051115668-r6fxsw5",
+        "name": "Floor 2",
+        "rooms": []
+      },
+      {
+        "id": "1751051115668-1ylbnqt",
+        "name": "Floor 3",
+        "rooms": []
+      },
+      {
+        "id": "1751051115668-7kvl9mt",
+        "name": "Floor 4",
+        "rooms": []
+      },
+      {
+        "id": "1751051115668-mgcwbxc",
+        "name": "Floor 5",
+        "rooms": []
+      },
+      {
+        "id": "1751051115668-9q5im6a",
+        "name": "Floor 6",
+        "rooms": []
+      },
+      {
+        "id": "1751051115668-a4pomjx",
+        "name": "Floor 6",
+        "rooms": []
+      },
+      {
+        "id": "1751051115668-zy57h6s",
+        "name": "Floor 7",
+        "rooms": []
+      },
+      {
+        "id": "1751051115668-7cq99k1",
+        "name": "Floor 8",
         "rooms": []
       }
     ]
