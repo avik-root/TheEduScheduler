@@ -78,3 +78,21 @@ export const UpdateFacultySchema = z.object({
     message: "Passwords do not match.",
     path: ["confirmPassword"],
 });
+
+export const BuildingSchema = z.object({
+  name: z.string().min(2, { message: 'Building name must be at least 2 characters.' }),
+});
+
+export const RoomSchema = z.object({
+  name: z.string().min(1, { message: 'Room name or number is required.' }),
+  capacity: z.coerce.number().min(1, { message: 'Capacity must be at least 1.' }),
+});
+
+export const AddRoomSchema = RoomSchema.extend({
+  buildingId: z.string(),
+});
+
+export const UpdateRoomSchema = RoomSchema.extend({
+  buildingId: z.string(),
+  roomId: z.string(),
+});

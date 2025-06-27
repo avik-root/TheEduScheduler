@@ -1,14 +1,1 @@
-
-[
-  {
-    "name": "Dr. Tester SNU",
-    "email": "test@gmail.com",
-    "password": "$2b$10$8lpcYpmylaOD6I7njyvXw.JawUBeFUfCZ3yMxzYmf8wmA96kKSCiu",
-    "department": "CSE",
-    "weeklyMaxHours": 40,
-    "weeklyOffDays": [
-      "Saturday",
-      "Sunday"
-    ]
-  }
-]
+[]
