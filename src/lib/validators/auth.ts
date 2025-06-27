@@ -42,3 +42,35 @@ export const UpdateAdminSchema = z.object({
     message: "Admin's current password is required to make this change.",
     path: ["currentPassword"],
 });
+
+
+export const FacultySchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  department: z.string().min(2, { message: 'Department must be at least 2 characters.' }),
+});
+
+export const UpdateFacultySchema = z.object({
+    name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+    email: z.string().email(),
+    department: z.string().min(2, { message: 'Department must be at least 2 characters.' }),
+    password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
+    confirmPassword: z.string().optional().or(z.literal('')),
+}).refine(data => {
+    if (data.password && !data.confirmPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Please confirm your new password.",
+    path: ["confirmPassword"],
+}).refine(data => {
+    if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+});
