@@ -134,3 +134,46 @@ export const UpdateDepartmentSchema = DepartmentSchema.extend({
 export const ProgramSchema = z.object({
   name: z.string().min(2, { message: 'Program name must be at least 2 characters.' }),
 });
+
+export const YearSchema = z.object({
+    name: z.string().min(1, { message: 'Year name is required.' }),
+});
+
+export const AddYearsSchema = z.object({
+    departmentId: z.string(),
+    programId: z.string(),
+    names: z.array(z.object({
+        name: z.string().min(1, { message: 'Year name cannot be empty.' })
+    })).min(1, { message: 'Please add at least one year.' }),
+});
+
+export const UpdateYearSchema = YearSchema.extend({
+    departmentId: z.string(),
+    programId: z.string(),
+    yearId: z.string(),
+});
+
+export const SectionSchema = z.object({
+    name: z.string().min(1, { message: 'Section name is required.' }),
+    studentCount: z.coerce.number().min(1, { message: 'Student count must be at least 1.' }),
+});
+
+export const BatchAddSectionSchema = z.object({
+    departmentId: z.string(),
+    programId: z.string(),
+    yearId: z.string(),
+    prefix: z.string().min(1, { message: 'Section prefix is required.' }),
+    start: z.coerce.number().min(1, { message: 'Start number must be at least 1.' }),
+    end: z.coerce.number().min(1, { message: 'End number must be at least 1.' }),
+    studentCount: z.coerce.number().min(1, { message: 'Student count must be at least 1.' }),
+}).refine(data => data.end >= data.start, {
+    message: 'End number must be greater than or equal to start number.',
+    path: ['end'],
+});
+
+export const UpdateSectionSchema = SectionSchema.extend({
+    departmentId: z.string(),
+    programId: z.string(),
+    yearId: z.string(),
+    sectionId: z.string(),
+});

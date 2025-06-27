@@ -11,43 +11,44 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { EditProgramForm } from '@/components/admin/departments/programs/edit-program-form';
-import type { Program } from '@/lib/departments';
+import { EditYearForm } from '@/components/admin/departments/programs/years/edit-year-form';
+import type { Year } from '@/lib/departments';
 import { FilePenLine } from 'lucide-react';
 
-interface EditProgramDialogProps {
+interface EditYearDialogProps {
   departmentId: string;
-  program: Program;
+  programId: string;
+  year: Year;
   variant?: "button" | "icon";
 }
 
-export function EditProgramDialog({ departmentId, program, variant = "icon" }: EditProgramDialogProps) {
+export function EditYearDialog({ departmentId, programId, year, variant = "icon" }: EditYearDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {variant === 'icon' ? (
+        {variant === "icon" ? (
           <Button variant="ghost" size="icon">
             <FilePenLine className="h-5 w-5" />
-            <span className="sr-only">Edit Program</span>
+            <span className="sr-only">Edit Year</span>
           </Button>
         ) : (
           <Button variant="outline" size="sm">
             <FilePenLine className="mr-2 h-4 w-4" />
-            Edit Program
+            Edit Year
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Program</DialogTitle>
+          <DialogTitle>Edit Year</DialogTitle>
           <DialogDescription>
-            Modify the name for {program.name}.
+            Modify the name for {year.name}.
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditProgramForm departmentId={departmentId} program={program} onSuccess={() => setOpen(false)} />
+          <EditYearForm departmentId={departmentId} programId={programId} year={year} onSuccess={() => setOpen(false)} />
         </div>
       </DialogContent>
     </Dialog>

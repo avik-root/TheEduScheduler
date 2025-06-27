@@ -1,7 +1,7 @@
 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CalendarDays, LogOut, ChevronLeft, Building, Layers, PlusCircle, BookCopy } from 'lucide-react';
+import { CalendarDays, LogOut, ChevronLeft, BookCopy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
@@ -9,8 +9,6 @@ import { getDepartmentById, type Program } from '@/lib/departments';
 import { EditDepartmentDialog } from '@/components/admin/departments/edit-department-dialog';
 import { DeleteDepartmentDialog } from '@/components/admin/departments/delete-department-dialog';
 import { CreateProgramDialog } from '@/components/admin/departments/programs/create-program-dialog';
-import { EditProgramDialog } from '@/components/admin/departments/programs/edit-program-dialog';
-import { DeleteProgramDialog } from '@/components/admin/departments/programs/delete-program-dialog';
 
 export default async function DepartmentProgramsPage({ params, searchParams }: { params: { departmentId: string }, searchParams: { email?: string } }) {
   const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
@@ -68,23 +66,24 @@ export default async function DepartmentProgramsPage({ params, searchParams }: {
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {department.programs.map((program: Program) => (
-                        <Card key={program.id} className="h-full flex flex-col">
-                            <CardHeader className="flex-row items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-full bg-primary/10 p-3">
-                                    <BookCopy className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <CardTitle className="text-xl">{program.name}</CardTitle>
+                      <Link key={program.id} href={`/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${searchParams.email}`}>
+                        <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
+                            <CardHeader className="flex-row items-center gap-4">
+                                <div className="rounded-full bg-primary/10 p-3">
+                                  <BookCopy className="h-6 w-6 text-primary" />
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <EditProgramDialog departmentId={department.id} program={program} />
-                                    <DeleteProgramDialog departmentId={department.id} program={program} />
-                                </div>
+                                <CardTitle className="text-xl">{program.name}</CardTitle>
                             </CardHeader>
+                             <CardContent className="flex-grow">
+                                <p className="text-sm text-muted-foreground">
+                                    {(program.years || []).length} year(s)
+                                </p>
+                            </CardContent>
                             <CardFooter>
                                 <p className="text-xs text-muted-foreground">Click to manage years</p>
                             </CardFooter>
                         </Card>
+                      </Link>
                     ))}
                     {department.programs.length === 0 && (
                       <div className="col-span-1 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 sm:col-span-2 lg:col-span-3">

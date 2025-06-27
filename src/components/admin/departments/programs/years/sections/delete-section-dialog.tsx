@@ -17,17 +17,17 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { deleteProgram, type Program } from '@/lib/departments';
+import { deleteSection } from '@/lib/departments';
 import { useToast } from '@/hooks/use-toast';
 
-interface DeleteProgramDialogProps {
+interface DeleteSectionDialogProps {
   departmentId: string;
-  program: Program;
-  variant?: "button" | "icon";
-  onSuccessRedirect?: string;
+  programId: string;
+  yearId: string;
+  sectionId: string;
 }
 
-export function DeleteProgramDialog({ departmentId, program, variant = "icon", onSuccessRedirect }: DeleteProgramDialogProps) {
+export function DeleteSectionDialog({ departmentId, programId, yearId, sectionId }: DeleteSectionDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -35,17 +35,14 @@ export function DeleteProgramDialog({ departmentId, program, variant = "icon", o
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteProgram(departmentId, program.id);
+    const result = await deleteSection(departmentId, programId, yearId, sectionId);
 
     if (result.success) {
       toast({
-        title: 'Program Deleted',
-        description: `The program "${program.name}" has been successfully deleted.`,
+        title: 'Section Deleted',
+        description: `The section has been successfully deleted.`,
       });
       setOpen(false);
-      if (onSuccessRedirect) {
-        router.push(onSuccessRedirect);
-      }
       router.refresh();
     } else {
       toast({
@@ -60,27 +57,16 @@ export function DeleteProgramDialog({ departmentId, program, variant = "icon", o
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        {variant === "icon" ? (
-          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-            <Trash2 className="h-5 w-5" />
-            <span className="sr-only">Delete Program</span>
-          </Button>
-        ) : (
-          <Button variant="destructive" size="sm">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete Program
-          </Button>
-        )}
+        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+          <Trash2 className="h-4 w-4" />
+          <span className="sr-only">Delete Section</span>
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the{' '}
-            <span className="font-semibold text-foreground">
-              {program.name}
-            </span>
-            {' '}program and all its associated years and sections.
+            This action cannot be undone. This will permanently delete the section.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="pt-4">

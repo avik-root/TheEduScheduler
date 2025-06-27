@@ -8,9 +8,22 @@ import { DepartmentSchema } from '@/lib/validators/auth';
 
 const departmentsFilePath = path.join(process.cwd(), 'src', 'data', 'departments.json');
 
+export interface Section {
+    id: string;
+    name: string;
+    studentCount: number;
+}
+
+export interface Year {
+    id: string;
+    name: string;
+    sections: Section[];
+}
+
 export interface Program {
     id: string;
     name: string;
+    years: Year[];
 }
 
 export interface Department {
@@ -39,10 +52,22 @@ async function writeDepartmentsFile(departments: Department[]): Promise<void> {
     await fs.writeFile(departmentsFilePath, JSON.stringify(departments, null, 2));
 }
 
+function ensureHierarchy(departments: Department[]): Department[] {
+    return departments.map(d => ({
+        ...d,
+        programs: (d.programs || []).map(p => ({
+            ...p,
+            years: (p.years || []).map(y => ({
+                ...y,
+                sections: y.sections || []
+            }))
+        }))
+    }));
+}
+
 export async function getDepartments(): Promise<Department[]> {
     const departments = await readDepartmentsFile();
-    // Ensure every department has a programs array
-    return departments.map(d => ({ ...d, programs: d.programs || [] }));
+    return ensureHierarchy(departments);
 }
 
 export async function getDepartmentById(id: string): Promise<Department | null> {
@@ -100,6 +125,11 @@ export async function deleteDepartment(id: string): Promise<{ success: boolean; 
 }
 
 // Program Functions
+export async function getProgramById(departmentId: string, programId: string): Promise<Program | null> {
+    const department = await getDepartmentById(departmentId);
+    return department?.programs.find(p => p.id === programId) || null;
+}
+
 export async function addProgram(departmentId: string, programName: string): Promise<{ success: boolean; message: string }> {
     const departments = await getDepartments();
     const departmentIndex = departments.findIndex(d => d.id === departmentId);
@@ -109,6 +139,7 @@ export async function addProgram(departmentId: string, programName: string): Pro
     const newProgram: Program = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         name: programName,
+        years: [],
     };
     departments[departmentIndex].programs.push(newProgram);
     try {
@@ -123,14 +154,12 @@ export async function addProgram(departmentId: string, programName: string): Pro
 export async function updateProgram(departmentId: string, programId: string, programName: string): Promise<{ success: boolean; message: string }> {
     const departments = await getDepartments();
     const departmentIndex = departments.findIndex(d => d.id === departmentId);
-    if (departmentIndex === -1) {
-        return { success: false, message: 'Department not found.' };
-    }
+    if (departmentIndex === -1) return { success: false, message: 'Department not found.' };
     const programIndex = departments[departmentIndex].programs.findIndex(p => p.id === programId);
-    if (programIndex === -1) {
-        return { success: false, message: 'Program not found.' };
-    }
+    if (programIndex === -1) return { success: false, message: 'Program not found.' };
+    
     departments[departmentIndex].programs[programIndex].name = programName;
+    
     try {
         await writeDepartmentsFile(departments);
         return { success: true, message: 'Program updated successfully.' };
@@ -143,19 +172,169 @@ export async function updateProgram(departmentId: string, programId: string, pro
 export async function deleteProgram(departmentId: string, programId: string): Promise<{ success: boolean; message: string }> {
     const departments = await getDepartments();
     const departmentIndex = departments.findIndex(d => d.id === departmentId);
-    if (departmentIndex === -1) {
-        return { success: false, message: 'Department not found.' };
-    }
+    if (departmentIndex === -1) return { success: false, message: 'Department not found.' };
+    
     const originalCount = departments[departmentIndex].programs.length;
     departments[departmentIndex].programs = departments[departmentIndex].programs.filter(p => p.id !== programId);
-    if (departments[departmentIndex].programs.length === originalCount) {
-        return { success: false, message: 'Program not found.' };
-    }
+    
+    if (departments[departmentIndex].programs.length === originalCount) return { success: false, message: 'Program not found.' };
+    
     try {
         await writeDepartmentsFile(departments);
         return { success: true, message: 'Program deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete program:', error);
         return { success: false, message: 'An internal error occurred.' };
+    }
+}
+
+// Year Functions
+export async function addYears(departmentId: string, programId: string, names: string[]): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments();
+    const deptIdx = departments.findIndex(d => d.id === departmentId);
+    if (deptIdx === -1) return { success: false, message: 'Department not found.' };
+    const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
+    if (progIdx === -1) return { success: false, message: 'Program not found.' };
+
+    names.forEach(name => {
+        const newYear: Year = {
+            id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            name,
+            sections: [],
+        };
+        departments[deptIdx].programs[progIdx].years.push(newYear);
+    });
+
+    try {
+        await writeDepartmentsFile(departments);
+        return { success: true, message: `${names.length} year(s) added successfully.` };
+    } catch (e) {
+        return { success: false, message: 'Failed to add years.' };
+    }
+}
+
+export async function updateYear(departmentId: string, programId: string, yearId: string, name: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments();
+    const deptIdx = departments.findIndex(d => d.id === departmentId);
+    if (deptIdx === -1) return { success: false, message: 'Department not found.' };
+    const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
+    if (progIdx === -1) return { success: false, message: 'Program not found.' };
+    const yearIdx = departments[deptIdx].programs[progIdx].years.findIndex(y => y.id === yearId);
+    if (yearIdx === -1) return { success: false, message: 'Year not found.' };
+
+    departments[deptIdx].programs[progIdx].years[yearIdx].name = name;
+
+    try {
+        await writeDepartmentsFile(departments);
+        return { success: true, message: 'Year updated successfully.' };
+    } catch (e) {
+        return { success: false, message: 'Failed to update year.' };
+    }
+}
+
+export async function deleteYear(departmentId: string, programId: string, yearId: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments();
+    const deptIdx = departments.findIndex(d => d.id === departmentId);
+    if (deptIdx === -1) return { success: false, message: 'Department not found.' };
+    const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
+    if (progIdx === -1) return { success: false, message: 'Program not found.' };
+    
+    departments[deptIdx].programs[progIdx].years = departments[deptIdx].programs[progIdx].years.filter(y => y.id !== yearId);
+
+    try {
+        await writeDepartmentsFile(departments);
+        return { success: true, message: 'Year deleted successfully.' };
+    } catch (e) {
+        return { success: false, message: 'Failed to delete year.' };
+    }
+}
+
+
+// Section Functions
+export async function addSections(departmentId: string, programId: string, yearId: string, sections: Omit<Section, 'id'>[]): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments();
+    const deptIdx = departments.findIndex(d => d.id === departmentId);
+    if (deptIdx === -1) return { success: false, message: 'Department not found.' };
+    const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
+    if (progIdx === -1) return { success: false, message: 'Program not found.' };
+    const yearIdx = departments[deptIdx].programs[progIdx].years.findIndex(y => y.id === yearId);
+    if (yearIdx === -1) return { success: false, message: 'Year not found.' };
+
+    sections.forEach(sectionData => {
+        const newSection: Section = {
+            id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            ...sectionData,
+        };
+        departments[deptIdx].programs[progIdx].years[yearIdx].sections.push(newSection);
+    });
+
+    try {
+        await writeDepartmentsFile(departments);
+        return { success: true, message: `${sections.length} section(s) added successfully.` };
+    } catch (e) {
+        return { success: false, message: 'Failed to add sections.' };
+    }
+}
+
+export async function updateSection(departmentId: string, programId: string, yearId: string, sectionId: string, data: Omit<Section, 'id'>): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments();
+    const deptIdx = departments.findIndex(d => d.id === departmentId);
+    if (deptIdx === -1) return { success: false, message: 'Department not found.' };
+    const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
+    if (progIdx === -1) return { success: false, message: 'Program not found.' };
+    const yearIdx = departments[deptIdx].programs[progIdx].years.findIndex(y => y.id === yearId);
+    if (yearIdx === -1) return { success: false, message: 'Year not found.' };
+    const sectionIdx = departments[deptIdx].programs[progIdx].years[yearIdx].sections.findIndex(s => s.id === sectionId);
+    if (sectionIdx === -1) return { success: false, message: 'Section not found.' };
+
+    departments[deptIdx].programs[progIdx].years[yearIdx].sections[sectionIdx] = { ...departments[deptIdx].programs[progIdx].years[yearIdx].sections[sectionIdx], ...data };
+
+    try {
+        await writeDepartmentsFile(departments);
+        return { success: true, message: 'Section updated successfully.' };
+    } catch (e) {
+        return { success: false, message: 'Failed to update section.' };
+    }
+}
+
+export async function deleteSection(departmentId: string, programId: string, yearId: string, sectionId: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments();
+    const deptIdx = departments.findIndex(d => d.id === departmentId);
+    if (deptIdx === -1) return { success: false, message: 'Department not found.' };
+    const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
+    if (progIdx === -1) return { success: false, message: 'Program not found.' };
+    const yearIdx = departments[deptIdx].programs[progIdx].years.findIndex(y => y.id === yearId);
+    if (yearIdx === -1) return { success: false, message: 'Year not found.' };
+    
+    departments[deptIdx].programs[progIdx].years[yearIdx].sections = departments[deptIdx].programs[progIdx].years[yearIdx].sections.filter(s => s.id !== sectionId);
+
+    try {
+        await writeDepartmentsFile(departments);
+        return { success: true, message: 'Section deleted successfully.' };
+    } catch (e) {
+        return { success: false, message: 'Failed to delete section.' };
+    }
+}
+
+export async function deleteSections(departmentId: string, programId: string, yearId: string, sectionIds: string[]): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments();
+    const deptIdx = departments.findIndex(d => d.id === departmentId);
+    if (deptIdx === -1) return { success: false, message: 'Department not found.' };
+    const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
+    if (progIdx === -1) return { success: false, message: 'Program not found.' };
+    const yearIdx = departments[deptIdx].programs[progIdx].years.findIndex(y => y.id === yearId);
+    if (yearIdx === -1) return { success: false, message: 'Year not found.' };
+    
+    const originalCount = departments[deptIdx].programs[progIdx].years[yearIdx].sections.length;
+    departments[deptIdx].programs[progIdx].years[yearIdx].sections = departments[deptIdx].programs[progIdx].years[yearIdx].sections.filter(s => !sectionIds.includes(s.id));
+    const deletedCount = originalCount - departments[deptIdx].programs[progIdx].years[yearIdx].sections.length;
+
+    if (deletedCount === 0) return { success: false, message: 'No matching sections found.' };
+
+    try {
+        await writeDepartmentsFile(departments);
+        return { success: true, message: `${deletedCount} section(s) deleted successfully.` };
+    } catch (e) {
+        return { success: false, message: 'Failed to delete sections.' };
     }
 }
