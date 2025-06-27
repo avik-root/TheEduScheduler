@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "name": "Dr. Tester SNU",
+    "email": "test@gmail.com",
+    "password": "$2b$10$3GWbjq8r7ThlK3sXmRQU9uabOVQUlVAN2YOBR/MLfxncPef6gth/y",
+    "department": "CSE",
+    "weeklyMaxHours": 20,
+    "weeklyOffDays": [
+      "Sunday",
+      "Monday"
+    ]
+  }
+]

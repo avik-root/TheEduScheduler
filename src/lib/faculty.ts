@@ -4,12 +4,14 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { FacultySchema, UpdateFacultySchema } from '@/lib/validators/auth';
+import { FacultySchema, UpdateFacultySchema, LoginSchema } from '@/lib/validators/auth';
 
 const facultyFilePath = path.join(process.cwd(), 'src', 'data', 'faculty.json');
 
 export type Faculty = z.infer<typeof FacultySchema>;
 type UpdateFacultyData = z.infer<typeof UpdateFacultySchema>;
+type LoginData = z.infer<typeof LoginSchema>;
+
 
 async function readFacultyFile(): Promise<Faculty[]> {
     try {
@@ -31,6 +33,12 @@ async function writeFacultyFile(faculty: Faculty[]): Promise<void> {
 
 export async function getFaculty(): Promise<Faculty[]> {
     return await readFacultyFile();
+}
+
+export async function getFacultyByEmail(email: string): Promise<Faculty | null> {
+    const facultyList = await readFacultyFile();
+    const faculty = facultyList.find(f => f.email === email);
+    return faculty || null;
 }
 
 export async function createFaculty(data: Faculty): Promise<{ success: boolean; message: string }> {
@@ -101,4 +109,26 @@ export async function deleteFaculty(email: string): Promise<{ success: boolean; 
         console.error('Failed to delete faculty:', error);
         return { success: false, message: 'An internal error occurred. Please try again.' };
     }
+}
+
+export async function loginFaculty(credentials: LoginData): Promise<{ success: boolean; message: string }> {
+    const facultyList = await readFacultyFile();
+
+    if (facultyList.length === 0) {
+        return { success: false, message: 'No faculty accounts exist.' };
+    }
+
+    const faculty = facultyList.find(f => f.email === credentials.email);
+
+    if (!faculty) {
+        return { success: false, message: 'Invalid email or password.' };
+    }
+
+    const passwordMatch = await bcrypt.compare(credentials.password, faculty.password);
+
+    if (passwordMatch) {
+        return { success: true, message: 'Login successful!' };
+    }
+
+    return { success: false, message: 'Invalid email or password.' };
 }

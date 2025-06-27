@@ -97,7 +97,7 @@ export default async function SuperAdminDashboardPage() {
               <Shield className="h-4 w-4" /> Admin Login
             </Link>
             <Link
-              href="#"
+              href="/teacher/login"
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:underline"
             >
               <School className="h-4 w-4" /> Teacher Login
