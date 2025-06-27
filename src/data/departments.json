@@ -1,4 +1,3 @@
-
 [
   {
     "id": "1751053989994-ycyvia9",
@@ -7,7 +6,232 @@
       {
         "id": "1751054518538-19pthol",
         "name": "B. Tech Computer Science",
-        "years": []
+        "years": [
+          {
+            "id": "1751054724273-glq0kg0",
+            "name": "Year 1",
+            "sections": [
+              {
+                "id": "1751054757144-jb5wvbh",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-zbi8eiu",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-uf1vsvg",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-75ejva4",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-bu7yro7",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-jh3a6tw",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-0r2rclf",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-9nl6u7k",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-8mpsoi0",
+                "name": "Section 9",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054757144-qy7gc15",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          },
+          {
+            "id": "1751054724273-5cyfs71",
+            "name": "Year 2",
+            "sections": [
+              {
+                "id": "1751054786176-t26gb8k",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-uuouww3",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-tt2ikn7",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-as8jpnt",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-e03g1qx",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-hdj5f9h",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-qa45w3c",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-uw0qaj4",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-uieib8c",
+                "name": "Section 9",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054786176-m2a1jm7",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          },
+          {
+            "id": "1751054724273-jz09rma",
+            "name": "Year 3",
+            "sections": [
+              {
+                "id": "1751054795399-vtkijju",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-b4er6ix",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-df5k12e",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-fnefmzj",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-8xz1ulw",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-4332gji",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-tkpfwen",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-x0a8z90",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-zm2mzwp",
+                "name": "Section 9",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054795399-zforozn",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          },
+          {
+            "id": "1751054732063-sgcig7j",
+            "name": "Year 4",
+            "sections": [
+              {
+                "id": "1751054822118-g3ohl5p",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-y1taotv",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-28tkg89",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-zdxaqjk",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-u7onq67",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-g61rgzv",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-f5kw1w6",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-czgwd8c",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-8c2y1qe",
+                "name": "Section 9",
+                "studentCount": 60
+              },
+              {
+                "id": "1751054822118-ijyuked",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          }
+        ]
       }
     ]
   }
