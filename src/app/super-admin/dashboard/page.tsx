@@ -91,7 +91,7 @@ export default async function SuperAdminDashboardPage() {
           </p>
           <nav className="flex gap-4 sm:gap-6">
             <Link
-              href="#"
+              href="/admin/login"
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:underline"
             >
               <Shield className="h-4 w-4" /> Admin Login

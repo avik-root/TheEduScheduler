@@ -4,12 +4,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { SignupSchema, UpdateAdminSchema } from '@/lib/validators/auth';
+import { LoginSchema, SignupSchema, UpdateAdminSchema } from '@/lib/validators/auth';
 
 const adminFilePath = path.join(process.cwd(), 'src', 'data', 'admin.json');
 
 export type Admin = z.infer<typeof SignupSchema>;
 type UpdateAdminData = z.infer<typeof UpdateAdminSchema>;
+type LoginData = z.infer<typeof LoginSchema>;
 
 async function readAdminsFile(): Promise<Admin[]> {
     try {
@@ -115,4 +116,26 @@ export async function deleteAdmin(email: string, password: string): Promise<{ su
         console.error('Failed to delete admin:', error);
         return { success: false, message: 'An internal error occurred. Please try again.' };
     }
+}
+
+export async function loginAdmin(credentials: LoginData): Promise<{ success: boolean; message: string }> {
+    const admins = await readAdminsFile();
+
+    if (admins.length === 0) {
+        return { success: false, message: 'No admin accounts exist.' };
+    }
+
+    const admin = admins.find(a => a.email === credentials.email);
+
+    if (!admin) {
+        return { success: false, message: 'Invalid email or password.' };
+    }
+
+    const passwordMatch = await bcrypt.compare(credentials.password, admin.password);
+
+    if (passwordMatch) {
+        return { success: true, message: 'Login successful!' };
+    }
+
+    return { success: false, message: 'Invalid email or password.' };
 }
