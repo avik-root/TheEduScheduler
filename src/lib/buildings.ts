@@ -247,3 +247,33 @@ export async function deleteRoom(buildingId: string, floorId: string, roomId: st
         return { success: false, message: 'An internal error occurred.' };
     }
 }
+
+export async function deleteRooms(buildingId: string, floorId: string, roomIds: string[]): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile();
+    const buildingIndex = buildings.findIndex(b => b.id === buildingId);
+    if (buildingIndex === -1) {
+        return { success: false, message: 'Building not found.' };
+    }
+    const floorIndex = buildings[buildingIndex].floors.findIndex(f => f.id === floorId);
+    if (floorIndex === -1) {
+        return { success: false, message: 'Floor not found.' };
+    }
+
+    const originalRoomCount = buildings[buildingIndex].floors[floorIndex].rooms.length;
+    buildings[buildingIndex].floors[floorIndex].rooms = buildings[buildingIndex].floors[floorIndex].rooms.filter(r => !roomIds.includes(r.id));
+    
+    const deletedCount = originalRoomCount - buildings[buildingIndex].floors[floorIndex].rooms.length;
+
+    if (deletedCount === 0) {
+        return { success: false, message: 'No matching rooms found to delete.' };
+    }
+    
+    try {
+        await writeBuildingsFile(buildings);
+        const plural = deletedCount > 1 ? 's' : '';
+        return { success: true, message: `${deletedCount} room${plural} deleted successfully.` };
+    } catch (error) {
+        console.error('Failed to delete rooms:', error);
+        return { success: false, message: 'An internal error occurred.' };
+    }
+}

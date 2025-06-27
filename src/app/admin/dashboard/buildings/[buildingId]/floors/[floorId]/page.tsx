@@ -1,15 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CalendarDays, LogOut, ChevronLeft, Layers, DoorOpen, Users } from 'lucide-react';
+import { CalendarDays, LogOut, ChevronLeft, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
-import { getBuildingById, type Room } from '@/lib/buildings';
+import { getBuildingById } from '@/lib/buildings';
 import { AddRoomDialog } from '@/components/admin/buildings/add-room-dialog';
 import { EditFloorDialog } from '@/components/admin/buildings/edit-floor-dialog';
 import { DeleteFloorDialog } from '@/components/admin/buildings/delete-floor-dialog';
-import { EditRoomDialog } from '@/components/admin/buildings/edit-room-dialog';
-import { DeleteRoomDialog } from '@/components/admin/buildings/delete-room-dialog';
+import { RoomsList } from '@/components/admin/buildings/rooms-list';
 
 
 export default async function FloorRoomsPage({ params, searchParams }: { params: { buildingId: string, floorId: string }, searchParams: { email?: string } }) {
@@ -67,42 +66,7 @@ export default async function FloorRoomsPage({ params, searchParams }: { params:
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                     {floor.rooms.map((room: Room) => (
-                      <Card key={room.id} className="h-full flex flex-col">
-                        <CardHeader className="flex-grow">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="flex items-center gap-2 text-xl">
-                              <DoorOpen className="h-5 w-5 text-muted-foreground" />
-                              {room.name}
-                            </CardTitle>
-                            <div className="flex items-center gap-1">
-                              <EditRoomDialog buildingId={building.id} floorId={floor.id} room={room} />
-                              <DeleteRoomDialog buildingId={building.id} floorId={floor.id} roomId={room.id} />
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Users className="h-4 w-4" />
-                                <span>Capacity: {room.capacity}</span>
-                            </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {floor.rooms.length === 0 && (
-                      <div className="col-span-1 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 sm:col-span-2 lg:col-span-3">
-                        <div className="text-center">
-                           <p className="text-muted-foreground">
-                            No rooms found for this floor.
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Click &apos;Add New Room&apos; to get started.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <RoomsList buildingId={building.id} floorId={floor.id} rooms={floor.rooms} />
                 </CardContent>
             </Card>
         </div>
