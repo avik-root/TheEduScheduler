@@ -32,6 +32,7 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -109,64 +110,80 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Password</FormLabel>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Leave blank to keep current password"
-                    {...field}
-                    className="pl-10 pr-10"
-                  />
-                </FormControl>
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                >
-                  <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-         <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm New Password</FormLabel>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Confirm new password"
-                    {...field}
-                    className="pl-10 pr-10"
-                  />
-                </FormControl>
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                >
-                  <span className="sr-only">{showConfirmPassword ? 'Hide password' : 'Show password'}</span>
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        
+        {isChangingPassword ? (
+          <div className="space-y-6 rounded-md border p-4">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Enter a new password"
+                        {...field}
+                        className="pl-10 pr-10"
+                      />
+                    </FormControl>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                    >
+                      <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm New Password</FormLabel>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Confirm new password"
+                        {...field}
+                        className="pl-10 pr-10"
+                      />
+                    </FormControl>
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                    >
+                      <span className="sr-only">{showConfirmPassword ? 'Hide password' : 'Show password'}</span>
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => setIsChangingPassword(true)}
+          >
+            <Lock className="mr-2 h-4 w-4" />
+            Change Password
+          </Button>
+        )}
+
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save Changes
