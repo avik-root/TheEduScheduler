@@ -121,3 +121,11 @@ export const UpdateRoomSchema = RoomSchema.extend({
   floorId: z.string(),
   roomId: z.string(),
 });
+
+export const DepartmentSchema = z.object({
+  name: z.string().min(2, { message: 'Department name must be at least 2 characters.' }),
+});
+
+export const UpdateDepartmentSchema = DepartmentSchema.extend({
+  id: z.string(),
+});
