@@ -7,6 +7,8 @@ import bcrypt from 'bcrypt';
 import { SignupSchema, UpdateAdminSchema } from '@/lib/validators/auth';
 
 const adminFilePath = path.join(process.cwd(), 'src', 'data', 'admin.json');
+const superAdminFilePath = path.join(process.cwd(), 'src', 'data', 'super-admin.json');
+
 
 export type Admin = z.infer<typeof SignupSchema>;
 type UpdateAdminData = z.infer<typeof UpdateAdminSchema>;
@@ -69,6 +71,28 @@ export async function updateAdmin(data: UpdateAdminData): Promise<{ success: boo
 
     // Update password only if a new one is provided
     if (data.password) {
+        if (!data.superAdminPassword) {
+            return { success: false, message: "Your password is required to authorize this change." };
+        }
+
+        let superAdmin;
+        try {
+            const fileContent = await fs.readFile(superAdminFilePath, 'utf-8');
+            superAdmin = JSON.parse(fileContent);
+        } catch (error) {
+            console.error('Failed to read super admin file:', error);
+            return { success: false, message: 'Could not verify your credentials. Please try again.' };
+        }
+
+        if (!superAdmin || !superAdmin.password) {
+            return { success: false, message: 'Super admin account not found or is invalid.' };
+        }
+
+        const passwordMatch = await bcrypt.compare(data.superAdminPassword, superAdmin.password);
+        if (!passwordMatch) {
+            return { success: false, message: 'Incorrect password. Password change not authorized.' };
+        }
+
         const hashedPassword = await bcrypt.hash(data.password, 10);
         admins[adminIndex].password = hashedPassword;
     }

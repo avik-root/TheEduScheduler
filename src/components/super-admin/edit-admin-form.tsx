@@ -32,6 +32,7 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [showSuperAdminPassword, setShowSuperAdminPassword] = React.useState(false);
   const [isChangingPassword, setIsChangingPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -43,6 +44,7 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
       email: admin.email,
       password: '',
       confirmPassword: '',
+      superAdminPassword: '',
     },
   });
 
@@ -165,6 +167,35 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
                     >
                       <span className="sr-only">{showConfirmPassword ? 'Hide password' : 'Show password'}</span>
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="superAdminPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Your Password</FormLabel>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input
+                        type={showSuperAdminPassword ? 'text' : 'password'}
+                        placeholder="Enter your password to confirm"
+                        {...field}
+                        className="pl-10 pr-10"
+                      />
+                    </FormControl>
+                    <button
+                      type="button"
+                      onClick={() => setShowSuperAdminPassword(!showSuperAdminPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                    >
+                      <span className="sr-only">{showSuperAdminPassword ? 'Hide password' : 'Show password'}</span>
+                      {showSuperAdminPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                   <FormMessage />
