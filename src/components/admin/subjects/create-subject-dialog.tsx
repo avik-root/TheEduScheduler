@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -12,12 +13,16 @@ import {
 } from "@/components/ui/dialog";
 import { CreateSubjectForm } from '@/components/admin/subjects/create-subject-form';
 import { PlusCircle } from 'lucide-react';
+import type { Department } from '@/lib/departments';
+import type { Faculty } from '@/lib/faculty';
 
 interface CreateSubjectDialogProps {
   adminEmail: string;
+  departments: Department[];
+  faculty: Faculty[];
 }
 
-export function CreateSubjectDialog({ adminEmail }: CreateSubjectDialogProps) {
+export function CreateSubjectDialog({ adminEmail, departments, faculty }: CreateSubjectDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -28,7 +33,7 @@ export function CreateSubjectDialog({ adminEmail }: CreateSubjectDialogProps) {
           Create New Subject
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Subject</DialogTitle>
           <DialogDescription>
@@ -36,7 +41,7 @@ export function CreateSubjectDialog({ adminEmail }: CreateSubjectDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateSubjectForm onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
+            <CreateSubjectForm onSuccess={() => setOpen(false)} adminEmail={adminEmail} departments={departments} faculty={faculty} />
         </div>
       </DialogContent>
     </Dialog>

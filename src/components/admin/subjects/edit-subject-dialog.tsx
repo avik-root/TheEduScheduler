@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -13,13 +14,17 @@ import {
 import { EditSubjectForm } from '@/components/admin/subjects/edit-subject-form';
 import type { Subject } from '@/lib/subjects';
 import { FilePenLine } from 'lucide-react';
+import type { Department } from '@/lib/departments';
+import type { Faculty } from '@/lib/faculty';
 
 interface EditSubjectDialogProps {
   subject: Subject;
   adminEmail: string;
+  departments: Department[];
+  faculty: Faculty[];
 }
 
-export function EditSubjectDialog({ subject, adminEmail }: EditSubjectDialogProps) {
+export function EditSubjectDialog({ subject, adminEmail, departments, faculty }: EditSubjectDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -30,7 +35,7 @@ export function EditSubjectDialog({ subject, adminEmail }: EditSubjectDialogProp
           <span className="sr-only">Edit Subject</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Subject</DialogTitle>
           <DialogDescription>
@@ -38,7 +43,7 @@ export function EditSubjectDialog({ subject, adminEmail }: EditSubjectDialogProp
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditSubjectForm subject={subject} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
+          <EditSubjectForm subject={subject} onSuccess={() => setOpen(false)} adminEmail={adminEmail} departments={departments} faculty={faculty} />
         </div>
       </DialogContent>
     </Dialog>
