@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, User, Mail, Lock, Eye, EyeOff, Building } from 'lucide-react';
+import { Loader2, User, Mail, Lock, Eye, EyeOff, Building, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { UpdateFacultySchema } from '@/lib/validators/auth';
 import { useToast } from '@/hooks/use-toast';
 import { updateFaculty, type Faculty } from '@/lib/faculty';
@@ -27,6 +28,8 @@ interface EditFacultyFormProps {
   faculty: Faculty;
   onSuccess?: () => void;
 }
+
+const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export function EditFacultyForm({ faculty, onSuccess }: EditFacultyFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -41,7 +44,9 @@ export function EditFacultyForm({ faculty, onSuccess }: EditFacultyFormProps) {
     defaultValues: {
       name: faculty.name,
       email: faculty.email,
-      department: (faculty as any).department || '',
+      department: faculty.department || '',
+      weeklyMaxHours: faculty.weeklyMaxHours ?? 40,
+      weeklyOffDays: faculty.weeklyOffDays ?? [],
       password: '',
       confirmPassword: '',
     },
@@ -122,6 +127,75 @@ export function EditFacultyForm({ faculty, onSuccess }: EditFacultyFormProps) {
                 <FormControl>
                   <Input placeholder="Paleontology" {...field} className="pl-10" />
                 </FormControl>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="weeklyMaxHours"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Weekly Max Hours</FormLabel>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 40"
+                    {...field}
+                    className="pl-10"
+                  />
+                </FormControl>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="weeklyOffDays"
+          render={() => (
+            <FormItem>
+              <div className="mb-4">
+                <FormLabel>Weekly Off Days</FormLabel>
+                <p className="text-sm text-muted-foreground">Select the days the faculty member is typically off.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {daysOfWeek.map((day) => (
+                  <FormField
+                    key={day}
+                    control={form.control}
+                    name="weeklyOffDays"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={day}
+                          className="flex flex-row items-start space-x-3 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(day)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...(field.value || []), day])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== day
+                                      )
+                                    )
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {day}
+                          </FormLabel>
+                        </FormItem>
+                      )
+                    }}
+                  />
+                ))}
               </div>
               <FormMessage />
             </FormItem>

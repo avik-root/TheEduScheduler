@@ -49,12 +49,16 @@ export const FacultySchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   department: z.string().min(2, { message: 'Department must be at least 2 characters.' }),
+  weeklyMaxHours: z.coerce.number().min(0, { message: "Weekly max hours can't be negative." }),
+  weeklyOffDays: z.array(z.string()).optional(),
 });
 
 export const UpdateFacultySchema = z.object({
     name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
     email: z.string().email(),
     department: z.string().min(2, { message: 'Department must be at least 2 characters.' }),
+    weeklyMaxHours: z.coerce.number().min(0, { message: "Weekly max hours can't be negative." }),
+    weeklyOffDays: z.array(z.string()).optional(),
     password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
     confirmPassword: z.string().optional().or(z.literal('')),
 }).refine(data => {

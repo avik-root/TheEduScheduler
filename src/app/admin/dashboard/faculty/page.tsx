@@ -76,6 +76,14 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                             <p className="text-sm text-muted-foreground">
                                 Department: <span className="font-medium text-foreground">{faculty.department}</span>
                             </p>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Weekly Max Hours: <span className="font-medium text-foreground">{faculty.weeklyMaxHours}</span>
+                            </p>
+                            {faculty.weeklyOffDays && faculty.weeklyOffDays.length > 0 && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                  Weekly Off: <span className="font-medium text-foreground">{faculty.weeklyOffDays.join(', ')}</span>
+                              </p>
+                            )}
                         </CardContent>
                       </Card>
                     ))}

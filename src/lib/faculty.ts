@@ -65,7 +65,10 @@ export async function updateFaculty(data: UpdateFacultyData): Promise<{ success:
     
     const facultyToUpdate = facultyList[facultyIndex];
     facultyToUpdate.name = data.name;
-    facultyToUpdate.department = (data as Faculty).department;
+    facultyToUpdate.department = data.department;
+    facultyToUpdate.weeklyMaxHours = data.weeklyMaxHours;
+    facultyToUpdate.weeklyOffDays = data.weeklyOffDays || [];
+
 
     if (data.password) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
