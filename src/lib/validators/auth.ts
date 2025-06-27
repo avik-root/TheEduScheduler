@@ -14,5 +14,22 @@ export const SignupSchema = z.object({
 export const UpdateAdminSchema = z.object({
     name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
     email: z.string().email(),
-    password: z.string().min(8, { message: 'Password must be at least 8 characters.' }).optional().or(z.literal('')),
+    password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
+    confirmPassword: z.string().optional().or(z.literal('')),
+}).refine(data => {
+    if (data.password && !data.confirmPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Please confirm your new password.",
+    path: ["confirmPassword"],
+}).refine(data => {
+    if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
 });

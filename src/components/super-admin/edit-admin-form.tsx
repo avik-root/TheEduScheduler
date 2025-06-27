@@ -31,6 +31,7 @@ interface EditAdminFormProps {
 export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -40,6 +41,7 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
       name: admin.name,
       email: admin.email,
       password: '',
+      confirmPassword: '',
     },
   });
 
@@ -112,7 +114,7 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password (Optional)</FormLabel>
+              <FormLabel>New Password</FormLabel>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
@@ -130,6 +132,35 @@ export function EditAdminForm({ admin, onSuccess }: EditAdminFormProps) {
                 >
                   <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm New Password</FormLabel>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <FormControl>
+                  <Input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm new password"
+                    {...field}
+                    className="pl-10 pr-10"
+                  />
+                </FormControl>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                >
+                  <span className="sr-only">{showConfirmPassword ? 'Hide password' : 'Show password'}</span>
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               <FormMessage />
