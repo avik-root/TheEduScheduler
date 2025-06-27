@@ -3,6 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
+import bcrypt from 'bcrypt';
 import { LoginSchema, SignupSchema } from '@/lib/validators/auth';
 
 // Define the path to the super admin data file
@@ -58,8 +59,12 @@ export async function createSuperAdmin(data: SuperAdmin): Promise<{ success: boo
     }
 
     try {
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        const adminToSave = { ...data, password: hashedPassword };
+
         // Write the new admin data to the file
-        await fs.writeFile(superAdminFilePath, JSON.stringify(data, null, 2));
+        await fs.writeFile(superAdminFilePath, JSON.stringify(adminToSave, null, 2));
         return { success: true, message: 'Super admin account created successfully.' };
     } catch (error) {
         console.error('Failed to create super admin:', error);
@@ -79,7 +84,9 @@ export async function loginSuperAdmin(credentials: LoginData): Promise<{ success
         return { success: false, message: 'No super admin account exists. Please sign up.' };
     }
 
-    if (admin.email === credentials.email && admin.password === credentials.password) {
+    const passwordMatch = await bcrypt.compare(credentials.password, admin.password);
+
+    if (admin.email === credentials.email && passwordMatch) {
         return { success: true, message: 'Login successful!' };
     }
 

@@ -3,6 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
+import bcrypt from 'bcrypt';
 import { SignupSchema, UpdateAdminSchema } from '@/lib/validators/auth';
 
 const adminFilePath = path.join(process.cwd(), 'src', 'data', 'admin.json');
@@ -41,7 +42,10 @@ export async function createAdmin(data: Admin): Promise<{ success: boolean; mess
         return { success: false, message: 'An admin with this email already exists.' };
     }
 
-    admins.push(data);
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const newAdmin = { ...data, password: hashedPassword };
+
+    admins.push(newAdmin);
 
     try {
         await writeAdminsFile(admins);
@@ -65,7 +69,8 @@ export async function updateAdmin(data: UpdateAdminData): Promise<{ success: boo
 
     // Update password only if a new one is provided
     if (data.password) {
-        admins[adminIndex].password = data.password;
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        admins[adminIndex].password = hashedPassword;
     }
 
     try {
