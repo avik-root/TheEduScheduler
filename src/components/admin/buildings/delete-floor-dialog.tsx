@@ -40,6 +40,12 @@ export function DeleteFloorDialog({ buildingId, floorId }: DeleteFloorDialogProp
         description: `The floor has been successfully deleted.`,
       });
       setOpen(false);
+      
+      const redirectPath = `/admin/dashboard/buildings/${buildingId}`;
+      const emailParam = new URLSearchParams(window.location.search).get('email');
+      const finalRedirectPath = emailParam ? `${redirectPath}?email=${emailParam}` : redirectPath;
+
+      router.push(finalRedirectPath);
       router.refresh();
     } else {
       toast({
