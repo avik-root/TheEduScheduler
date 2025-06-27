@@ -2,6 +2,17 @@
   {
     "id": "1751039846674",
     "name": "Building A",
-    "floors": []
+    "floors": [
+      {
+        "id": "1751050884901",
+        "name": "Ground",
+        "rooms": []
+      },
+      {
+        "id": "1751050894835",
+        "name": "Floor 1",
+        "rooms": []
+      }
+    ]
   }
 ]

@@ -25,14 +25,14 @@ export function CreateFloorDialog({ buildingId }: CreateFloorDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Floor
+          Create New Floors
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create New Floor</DialogTitle>
+          <DialogTitle>Create New Floors</DialogTitle>
           <DialogDescription>
-            Provide the details for the new floor.
+            Add one or more floors to the building.
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">

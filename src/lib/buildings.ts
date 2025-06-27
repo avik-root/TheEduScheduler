@@ -105,23 +105,28 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean; me
     }
 }
 
-export async function addFloor(buildingId: string, data: FloorData): Promise<{ success: boolean; message: string }> {
+export async function addFloors(buildingId: string, names: string[]): Promise<{ success: boolean; message: string }> {
     const buildings = await readBuildingsFile();
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
     }
-    const newFloor: Floor = {
-        id: Date.now().toString(),
-        name: data.name,
-        rooms: [],
-    };
-    buildings[buildingIndex].floors.push(newFloor);
+
+    names.forEach(name => {
+        const newFloor: Floor = {
+            id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            name: name,
+            rooms: [],
+        };
+        buildings[buildingIndex].floors.push(newFloor);
+    });
+    
     try {
         await writeBuildingsFile(buildings);
-        return { success: true, message: 'Floor added successfully.' };
+        const plural = names.length > 1 ? 's' : '';
+        return { success: true, message: `${names.length} floor${plural} added successfully.` };
     } catch (error) {
-        console.error('Failed to add floor:', error);
+        console.error('Failed to add floors:', error);
         return { success: false, message: 'An internal error occurred.' };
     }
 }

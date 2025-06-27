@@ -87,8 +87,11 @@ export const FloorSchema = z.object({
   name: z.string().min(1, { message: 'Floor name or number is required.' }),
 });
 
-export const AddFloorSchema = FloorSchema.extend({
+export const AddFloorSchema = z.object({
   buildingId: z.string(),
+  names: z.array(z.object({
+    name: z.string().min(1, { message: 'Floor name cannot be empty.' })
+  })).min(1, { message: 'Please add at least one floor.' }),
 });
 
 export const UpdateFloorSchema = FloorSchema.extend({
