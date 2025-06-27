@@ -7,8 +7,6 @@ import bcrypt from 'bcrypt';
 import { SignupSchema, UpdateAdminSchema } from '@/lib/validators/auth';
 
 const adminFilePath = path.join(process.cwd(), 'src', 'data', 'admin.json');
-const superAdminFilePath = path.join(process.cwd(), 'src', 'data', 'super-admin.json');
-
 
 export type Admin = z.infer<typeof SignupSchema>;
 type UpdateAdminData = z.infer<typeof UpdateAdminSchema>;
@@ -66,36 +64,25 @@ export async function updateAdmin(data: UpdateAdminData): Promise<{ success: boo
         return { success: false, message: 'Admin not found.' };
     }
     
-    // Update name
-    admins[adminIndex].name = data.name;
+    const adminToUpdate = admins[adminIndex];
+    adminToUpdate.name = data.name;
 
     // Update password only if a new one is provided
     if (data.password) {
-        if (!data.superAdminPassword) {
-            return { success: false, message: "Your password is required to authorize this change." };
+        if (!data.currentPassword) {
+            return { success: false, message: "The admin's current password is required to make this change." };
         }
 
-        let superAdmin;
-        try {
-            const fileContent = await fs.readFile(superAdminFilePath, 'utf-8');
-            superAdmin = JSON.parse(fileContent);
-        } catch (error) {
-            console.error('Failed to read super admin file:', error);
-            return { success: false, message: 'Could not verify your credentials. Please try again.' };
-        }
-
-        if (!superAdmin || !superAdmin.password) {
-            return { success: false, message: 'Super admin account not found or is invalid.' };
-        }
-
-        const passwordMatch = await bcrypt.compare(data.superAdminPassword, superAdmin.password);
+        const passwordMatch = await bcrypt.compare(data.currentPassword, adminToUpdate.password);
         if (!passwordMatch) {
-            return { success: false, message: 'Incorrect password. Password change not authorized.' };
+            return { success: false, message: "Incorrect current password. Password change not authorized." };
         }
 
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        admins[adminIndex].password = hashedPassword;
+        adminToUpdate.password = hashedPassword;
     }
+    
+    admins[adminIndex] = adminToUpdate;
 
     try {
         await writeAdminsFile(admins);

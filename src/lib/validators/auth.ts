@@ -16,7 +16,7 @@ export const UpdateAdminSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
     confirmPassword: z.string().optional().or(z.literal('')),
-    superAdminPassword: z.string().optional().or(z.literal('')),
+    currentPassword: z.string().optional().or(z.literal('')),
 }).refine(data => {
     if (data.password && !data.confirmPassword) {
         return false;
@@ -34,11 +34,11 @@ export const UpdateAdminSchema = z.object({
     message: "Passwords do not match.",
     path: ["confirmPassword"],
 }).refine(data => {
-    if (data.password && !data.superAdminPassword) {
+    if (data.password && !data.currentPassword) {
         return false;
     }
     return true;
 }, {
-    message: "Your password is required to change the admin's password.",
-    path: ["superAdminPassword"],
+    message: "Admin's current password is required to make this change.",
+    path: ["currentPassword"],
 });
