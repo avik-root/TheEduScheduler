@@ -30,7 +30,7 @@ type FloorData = z.infer<typeof FloorSchema>;
 
 
 async function getBuildingsFilePath(adminEmail: string): Promise<string> {
-    const adminDataPath = getAdminDataPath(adminEmail);
+    const adminDataPath = await getAdminDataPath(adminEmail);
     await fs.mkdir(adminDataPath, { recursive: true });
     return path.join(adminDataPath, 'buildings.json');
 }

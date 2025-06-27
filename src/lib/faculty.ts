@@ -5,7 +5,8 @@ import path from 'path';
 import type { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { FacultySchema, UpdateFacultySchema, LoginSchema } from '@/lib/validators/auth';
-import { getAdminDataPath, getAdminEmails } from './common';
+import { getAdminDataPath } from './common';
+import { getAdminEmails } from './admin';
 
 const facultyFileName = 'faculty.json';
 
@@ -14,7 +15,7 @@ type UpdateFacultyData = z.infer<typeof UpdateFacultySchema>;
 type LoginData = z.infer<typeof LoginSchema>;
 
 async function getFacultyFilePath(adminEmail: string): Promise<string> {
-    const adminDataPath = getAdminDataPath(adminEmail);
+    const adminDataPath = await getAdminDataPath(adminEmail);
     await fs.mkdir(adminDataPath, { recursive: true });
     return path.join(adminDataPath, facultyFileName);
 }
