@@ -93,18 +93,23 @@ export async function updateAdmin(data: UpdateAdminData): Promise<{ success: boo
     }
 }
 
-export async function deleteAdmin(email: string): Promise<{ success: boolean; message: string }> {
+export async function deleteAdmin(email: string, password: string): Promise<{ success: boolean; message: string }> {
     let admins = await readAdminsFile();
 
-    const initialLength = admins.length;
-    admins = admins.filter(admin => admin.email !== email);
-
-    if (admins.length === initialLength) {
+    const adminToDelete = admins.find(admin => admin.email === email);
+    if (!adminToDelete) {
         return { success: false, message: 'Admin not found.' };
     }
 
+    const passwordMatch = await bcrypt.compare(password, adminToDelete.password);
+    if (!passwordMatch) {
+        return { success: false, message: 'Incorrect password. Deletion failed.' };
+    }
+
+    const updatedAdmins = admins.filter(admin => admin.email !== email);
+
     try {
-        await writeAdminsFile(admins);
+        await writeAdminsFile(updatedAdmins);
         return { success: true, message: 'Admin account deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete admin:', error);
