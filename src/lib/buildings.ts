@@ -3,7 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
-import { BuildingSchema, RoomSchema } from '@/lib/validators/auth';
+import { BuildingSchema, RoomSchema, FloorSchema } from '@/lib/validators/auth';
 
 const buildingsFilePath = path.join(process.cwd(), 'src', 'data', 'buildings.json');
 
@@ -13,14 +13,22 @@ export interface Room {
     capacity: number;
 }
 
-export interface Building {
+export interface Floor {
     id: string;
     name: string;
     rooms: Room[];
 }
 
+export interface Building {
+    id: string;
+    name: string;
+    floors: Floor[];
+}
+
 type BuildingData = z.infer<typeof BuildingSchema>;
 type RoomData = z.infer<typeof RoomSchema>;
+type FloorData = z.infer<typeof FloorSchema>;
+
 
 async function readBuildingsFile(): Promise<Building[]> {
     try {
@@ -44,12 +52,17 @@ export async function getBuildings(): Promise<Building[]> {
     return await readBuildingsFile();
 }
 
+export async function getBuildingById(id: string): Promise<Building | null> {
+    const buildings = await readBuildingsFile();
+    return buildings.find(b => b.id === id) || null;
+}
+
 export async function createBuilding(data: BuildingData): Promise<{ success: boolean; message: string }> {
     const buildings = await readBuildingsFile();
     const newBuilding: Building = {
         id: Date.now().toString(),
         name: data.name,
-        rooms: [],
+        floors: [],
     };
     buildings.push(newBuilding);
     try {
@@ -92,17 +105,82 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean; me
     }
 }
 
-export async function addRoom(buildingId: string, data: RoomData): Promise<{ success: boolean; message: string }> {
+export async function addFloor(buildingId: string, data: FloorData): Promise<{ success: boolean; message: string }> {
     const buildings = await readBuildingsFile();
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
     }
+    const newFloor: Floor = {
+        id: Date.now().toString(),
+        name: data.name,
+        rooms: [],
+    };
+    buildings[buildingIndex].floors.push(newFloor);
+    try {
+        await writeBuildingsFile(buildings);
+        return { success: true, message: 'Floor added successfully.' };
+    } catch (error) {
+        console.error('Failed to add floor:', error);
+        return { success: false, message: 'An internal error occurred.' };
+    }
+}
+
+export async function updateFloor(buildingId: string, floorId: string, data: FloorData): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile();
+    const buildingIndex = buildings.findIndex(b => b.id === buildingId);
+    if (buildingIndex === -1) {
+        return { success: false, message: 'Building not found.' };
+    }
+    const floorIndex = buildings[buildingIndex].floors.findIndex(f => f.id === floorId);
+    if (floorIndex === -1) {
+        return { success: false, message: 'Floor not found.' };
+    }
+    buildings[buildingIndex].floors[floorIndex].name = data.name;
+    try {
+        await writeBuildingsFile(buildings);
+        return { success: true, message: 'Floor updated successfully.' };
+    } catch (error) {
+        console.error('Failed to update floor:', error);
+        return { success: false, message: 'An internal error occurred.' };
+    }
+}
+
+export async function deleteFloor(buildingId: string, floorId: string): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile();
+    const buildingIndex = buildings.findIndex(b => b.id === buildingId);
+    if (buildingIndex === -1) {
+        return { success: false, message: 'Building not found.' };
+    }
+    const originalFloorCount = buildings[buildingIndex].floors.length;
+    buildings[buildingIndex].floors = buildings[buildingIndex].floors.filter(f => f.id !== floorId);
+    if (buildings[buildingIndex].floors.length === originalFloorCount) {
+        return { success: false, message: 'Floor not found.' };
+    }
+    try {
+        await writeBuildingsFile(buildings);
+        return { success: true, message: 'Floor deleted successfully.' };
+    } catch (error) {
+        console.error('Failed to delete floor:', error);
+        return { success: false, message: 'An internal error occurred.' };
+    }
+}
+
+export async function addRoom(buildingId: string, floorId: string, data: RoomData): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile();
+    const buildingIndex = buildings.findIndex(b => b.id === buildingId);
+    if (buildingIndex === -1) {
+        return { success: false, message: 'Building not found.' };
+    }
+    const floorIndex = buildings[buildingIndex].floors.findIndex(f => f.id === floorId);
+    if (floorIndex === -1) {
+        return { success: false, message: 'Floor not found.' };
+    }
     const newRoom: Room = {
         id: Date.now().toString(),
         ...data,
     };
-    buildings[buildingIndex].rooms.push(newRoom);
+    buildings[buildingIndex].floors[floorIndex].rooms.push(newRoom);
     try {
         await writeBuildingsFile(buildings);
         return { success: true, message: 'Room added successfully.' };
@@ -112,17 +190,21 @@ export async function addRoom(buildingId: string, data: RoomData): Promise<{ suc
     }
 }
 
-export async function updateRoom(buildingId: string, roomId: string, data: RoomData): Promise<{ success: boolean; message: string }> {
+export async function updateRoom(buildingId: string, floorId: string, roomId: string, data: RoomData): Promise<{ success: boolean; message: string }> {
     const buildings = await readBuildingsFile();
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
     }
-    const roomIndex = buildings[buildingIndex].rooms.findIndex(r => r.id === roomId);
+    const floorIndex = buildings[buildingIndex].floors.findIndex(f => f.id === floorId);
+    if (floorIndex === -1) {
+        return { success: false, message: 'Floor not found.' };
+    }
+    const roomIndex = buildings[buildingIndex].floors[floorIndex].rooms.findIndex(r => r.id === roomId);
     if (roomIndex === -1) {
         return { success: false, message: 'Room not found.' };
     }
-    buildings[buildingIndex].rooms[roomIndex] = { ...buildings[buildingIndex].rooms[roomIndex], ...data };
+    buildings[buildingIndex].floors[floorIndex].rooms[roomIndex] = { ...buildings[buildingIndex].floors[floorIndex].rooms[roomIndex], ...data };
     try {
         await writeBuildingsFile(buildings);
         return { success: true, message: 'Room updated successfully.' };
@@ -132,15 +214,19 @@ export async function updateRoom(buildingId: string, roomId: string, data: RoomD
     }
 }
 
-export async function deleteRoom(buildingId: string, roomId: string): Promise<{ success: boolean; message: string }> {
+export async function deleteRoom(buildingId: string, floorId: string, roomId: string): Promise<{ success: boolean; message: string }> {
     const buildings = await readBuildingsFile();
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
     }
-    const originalRoomCount = buildings[buildingIndex].rooms.length;
-    buildings[buildingIndex].rooms = buildings[buildingIndex].rooms.filter(r => r.id !== roomId);
-    if (buildings[buildingIndex].rooms.length === originalRoomCount) {
+    const floorIndex = buildings[buildingIndex].floors.findIndex(f => f.id === floorId);
+    if (floorIndex === -1) {
+        return { success: false, message: 'Floor not found.' };
+    }
+    const originalRoomCount = buildings[buildingIndex].floors[floorIndex].rooms.length;
+    buildings[buildingIndex].floors[floorIndex].rooms = buildings[buildingIndex].floors[floorIndex].rooms.filter(r => r.id !== roomId);
+    if (buildings[buildingIndex].floors[floorIndex].rooms.length === originalRoomCount) {
         return { success: false, message: 'Room not found.' };
     }
     try {

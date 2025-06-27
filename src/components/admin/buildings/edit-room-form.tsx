@@ -25,11 +25,12 @@ type FormData = z.infer<typeof UpdateRoomSchema>;
 
 interface EditRoomFormProps {
   buildingId: string;
+  floorId: string;
   room: Room;
   onSuccess?: () => void;
 }
 
-export function EditRoomForm({ buildingId, room, onSuccess }: EditRoomFormProps) {
+export function EditRoomForm({ buildingId, floorId, room, onSuccess }: EditRoomFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -38,6 +39,7 @@ export function EditRoomForm({ buildingId, room, onSuccess }: EditRoomFormProps)
     resolver: zodResolver(UpdateRoomSchema),
     defaultValues: {
       buildingId: buildingId,
+      floorId: floorId,
       roomId: room.id,
       name: room.name,
       capacity: room.capacity,
@@ -47,7 +49,7 @@ export function EditRoomForm({ buildingId, room, onSuccess }: EditRoomFormProps)
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateRoom(data.buildingId, data.roomId, { name: data.name, capacity: data.capacity });
+    const result = await updateRoom(data.buildingId, data.floorId, data.roomId, { name: data.name, capacity: data.capacity });
 
     if (result.success) {
       toast({

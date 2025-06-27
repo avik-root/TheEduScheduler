@@ -15,6 +15,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+
 
 import { deleteBuilding } from '@/lib/buildings';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +30,7 @@ export function DeleteBuildingDialog({ buildingId }: DeleteBuildingDialogProps) 
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
 
   async function handleDelete() {
     setIsLoading(true);
@@ -39,7 +42,17 @@ export function DeleteBuildingDialog({ buildingId }: DeleteBuildingDialogProps) 
         description: `The building has been successfully deleted.`,
       });
       setOpen(false);
+
+      const pathSegments = pathname.split('/');
+      const buildingsIndex = pathSegments.indexOf('buildings');
+      const redirectPath = pathSegments.slice(0, buildingsIndex + 1).join('/');
+      
+      const emailParam = new URLSearchParams(window.location.search).get('email');
+      const finalRedirectPath = emailParam ? `${redirectPath}?email=${emailParam}` : redirectPath;
+
+      router.push(finalRedirectPath);
       router.refresh();
+
     } else {
       toast({
         variant: 'destructive',
@@ -53,9 +66,9 @@ export function DeleteBuildingDialog({ buildingId }: DeleteBuildingDialogProps) 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-          <Trash2 className="h-5 w-5" />
-          <span className="sr-only">Delete Building</span>
+        <Button variant="destructive" size="sm">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Building
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -63,7 +76,7 @@ export function DeleteBuildingDialog({ buildingId }: DeleteBuildingDialogProps) 
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the building
-            and all of its associated rooms.
+            and all of its associated floors and rooms.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="pt-4">

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, DoorOpen, Users } from 'lucide-react';
+import { Loader2, Layers } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -17,50 +17,48 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { AddRoomSchema } from '@/lib/validators/auth';
+import { UpdateFloorSchema } from '@/lib/validators/auth';
 import { useToast } from '@/hooks/use-toast';
-import { addRoom } from '@/lib/buildings';
+import { updateFloor, type Floor } from '@/lib/buildings';
 
-type FormData = z.infer<typeof AddRoomSchema>;
+type FormData = z.infer<typeof UpdateFloorSchema>;
 
-interface AddRoomFormProps {
+interface EditFloorFormProps {
   buildingId: string;
-  floorId: string;
+  floor: Floor;
   onSuccess?: () => void;
 }
 
-export function AddRoomForm({ buildingId, floorId, onSuccess }: AddRoomFormProps) {
+export function EditFloorForm({ buildingId, floor, onSuccess }: EditFloorFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(AddRoomSchema),
+    resolver: zodResolver(UpdateFloorSchema),
     defaultValues: {
       buildingId: buildingId,
-      floorId: floorId,
-      name: '',
-      capacity: 30,
+      floorId: floor.id,
+      name: floor.name,
     },
   });
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await addRoom(data.buildingId, data.floorId, { name: data.name, capacity: data.capacity });
+    const result = await updateFloor(data.buildingId, data.floorId, { name: data.name });
 
     if (result.success) {
       toast({
-        title: 'Room Added',
-        description: `The room "${data.name}" has been successfully added.`,
+        title: 'Floor Updated',
+        description: `The floor "${data.name}" has been successfully updated.`,
       });
-      form.reset();
       router.refresh();
       onSuccess?.();
     } else {
       toast({
         variant: 'destructive',
-        title: 'Creation Failed',
+        title: 'Update Failed',
         description: result.message,
       });
     }
@@ -76,27 +74,11 @@ export function AddRoomForm({ buildingId, floorId, onSuccess }: AddRoomFormProps
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Room Name or Number</FormLabel>
+              <FormLabel>Floor Name or Number</FormLabel>
               <div className="relative">
-                <DoorOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Layers className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
-                  <Input placeholder="e.g., Room 101 or Lab A" {...field} className="pl-10" />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="capacity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Capacity</FormLabel>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input type="number" placeholder="e.g., 30" {...field} className="pl-10" />
+                  <Input placeholder="e.g., Ground Floor" {...field} className="pl-10" />
                 </FormControl>
               </div>
               <FormMessage />
@@ -105,7 +87,7 @@ export function AddRoomForm({ buildingId, floorId, onSuccess }: AddRoomFormProps
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Add Room
+          Save Changes
         </Button>
       </form>
     </Form>

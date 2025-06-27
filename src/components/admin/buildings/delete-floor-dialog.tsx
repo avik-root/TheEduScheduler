@@ -16,16 +16,15 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { deleteRoom } from '@/lib/buildings';
+import { deleteFloor } from '@/lib/buildings';
 import { useToast } from '@/hooks/use-toast';
 
-interface DeleteRoomDialogProps {
+interface DeleteFloorDialogProps {
   buildingId: string;
   floorId: string;
-  roomId: string;
 }
 
-export function DeleteRoomDialog({ buildingId, floorId, roomId }: DeleteRoomDialogProps) {
+export function DeleteFloorDialog({ buildingId, floorId }: DeleteFloorDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -33,12 +32,12 @@ export function DeleteRoomDialog({ buildingId, floorId, roomId }: DeleteRoomDial
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteRoom(buildingId, floorId, roomId);
+    const result = await deleteFloor(buildingId, floorId);
 
     if (result.success) {
       toast({
-        title: 'Room Deleted',
-        description: `The room has been successfully deleted.`,
+        title: 'Floor Deleted',
+        description: `The floor has been successfully deleted.`,
       });
       setOpen(false);
       router.refresh();
@@ -55,16 +54,17 @@ export function DeleteRoomDialog({ buildingId, floorId, roomId }: DeleteRoomDial
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-          <Trash2 className="h-4 w-4" />
-          <span className="sr-only">Delete Room</span>
+        <Button variant="destructive" size="sm">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Floor
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the room.
+            This action cannot be undone. This will permanently delete the floor
+            and all of its associated rooms.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="pt-4">

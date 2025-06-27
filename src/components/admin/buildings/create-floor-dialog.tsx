@@ -10,15 +10,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { AddRoomForm } from '@/components/admin/buildings/add-room-form';
+import { CreateFloorForm } from '@/components/admin/buildings/create-floor-form';
 import { PlusCircle } from 'lucide-react';
 
-interface AddRoomDialogProps {
+interface CreateFloorDialogProps {
     buildingId: string;
-    floorId: string;
 }
 
-export function AddRoomDialog({ buildingId, floorId }: AddRoomDialogProps) {
+export function CreateFloorDialog({ buildingId }: CreateFloorDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -26,18 +25,18 @@ export function AddRoomDialog({ buildingId, floorId }: AddRoomDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Room
+          Create New Floor
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Room</DialogTitle>
+          <DialogTitle>Create New Floor</DialogTitle>
           <DialogDescription>
-            Provide the details for the new room.
+            Provide the details for the new floor.
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <AddRoomForm buildingId={buildingId} floorId={floorId} onSuccess={() => setOpen(false)} />
+            <CreateFloorForm buildingId={buildingId} onSuccess={() => setOpen(false)} />
         </div>
       </DialogContent>
     </Dialog>

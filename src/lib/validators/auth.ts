@@ -83,6 +83,19 @@ export const BuildingSchema = z.object({
   name: z.string().min(2, { message: 'Building name must be at least 2 characters.' }),
 });
 
+export const FloorSchema = z.object({
+  name: z.string().min(1, { message: 'Floor name or number is required.' }),
+});
+
+export const AddFloorSchema = FloorSchema.extend({
+  buildingId: z.string(),
+});
+
+export const UpdateFloorSchema = FloorSchema.extend({
+  buildingId: z.string(),
+  floorId: z.string(),
+});
+
 export const RoomSchema = z.object({
   name: z.string().min(1, { message: 'Room name or number is required.' }),
   capacity: z.coerce.number().min(1, { message: 'Capacity must be at least 1.' }),
@@ -90,9 +103,11 @@ export const RoomSchema = z.object({
 
 export const AddRoomSchema = RoomSchema.extend({
   buildingId: z.string(),
+  floorId: z.string(),
 });
 
 export const UpdateRoomSchema = RoomSchema.extend({
   buildingId: z.string(),
+  floorId: z.string(),
   roomId: z.string(),
 });
