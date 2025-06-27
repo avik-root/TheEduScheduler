@@ -12,8 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import { CreateFacultyForm } from '@/components/admin/faculty/create-faculty-form';
 import { PlusCircle } from 'lucide-react';
+import type { Department } from '@/lib/departments';
 
-export function CreateFacultyDialog() {
+interface CreateFacultyDialogProps {
+  departments: Department[];
+}
+
+export function CreateFacultyDialog({ departments }: CreateFacultyDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -32,7 +37,7 @@ export function CreateFacultyDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateFacultyForm onSuccess={() => setOpen(false)} />
+            <CreateFacultyForm onSuccess={() => setOpen(false)} departments={departments} />
         </div>
       </DialogContent>
     </Dialog>

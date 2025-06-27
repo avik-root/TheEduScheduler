@@ -13,12 +13,14 @@ import {
 import { EditFacultyForm } from '@/components/admin/faculty/edit-faculty-form';
 import type { Faculty } from '@/lib/faculty';
 import { FilePenLine } from 'lucide-react';
+import type { Department } from '@/lib/departments';
 
 interface EditFacultyDialogProps {
   faculty: Faculty;
+  departments: Department[];
 }
 
-export function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
+export function EditFacultyDialog({ faculty, departments }: EditFacultyDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -37,7 +39,7 @@ export function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditFacultyForm faculty={faculty} onSuccess={() => setOpen(false)} />
+          <EditFacultyForm faculty={faculty} onSuccess={() => setOpen(false)} departments={departments} />
         </div>
       </DialogContent>
     </Dialog>

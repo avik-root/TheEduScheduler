@@ -21,17 +21,26 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { UpdateFacultySchema } from '@/lib/validators/auth';
 import { useToast } from '@/hooks/use-toast';
 import { updateFaculty, type Faculty } from '@/lib/faculty';
+import type { Department } from '@/lib/departments';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type FormData = z.infer<typeof UpdateFacultySchema>;
 
 interface EditFacultyFormProps {
   faculty: Faculty;
   onSuccess?: () => void;
+  departments: Department[];
 }
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export function EditFacultyForm({ faculty, onSuccess }: EditFacultyFormProps) {
+export function EditFacultyForm({ faculty, onSuccess, departments }: EditFacultyFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
@@ -122,12 +131,23 @@ export function EditFacultyForm({ faculty, onSuccess }: EditFacultyFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Department</FormLabel>
-              <div className="relative">
-                <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input placeholder="Paleontology" {...field} className="pl-10" />
-                </FormControl>
-              </div>
+               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <div className="relative">
+                        <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <SelectTrigger className="pl-10">
+                            <SelectValue placeholder="Select a department" />
+                        </SelectTrigger>
+                    </div>
+                  </FormControl>
+                  <SelectContent>
+                    {departments.map((department) => (
+                      <SelectItem key={department.id} value={department.name}>
+                        {department.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               <FormMessage />
             </FormItem>
           )}

@@ -7,10 +7,12 @@ import { getFaculty, type Faculty } from '@/lib/faculty';
 import { CreateFacultyDialog } from '@/components/admin/faculty/create-faculty-dialog';
 import { EditFacultyDialog } from '@/components/admin/faculty/edit-faculty-dialog';
 import { DeleteFacultyDialog } from '@/components/admin/faculty/delete-faculty-dialog';
+import { getDepartments } from '@/lib/departments';
 
 export default async function FacultyPage({ searchParams }: { searchParams: { email?: string } }) {
   const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
   const facultyList = await getFaculty();
+  const departments = await getDepartments();
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -50,7 +52,7 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                         <CardDescription>Add, edit, and remove faculty members.</CardDescription>
                       </div>
                     </div>
-                    <CreateFacultyDialog />
+                    <CreateFacultyDialog departments={departments} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -68,7 +70,7 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <EditFacultyDialog faculty={faculty} />
+                            <EditFacultyDialog faculty={faculty} departments={departments} />
                             <DeleteFacultyDialog faculty={faculty} />
                           </div>
                         </CardHeader>
