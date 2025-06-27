@@ -47,7 +47,7 @@ export function AdminLoginForm() {
         title: "Login Successful",
         description: "Welcome back! Redirecting...",
       });
-      router.push('/admin/dashboard');
+      router.push(`/admin/dashboard?email=${encodeURIComponent(data.email)}`);
     } else {
       toast({
         variant: "destructive",

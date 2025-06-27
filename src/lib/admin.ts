@@ -35,6 +35,12 @@ export async function getAdmins(): Promise<Admin[]> {
     return await readAdminsFile();
 }
 
+export async function getAdminByEmail(email: string): Promise<Admin | null> {
+    const admins = await readAdminsFile();
+    const admin = admins.find(a => a.email === email);
+    return admin || null;
+}
+
 export async function createAdmin(data: Admin): Promise<{ success: boolean; message: string }> {
     const admins = await readAdminsFile();
 

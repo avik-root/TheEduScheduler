@@ -17,8 +17,11 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { getAdminByEmail } from '@/lib/admin';
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
+  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
+  
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
@@ -30,7 +33,7 @@ export default function AdminDashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
-              Admin
+              {admin?.name || 'Admin'}
             </span>
             <Button variant="outline" size="icon" asChild>
               <Link href="/admin/login">
