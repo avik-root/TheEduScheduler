@@ -76,3 +76,22 @@ export async function updateAdmin(data: UpdateAdminData): Promise<{ success: boo
         return { success: false, message: 'An internal error occurred. Please try again.' };
     }
 }
+
+export async function deleteAdmin(email: string): Promise<{ success: boolean; message: string }> {
+    let admins = await readAdminsFile();
+
+    const initialLength = admins.length;
+    admins = admins.filter(admin => admin.email !== email);
+
+    if (admins.length === initialLength) {
+        return { success: false, message: 'Admin not found.' };
+    }
+
+    try {
+        await writeAdminsFile(admins);
+        return { success: true, message: 'Admin account deleted successfully.' };
+    } catch (error) {
+        console.error('Failed to delete admin:', error);
+        return { success: false, message: 'An internal error occurred. Please try again.' };
+    }
+}

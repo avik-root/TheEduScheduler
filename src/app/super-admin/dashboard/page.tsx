@@ -11,6 +11,7 @@ import {
 import { getAdmins, type Admin } from '@/lib/admin';
 import { CreateAdminDialog } from '@/components/super-admin/create-admin-dialog';
 import { EditAdminDialog } from '@/components/super-admin/edit-admin-dialog';
+import { DeleteAdminDialog } from '@/components/super-admin/delete-admin-dialog';
 
 export default async function SuperAdminDashboardPage() {
   const admins = await getAdmins();
@@ -61,7 +62,10 @@ export default async function SuperAdminDashboardPage() {
                       <CardDescription>{admin.email}</CardDescription>
                     </div>
                   </div>
-                  <EditAdminDialog admin={admin} />
+                  <div className="flex items-center gap-1">
+                    <EditAdminDialog admin={admin} />
+                    <DeleteAdminDialog admin={admin} />
+                  </div>
                 </CardHeader>
               </Card>
             ))}
