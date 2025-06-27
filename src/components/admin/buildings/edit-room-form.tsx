@@ -28,9 +28,10 @@ interface EditRoomFormProps {
   floorId: string;
   room: Room;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function EditRoomForm({ buildingId, floorId, room, onSuccess }: EditRoomFormProps) {
+export function EditRoomForm({ buildingId, floorId, room, onSuccess, adminEmail }: EditRoomFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -49,7 +50,7 @@ export function EditRoomForm({ buildingId, floorId, room, onSuccess }: EditRoomF
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateRoom(data.buildingId, data.floorId, data.roomId, { name: data.name, capacity: data.capacity });
+    const result = await updateRoom(adminEmail, data.buildingId, data.floorId, data.roomId, { name: data.name, capacity: data.capacity });
 
     if (result.success) {
       toast({

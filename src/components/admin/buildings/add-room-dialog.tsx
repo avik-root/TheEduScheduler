@@ -16,9 +16,10 @@ import { PlusCircle } from 'lucide-react';
 interface AddRoomDialogProps {
     buildingId: string;
     floorId: string;
+    adminEmail: string;
 }
 
-export function AddRoomDialog({ buildingId, floorId }: AddRoomDialogProps) {
+export function AddRoomDialog({ buildingId, floorId, adminEmail }: AddRoomDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -37,7 +38,7 @@ export function AddRoomDialog({ buildingId, floorId }: AddRoomDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <AddRoomForm buildingId={buildingId} floorId={floorId} onSuccess={() => setOpen(false)} />
+            <AddRoomForm buildingId={buildingId} floorId={floorId} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

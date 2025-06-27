@@ -8,11 +8,17 @@ import { CreateFacultyDialog } from '@/components/admin/faculty/create-faculty-d
 import { EditFacultyDialog } from '@/components/admin/faculty/edit-faculty-dialog';
 import { DeleteFacultyDialog } from '@/components/admin/faculty/delete-faculty-dialog';
 import { getDepartments } from '@/lib/departments';
+import { notFound } from 'next/navigation';
 
 export default async function FacultyPage({ searchParams }: { searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
-  const facultyList = await getFaculty();
-  const departments = await getDepartments();
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+  
+  const admin = await getAdminByEmail(adminEmail);
+  const facultyList = await getFaculty(adminEmail);
+  const departments = await getDepartments(adminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -42,7 +48,7 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard?email=${searchParams.email}`}>
+                        <Link href={`/admin/dashboard?email=${adminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Dashboard</span>
                         </Link>
@@ -52,7 +58,7 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                         <CardDescription>Add, edit, and remove faculty members.</CardDescription>
                       </div>
                     </div>
-                    <CreateFacultyDialog departments={departments} />
+                    <CreateFacultyDialog departments={departments} adminEmail={adminEmail} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -70,8 +76,8 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <EditFacultyDialog faculty={faculty} departments={departments} />
-                            <DeleteFacultyDialog faculty={faculty} />
+                            <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
+                            <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
                           </div>
                         </CardHeader>
                         <CardContent>

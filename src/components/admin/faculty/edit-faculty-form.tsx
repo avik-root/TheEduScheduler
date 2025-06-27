@@ -36,11 +36,12 @@ interface EditFacultyFormProps {
   faculty: Faculty;
   onSuccess?: () => void;
   departments: Department[];
+  adminEmail: string;
 }
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export function EditFacultyForm({ faculty, onSuccess, departments }: EditFacultyFormProps) {
+export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }: EditFacultyFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
@@ -64,7 +65,7 @@ export function EditFacultyForm({ faculty, onSuccess, departments }: EditFaculty
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateFaculty(data);
+    const result = await updateFaculty(adminEmail, data);
 
     if (result.success) {
       toast({

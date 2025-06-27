@@ -21,9 +21,10 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DeleteFacultyDialogProps {
   faculty: Faculty;
+  adminEmail: string;
 }
 
-export function DeleteFacultyDialog({ faculty }: DeleteFacultyDialogProps) {
+export function DeleteFacultyDialog({ faculty, adminEmail }: DeleteFacultyDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -31,7 +32,7 @@ export function DeleteFacultyDialog({ faculty }: DeleteFacultyDialogProps) {
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteFaculty(faculty.email);
+    const result = await deleteFaculty(adminEmail, faculty.email);
 
     if (result.success) {
       toast({

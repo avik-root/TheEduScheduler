@@ -29,9 +29,10 @@ interface AddSectionFormProps {
   programId: string;
   yearId: string;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function AddSectionForm({ departmentId, programId, yearId, onSuccess }: AddSectionFormProps) {
+export function AddSectionForm({ departmentId, programId, yearId, onSuccess, adminEmail }: AddSectionFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -60,7 +61,7 @@ export function AddSectionForm({ departmentId, programId, yearId, onSuccess }: A
         });
     }
 
-    const result = await addSections(data.departmentId, data.programId, data.yearId, sectionsToCreate);
+    const result = await addSections(adminEmail, data.departmentId, data.programId, data.yearId, sectionsToCreate);
 
     if (result.success) {
       toast({

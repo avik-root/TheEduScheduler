@@ -23,9 +23,10 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DeleteBuildingDialogProps {
   buildingId: string;
+  adminEmail: string;
 }
 
-export function DeleteBuildingDialog({ buildingId }: DeleteBuildingDialogProps) {
+export function DeleteBuildingDialog({ buildingId, adminEmail }: DeleteBuildingDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -34,7 +35,7 @@ export function DeleteBuildingDialog({ buildingId }: DeleteBuildingDialogProps) 
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteBuilding(buildingId);
+    const result = await deleteBuilding(adminEmail, buildingId);
 
     if (result.success) {
       toast({
@@ -47,8 +48,7 @@ export function DeleteBuildingDialog({ buildingId }: DeleteBuildingDialogProps) 
       const buildingsIndex = pathSegments.indexOf('buildings');
       const redirectPath = pathSegments.slice(0, buildingsIndex + 1).join('/');
       
-      const emailParam = new URLSearchParams(window.location.search).get('email');
-      const finalRedirectPath = emailParam ? `${redirectPath}?email=${emailParam}` : redirectPath;
+      const finalRedirectPath = `${redirectPath}?email=${adminEmail}`;
 
       router.push(finalRedirectPath);
       router.refresh();

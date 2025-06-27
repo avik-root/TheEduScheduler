@@ -19,9 +19,10 @@ interface EditProgramDialogProps {
   departmentId: string;
   program: Program;
   variant?: "button" | "icon";
+  adminEmail: string;
 }
 
-export function EditProgramDialog({ departmentId, program, variant = "icon" }: EditProgramDialogProps) {
+export function EditProgramDialog({ departmentId, program, variant = "icon", adminEmail }: EditProgramDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -47,7 +48,7 @@ export function EditProgramDialog({ departmentId, program, variant = "icon" }: E
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditProgramForm departmentId={departmentId} program={program} onSuccess={() => setOpen(false)} />
+          <EditProgramForm departmentId={departmentId} program={program} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

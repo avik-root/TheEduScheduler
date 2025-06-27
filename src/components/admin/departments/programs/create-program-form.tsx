@@ -27,9 +27,10 @@ type FormData = z.infer<typeof ProgramSchema>;
 interface CreateProgramFormProps {
   departmentId: string;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function CreateProgramForm({ departmentId, onSuccess }: CreateProgramFormProps) {
+export function CreateProgramForm({ departmentId, onSuccess, adminEmail }: CreateProgramFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -44,7 +45,7 @@ export function CreateProgramForm({ departmentId, onSuccess }: CreateProgramForm
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await addProgram(departmentId, data.name);
+    const result = await addProgram(adminEmail, departmentId, data.name);
 
     if (result.success) {
       toast({

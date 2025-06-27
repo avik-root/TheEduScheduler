@@ -4,8 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import { BuildingSchema, RoomSchema, FloorSchema } from '@/lib/validators/auth';
-
-const buildingsFilePath = path.join(process.cwd(), 'src', 'data', 'buildings.json');
+import { getAdminDataPath } from './common';
 
 export interface Room {
     id: string;
@@ -30,10 +29,17 @@ type RoomData = z.infer<typeof RoomSchema>;
 type FloorData = z.infer<typeof FloorSchema>;
 
 
-async function readBuildingsFile(): Promise<Building[]> {
+async function getBuildingsFilePath(adminEmail: string): Promise<string> {
+    const adminDataPath = getAdminDataPath(adminEmail);
+    await fs.mkdir(adminDataPath, { recursive: true });
+    return path.join(adminDataPath, 'buildings.json');
+}
+
+async function readBuildingsFile(adminEmail: string): Promise<Building[]> {
     try {
-        await fs.access(buildingsFilePath);
-        const fileContent = await fs.readFile(buildingsFilePath, 'utf-8');
+        const filePath = await getBuildingsFilePath(adminEmail);
+        await fs.access(filePath);
+        const fileContent = await fs.readFile(filePath, 'utf-8');
         if (!fileContent.trim()) {
             return [];
         }
@@ -43,22 +49,24 @@ async function readBuildingsFile(): Promise<Building[]> {
     }
 }
 
-async function writeBuildingsFile(buildings: Building[]): Promise<void> {
-    await fs.mkdir(path.dirname(buildingsFilePath), { recursive: true });
-    await fs.writeFile(buildingsFilePath, JSON.stringify(buildings, null, 2));
+async function writeBuildingsFile(adminEmail: string, buildings: Building[]): Promise<void> {
+    const filePath = await getBuildingsFilePath(adminEmail);
+    await fs.writeFile(filePath, JSON.stringify(buildings, null, 2));
 }
 
-export async function getBuildings(): Promise<Building[]> {
-    return await readBuildingsFile();
+export async function getBuildings(adminEmail: string): Promise<Building[]> {
+    if (!adminEmail) return [];
+    return await readBuildingsFile(adminEmail);
 }
 
-export async function getBuildingById(id: string): Promise<Building | null> {
-    const buildings = await readBuildingsFile();
+export async function getBuildingById(adminEmail: string, id: string): Promise<Building | null> {
+    if (!adminEmail) return null;
+    const buildings = await readBuildingsFile(adminEmail);
     return buildings.find(b => b.id === id) || null;
 }
 
-export async function createBuilding(data: BuildingData): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function createBuilding(adminEmail: string, data: BuildingData): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const newBuilding: Building = {
         id: Date.now().toString(),
         name: data.name,
@@ -66,7 +74,7 @@ export async function createBuilding(data: BuildingData): Promise<{ success: boo
     };
     buildings.push(newBuilding);
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         return { success: true, message: 'Building created successfully.' };
     } catch (error) {
         console.error('Failed to create building:', error);
@@ -74,15 +82,15 @@ export async function createBuilding(data: BuildingData): Promise<{ success: boo
     }
 }
 
-export async function updateBuilding(id: string, data: BuildingData): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function updateBuilding(adminEmail: string, id: string, data: BuildingData): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === id);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
     }
     buildings[buildingIndex].name = data.name;
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         return { success: true, message: 'Building updated successfully.' };
     } catch (error) {
         console.error('Failed to update building:', error);
@@ -90,14 +98,14 @@ export async function updateBuilding(id: string, data: BuildingData): Promise<{ 
     }
 }
 
-export async function deleteBuilding(id: string): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function deleteBuilding(adminEmail: string, id: string): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const updatedBuildings = buildings.filter(b => b.id !== id);
     if (buildings.length === updatedBuildings.length) {
         return { success: false, message: 'Building not found.' };
     }
     try {
-        await writeBuildingsFile(updatedBuildings);
+        await writeBuildingsFile(adminEmail, updatedBuildings);
         return { success: true, message: 'Building deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete building:', error);
@@ -105,8 +113,8 @@ export async function deleteBuilding(id: string): Promise<{ success: boolean; me
     }
 }
 
-export async function addFloors(buildingId: string, names: string[]): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function addFloors(adminEmail: string, buildingId: string, names: string[]): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
@@ -122,7 +130,7 @@ export async function addFloors(buildingId: string, names: string[]): Promise<{ 
     });
     
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         const plural = names.length > 1 ? 's' : '';
         return { success: true, message: `${names.length} floor${plural} added successfully.` };
     } catch (error) {
@@ -131,8 +139,8 @@ export async function addFloors(buildingId: string, names: string[]): Promise<{ 
     }
 }
 
-export async function updateFloor(buildingId: string, floorId: string, data: FloorData): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function updateFloor(adminEmail: string, buildingId: string, floorId: string, data: FloorData): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
@@ -143,7 +151,7 @@ export async function updateFloor(buildingId: string, floorId: string, data: Flo
     }
     buildings[buildingIndex].floors[floorIndex].name = data.name;
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         return { success: true, message: 'Floor updated successfully.' };
     } catch (error) {
         console.error('Failed to update floor:', error);
@@ -151,8 +159,8 @@ export async function updateFloor(buildingId: string, floorId: string, data: Flo
     }
 }
 
-export async function deleteFloor(buildingId: string, floorId: string): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function deleteFloor(adminEmail: string, buildingId: string, floorId: string): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
@@ -163,7 +171,7 @@ export async function deleteFloor(buildingId: string, floorId: string): Promise<
         return { success: false, message: 'Floor not found.' };
     }
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         return { success: true, message: 'Floor deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete floor:', error);
@@ -171,8 +179,8 @@ export async function deleteFloor(buildingId: string, floorId: string): Promise<
     }
 }
 
-export async function addRooms(buildingId: string, floorId: string, rooms: RoomData[]): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function addRooms(adminEmail: string, buildingId: string, floorId: string, rooms: RoomData[]): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
@@ -191,7 +199,7 @@ export async function addRooms(buildingId: string, floorId: string, rooms: RoomD
     });
 
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         const plural = rooms.length > 1 ? 's' : '';
         return { success: true, message: `${rooms.length} room${plural} added successfully.` };
     } catch (error) {
@@ -200,8 +208,8 @@ export async function addRooms(buildingId: string, floorId: string, rooms: RoomD
     }
 }
 
-export async function updateRoom(buildingId: string, floorId: string, roomId: string, data: RoomData): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function updateRoom(adminEmail: string, buildingId: string, floorId: string, roomId: string, data: RoomData): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
@@ -216,7 +224,7 @@ export async function updateRoom(buildingId: string, floorId: string, roomId: st
     }
     buildings[buildingIndex].floors[floorIndex].rooms[roomIndex] = { ...buildings[buildingIndex].floors[floorIndex].rooms[roomIndex], ...data };
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         return { success: true, message: 'Room updated successfully.' };
     } catch (error) {
         console.error('Failed to update room:', error);
@@ -224,8 +232,8 @@ export async function updateRoom(buildingId: string, floorId: string, roomId: st
     }
 }
 
-export async function deleteRoom(buildingId: string, floorId: string, roomId: string): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function deleteRoom(adminEmail: string, buildingId: string, floorId: string, roomId: string): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
@@ -240,7 +248,7 @@ export async function deleteRoom(buildingId: string, floorId: string, roomId: st
         return { success: false, message: 'Room not found.' };
     }
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         return { success: true, message: 'Room deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete room:', error);
@@ -248,8 +256,8 @@ export async function deleteRoom(buildingId: string, floorId: string, roomId: st
     }
 }
 
-export async function deleteRooms(buildingId: string, floorId: string, roomIds: string[]): Promise<{ success: boolean; message: string }> {
-    const buildings = await readBuildingsFile();
+export async function deleteRooms(adminEmail: string, buildingId: string, floorId: string, roomIds: string[]): Promise<{ success: boolean; message: string }> {
+    const buildings = await readBuildingsFile(adminEmail);
     const buildingIndex = buildings.findIndex(b => b.id === buildingId);
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
@@ -269,7 +277,7 @@ export async function deleteRooms(buildingId: string, floorId: string, roomIds: 
     }
     
     try {
-        await writeBuildingsFile(buildings);
+        await writeBuildingsFile(adminEmail, buildings);
         const plural = deletedCount > 1 ? 's' : '';
         return { success: true, message: `${deletedCount} room${plural} deleted successfully.` };
     } catch (error) {

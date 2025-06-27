@@ -11,8 +11,13 @@ import { DeleteDepartmentDialog } from '@/components/admin/departments/delete-de
 import { CreateProgramDialog } from '@/components/admin/departments/programs/create-program-dialog';
 
 export default async function DepartmentProgramsPage({ params, searchParams }: { params: { departmentId: string }, searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
-  const department = await getDepartmentById(params.departmentId);
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+
+  const admin = await getAdminByEmail(adminEmail);
+  const department = await getDepartmentById(adminEmail, params.departmentId);
 
   if (!department) {
     notFound();
@@ -46,7 +51,7 @@ export default async function DepartmentProgramsPage({ params, searchParams }: {
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard/departments?email=${searchParams.email}`}>
+                        <Link href={`/admin/dashboard/departments?email=${adminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Departments</span>
                         </Link>
@@ -57,16 +62,16 @@ export default async function DepartmentProgramsPage({ params, searchParams }: {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <CreateProgramDialog departmentId={department.id} />
-                        <EditDepartmentDialog department={department} />
-                        <DeleteDepartmentDialog department={department} />
+                        <CreateProgramDialog departmentId={department.id} adminEmail={adminEmail} />
+                        <EditDepartmentDialog department={department} adminEmail={adminEmail} />
+                        <DeleteDepartmentDialog department={department} adminEmail={adminEmail} />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {department.programs.map((program: Program) => (
-                      <Link key={program.id} href={`/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${searchParams.email}`}>
+                      <Link key={program.id} href={`/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${adminEmail}`}>
                         <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="rounded-full bg-primary/10 p-3">

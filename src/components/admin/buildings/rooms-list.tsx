@@ -13,9 +13,10 @@ interface RoomsListProps {
   buildingId: string;
   floorId: string;
   rooms: Room[];
+  adminEmail: string;
 }
 
-export function RoomsList({ buildingId, floorId, rooms }: RoomsListProps) {
+export function RoomsList({ buildingId, floorId, rooms, adminEmail }: RoomsListProps) {
   const [selectedRoomIds, setSelectedRoomIds] = React.useState<string[]>([]);
 
   const handleSelectAll = (checked: boolean) => {
@@ -57,6 +58,7 @@ export function RoomsList({ buildingId, floorId, rooms }: RoomsListProps) {
                     floorId={floorId}
                     roomIds={selectedRoomIds}
                     onSuccess={() => setSelectedRoomIds([])}
+                    adminEmail={adminEmail}
                 />
             )}
         </div>
@@ -79,8 +81,8 @@ export function RoomsList({ buildingId, floorId, rooms }: RoomsListProps) {
                     {room.name}
                     </CardTitle>
                     <div className="flex items-center gap-1">
-                    <EditRoomDialog buildingId={buildingId} floorId={floorId} room={room} />
-                    <DeleteRoomDialog buildingId={buildingId} floorId={floorId} roomId={room.id} />
+                    <EditRoomDialog buildingId={buildingId} floorId={floorId} room={room} adminEmail={adminEmail} />
+                    <DeleteRoomDialog buildingId={buildingId} floorId={floorId} roomId={room.id} adminEmail={adminEmail} />
                     </div>
                 </div>
                 </CardHeader>

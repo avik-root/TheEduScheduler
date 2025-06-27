@@ -10,14 +10,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CreateDepartmentForm } from '@/components/admin/departments/create-department-form';
+import { CreateSubjectForm } from '@/components/admin/subjects/create-subject-form';
 import { PlusCircle } from 'lucide-react';
 
-interface CreateDepartmentDialogProps {
-    adminEmail: string;
+interface CreateSubjectDialogProps {
+  adminEmail: string;
 }
 
-export function CreateDepartmentDialog({ adminEmail }: CreateDepartmentDialogProps) {
+export function CreateSubjectDialog({ adminEmail }: CreateSubjectDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -25,18 +25,18 @@ export function CreateDepartmentDialog({ adminEmail }: CreateDepartmentDialogPro
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Department
+          Create New Subject
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create New Department</DialogTitle>
+          <DialogTitle>Create New Subject</DialogTitle>
           <DialogDescription>
-            Provide the name for the new academic department.
+            Provide the details for the new subject.
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateDepartmentForm onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
+            <CreateSubjectForm onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

@@ -17,9 +17,10 @@ import { PlusCircle } from 'lucide-react';
 interface CreateYearDialogProps {
     departmentId: string;
     programId: string;
+    adminEmail: string;
 }
 
-export function CreateYearDialog({ departmentId, programId }: CreateYearDialogProps) {
+export function CreateYearDialog({ departmentId, programId, adminEmail }: CreateYearDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -38,7 +39,7 @@ export function CreateYearDialog({ departmentId, programId }: CreateYearDialogPr
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateYearForm departmentId={departmentId} programId={programId} onSuccess={() => setOpen(false)} />
+            <CreateYearForm departmentId={departmentId} programId={programId} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

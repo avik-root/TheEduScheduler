@@ -16,9 +16,10 @@ import { FilePenLine } from 'lucide-react';
 
 interface EditBuildingDialogProps {
   building: Building;
+  adminEmail: string;
 }
 
-export function EditBuildingDialog({ building }: EditBuildingDialogProps) {
+export function EditBuildingDialog({ building, adminEmail }: EditBuildingDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -37,7 +38,7 @@ export function EditBuildingDialog({ building }: EditBuildingDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditBuildingForm building={building} onSuccess={() => setOpen(false)} />
+          <EditBuildingForm building={building} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

@@ -26,9 +26,10 @@ type FormData = z.infer<typeof DepartmentSchema>;
 interface EditDepartmentFormProps {
   department: Department;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function EditDepartmentForm({ department, onSuccess }: EditDepartmentFormProps) {
+export function EditDepartmentForm({ department, onSuccess, adminEmail }: EditDepartmentFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -43,7 +44,7 @@ export function EditDepartmentForm({ department, onSuccess }: EditDepartmentForm
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateDepartment(department.id, data);
+    const result = await updateDepartment(adminEmail, department.id, data);
 
     if (result.success) {
       toast({

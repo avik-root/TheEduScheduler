@@ -18,9 +18,10 @@ import type { Department } from '@/lib/departments';
 interface EditFacultyDialogProps {
   faculty: Faculty;
   departments: Department[];
+  adminEmail: string;
 }
 
-export function EditFacultyDialog({ faculty, departments }: EditFacultyDialogProps) {
+export function EditFacultyDialog({ faculty, departments, adminEmail }: EditFacultyDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -39,7 +40,7 @@ export function EditFacultyDialog({ faculty, departments }: EditFacultyDialogPro
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditFacultyForm faculty={faculty} onSuccess={() => setOpen(false)} departments={departments} />
+          <EditFacultyForm faculty={faculty} onSuccess={() => setOpen(false)} departments={departments} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

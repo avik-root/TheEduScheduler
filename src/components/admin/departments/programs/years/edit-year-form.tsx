@@ -29,9 +29,10 @@ interface EditYearFormProps {
   programId: string;
   year: Year;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function EditYearForm({ departmentId, programId, year, onSuccess }: EditYearFormProps) {
+export function EditYearForm({ departmentId, programId, year, onSuccess, adminEmail }: EditYearFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -49,7 +50,7 @@ export function EditYearForm({ departmentId, programId, year, onSuccess }: EditY
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateYear(data.departmentId, data.programId, data.yearId, data.name);
+    const result = await updateYear(adminEmail, data.departmentId, data.programId, data.yearId, data.name);
 
     if (result.success) {
       toast({

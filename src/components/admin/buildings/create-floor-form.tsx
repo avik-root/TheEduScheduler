@@ -19,9 +19,10 @@ type FormData = z.infer<typeof AddFloorSchema>;
 interface CreateFloorFormProps {
   buildingId: string;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function CreateFloorForm({ buildingId, onSuccess }: CreateFloorFormProps) {
+export function CreateFloorForm({ buildingId, onSuccess, adminEmail }: CreateFloorFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [newFloorName, setNewFloorName] = React.useState('');
   const { toast } = useToast();
@@ -44,7 +45,7 @@ export function CreateFloorForm({ buildingId, onSuccess }: CreateFloorFormProps)
     setIsLoading(true);
 
     const names = data.names.map(item => item.name);
-    const result = await addFloors(data.buildingId, names);
+    const result = await addFloors(adminEmail, data.buildingId, names);
 
     if (result.success) {
       toast({

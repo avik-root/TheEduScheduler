@@ -17,9 +17,10 @@ import { FilePenLine } from 'lucide-react';
 interface EditFloorDialogProps {
   buildingId: string;
   floor: Floor;
+  adminEmail: string;
 }
 
-export function EditFloorDialog({ buildingId, floor }: EditFloorDialogProps) {
+export function EditFloorDialog({ buildingId, floor, adminEmail }: EditFloorDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -38,7 +39,7 @@ export function EditFloorDialog({ buildingId, floor }: EditFloorDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditFloorForm buildingId={buildingId} floor={floor} onSuccess={() => setOpen(false)} />
+          <EditFloorForm buildingId={buildingId} floor={floor} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

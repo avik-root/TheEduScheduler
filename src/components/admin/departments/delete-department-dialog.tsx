@@ -22,9 +22,10 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DeleteDepartmentDialogProps {
   department: Department;
+  adminEmail: string;
 }
 
-export function DeleteDepartmentDialog({ department }: DeleteDepartmentDialogProps) {
+export function DeleteDepartmentDialog({ department, adminEmail }: DeleteDepartmentDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -33,7 +34,7 @@ export function DeleteDepartmentDialog({ department }: DeleteDepartmentDialogPro
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteDepartment(department.id);
+    const result = await deleteDepartment(adminEmail, department.id);
 
     if (result.success) {
       toast({
@@ -46,8 +47,7 @@ export function DeleteDepartmentDialog({ department }: DeleteDepartmentDialogPro
       const departmentsIndex = pathSegments.indexOf('departments');
       if (departmentsIndex > -1) {
         const redirectPath = pathSegments.slice(0, departmentsIndex + 1).join('/');
-        const emailParam = new URLSearchParams(window.location.search).get('email');
-        const finalRedirectPath = emailParam ? `${redirectPath}?email=${emailParam}` : redirectPath;
+        const finalRedirectPath = `${redirectPath}?email=${adminEmail}`;
         router.push(finalRedirectPath);
       }
       

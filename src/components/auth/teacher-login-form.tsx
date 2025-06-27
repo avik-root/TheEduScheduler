@@ -42,12 +42,12 @@ export function TeacherLoginForm() {
     
     const result = await loginFaculty(data);
 
-    if (result.success) {
+    if (result.success && result.adminEmail) {
       toast({
         title: "Login Successful",
         description: "Welcome back! Redirecting...",
       });
-      router.push(`/teacher/dashboard?email=${encodeURIComponent(data.email)}`);
+      router.push(`/teacher/dashboard?email=${encodeURIComponent(data.email)}&adminEmail=${encodeURIComponent(result.adminEmail)}`);
     } else {
       toast({
         variant: "destructive",

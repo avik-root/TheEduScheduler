@@ -15,9 +15,10 @@ import { PlusCircle } from 'lucide-react';
 
 interface CreateFloorDialogProps {
     buildingId: string;
+    adminEmail: string;
 }
 
-export function CreateFloorDialog({ buildingId }: CreateFloorDialogProps) {
+export function CreateFloorDialog({ buildingId, adminEmail }: CreateFloorDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -36,7 +37,7 @@ export function CreateFloorDialog({ buildingId }: CreateFloorDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateFloorForm buildingId={buildingId} onSuccess={() => setOpen(false)} />
+            <CreateFloorForm buildingId={buildingId} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

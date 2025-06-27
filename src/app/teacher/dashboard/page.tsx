@@ -17,9 +17,11 @@ import {
 } from '@/components/ui/card';
 import { getFacultyByEmail } from '@/lib/faculty';
 import { notFound } from 'next/navigation';
+import { getAdminByEmail } from '@/lib/admin';
 
-export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
-  const faculty = searchParams.email ? await getFacultyByEmail(searchParams.email) : null;
+export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
+  const faculty = searchParams.email && searchParams.adminEmail ? await getFacultyByEmail(searchParams.adminEmail, searchParams.email) : null;
+  const admin = searchParams.adminEmail ? await getAdminByEmail(searchParams.adminEmail) : null;
   
   if (!faculty) {
       notFound();
@@ -35,9 +37,10 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
-              {faculty.name}
-            </span>
+            <div className="text-right">
+                <p className="font-medium text-foreground">{faculty.name}</p>
+                <p className="text-xs text-muted-foreground">{admin?.name || 'Institution'}</p>
+            </div>
             <Button variant="outline" size="icon" asChild>
               <Link href="/teacher/login">
                 <LogOut className="h-4 w-4" />

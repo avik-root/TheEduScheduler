@@ -13,7 +13,11 @@ import {
 import { CreateBuildingForm } from '@/components/admin/buildings/create-building-form';
 import { PlusCircle } from 'lucide-react';
 
-export function CreateBuildingDialog() {
+interface CreateBuildingDialogProps {
+  adminEmail: string;
+}
+
+export function CreateBuildingDialog({ adminEmail }: CreateBuildingDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -32,7 +36,7 @@ export function CreateBuildingDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateBuildingForm onSuccess={() => setOpen(false)} />
+            <CreateBuildingForm onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

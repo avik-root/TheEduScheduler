@@ -16,9 +16,10 @@ import type { Department } from '@/lib/departments';
 
 interface CreateFacultyDialogProps {
   departments: Department[];
+  adminEmail: string;
 }
 
-export function CreateFacultyDialog({ departments }: CreateFacultyDialogProps) {
+export function CreateFacultyDialog({ departments, adminEmail }: CreateFacultyDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -37,7 +38,7 @@ export function CreateFacultyDialog({ departments }: CreateFacultyDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateFacultyForm onSuccess={() => setOpen(false)} departments={departments} />
+            <CreateFacultyForm onSuccess={() => setOpen(false)} departments={departments} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

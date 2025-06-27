@@ -27,9 +27,10 @@ interface EditFloorFormProps {
   buildingId: string;
   floor: Floor;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function EditFloorForm({ buildingId, floor, onSuccess }: EditFloorFormProps) {
+export function EditFloorForm({ buildingId, floor, onSuccess, adminEmail }: EditFloorFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -46,7 +47,7 @@ export function EditFloorForm({ buildingId, floor, onSuccess }: EditFloorFormPro
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateFloor(data.buildingId, data.floorId, { name: data.name });
+    const result = await updateFloor(adminEmail, data.buildingId, data.floorId, { name: data.name });
 
     if (result.success) {
       toast({

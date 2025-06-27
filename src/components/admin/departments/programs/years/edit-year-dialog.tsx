@@ -20,9 +20,10 @@ interface EditYearDialogProps {
   programId: string;
   year: Year;
   variant?: "button" | "icon";
+  adminEmail: string;
 }
 
-export function EditYearDialog({ departmentId, programId, year, variant = "icon" }: EditYearDialogProps) {
+export function EditYearDialog({ departmentId, programId, year, variant = "icon", adminEmail }: EditYearDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -48,7 +49,7 @@ export function EditYearDialog({ departmentId, programId, year, variant = "icon"
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditYearForm departmentId={departmentId} programId={programId} year={year} onSuccess={() => setOpen(false)} />
+          <EditYearForm departmentId={departmentId} programId={programId} year={year} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

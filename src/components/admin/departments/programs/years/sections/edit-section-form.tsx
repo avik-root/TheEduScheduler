@@ -30,9 +30,10 @@ interface EditSectionFormProps {
   yearId: string;
   section: Section;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function EditSectionForm({ departmentId, programId, yearId, section, onSuccess }: EditSectionFormProps) {
+export function EditSectionForm({ departmentId, programId, yearId, section, onSuccess, adminEmail }: EditSectionFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -52,7 +53,7 @@ export function EditSectionForm({ departmentId, programId, yearId, section, onSu
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateSection(data.departmentId, data.programId, data.yearId, data.sectionId, { name: data.name, studentCount: data.studentCount });
+    const result = await updateSection(adminEmail, data.departmentId, data.programId, data.yearId, data.sectionId, { name: data.name, studentCount: data.studentCount });
 
     if (result.success) {
       toast({

@@ -22,9 +22,10 @@ import { useToast } from '@/hooks/use-toast';
 interface DeleteFloorDialogProps {
   buildingId: string;
   floorId: string;
+  adminEmail: string;
 }
 
-export function DeleteFloorDialog({ buildingId, floorId }: DeleteFloorDialogProps) {
+export function DeleteFloorDialog({ buildingId, floorId, adminEmail }: DeleteFloorDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -32,7 +33,7 @@ export function DeleteFloorDialog({ buildingId, floorId }: DeleteFloorDialogProp
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteFloor(buildingId, floorId);
+    const result = await deleteFloor(adminEmail, buildingId, floorId);
 
     if (result.success) {
       toast({
@@ -42,8 +43,7 @@ export function DeleteFloorDialog({ buildingId, floorId }: DeleteFloorDialogProp
       setOpen(false);
       
       const redirectPath = `/admin/dashboard/buildings/${buildingId}`;
-      const emailParam = new URLSearchParams(window.location.search).get('email');
-      const finalRedirectPath = emailParam ? `${redirectPath}?email=${emailParam}` : redirectPath;
+      const finalRedirectPath = `${redirectPath}?email=${adminEmail}`;
 
       router.push(finalRedirectPath);
       router.refresh();

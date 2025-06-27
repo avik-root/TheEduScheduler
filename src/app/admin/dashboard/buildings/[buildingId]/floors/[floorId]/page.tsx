@@ -12,8 +12,13 @@ import { RoomsList } from '@/components/admin/buildings/rooms-list';
 
 
 export default async function FloorRoomsPage({ params, searchParams }: { params: { buildingId: string, floorId: string }, searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
-  const building = await getBuildingById(params.buildingId);
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+
+  const admin = await getAdminByEmail(adminEmail);
+  const building = await getBuildingById(adminEmail, params.buildingId);
   const floor = building?.floors.find(f => f.id === params.floorId);
 
   if (!building || !floor) {
@@ -48,7 +53,7 @@ export default async function FloorRoomsPage({ params, searchParams }: { params:
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard/buildings/${building.id}?email=${searchParams.email}`}>
+                        <Link href={`/admin/dashboard/buildings/${building.id}?email=${adminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Floors</span>
                         </Link>
@@ -59,14 +64,14 @@ export default async function FloorRoomsPage({ params, searchParams }: { params:
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <AddRoomDialog buildingId={building.id} floorId={floor.id} />
-                        <EditFloorDialog buildingId={building.id} floor={floor} />
-                        <DeleteFloorDialog buildingId={building.id} floorId={floor.id} />
+                        <AddRoomDialog buildingId={building.id} floorId={floor.id} adminEmail={adminEmail} />
+                        <EditFloorDialog buildingId={building.id} floor={floor} adminEmail={adminEmail} />
+                        <DeleteFloorDialog buildingId={building.id} floorId={floor.id} adminEmail={adminEmail} />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <RoomsList buildingId={building.id} floorId={floor.id} rooms={floor.rooms} />
+                  <RoomsList buildingId={building.id} floorId={floor.id} rooms={floor.rooms} adminEmail={adminEmail} />
                 </CardContent>
             </Card>
         </div>

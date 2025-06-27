@@ -14,15 +14,20 @@ import { DeleteYearDialog } from '@/components/admin/departments/programs/years/
 
 
 export default async function ProgramYearsPage({ params, searchParams }: { params: { departmentId: string, programId: string }, searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
-  const department = await getDepartmentById(params.departmentId);
-  const program = await getProgramById(params.departmentId, params.programId);
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+
+  const admin = await getAdminByEmail(adminEmail);
+  const department = await getDepartmentById(adminEmail, params.departmentId);
+  const program = await getProgramById(adminEmail, params.departmentId, params.programId);
 
   if (!department || !program) {
     notFound();
   }
 
-  const redirectPath = `/admin/dashboard/departments/${department.id}?email=${searchParams.email}`;
+  const redirectPath = `/admin/dashboard/departments/${department.id}?email=${adminEmail}`;
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -52,7 +57,7 @@ export default async function ProgramYearsPage({ params, searchParams }: { param
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard/departments/${department.id}?email=${searchParams.email}`}>
+                        <Link href={`/admin/dashboard/departments/${department.id}?email=${adminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Programs</span>
                         </Link>
@@ -63,9 +68,9 @@ export default async function ProgramYearsPage({ params, searchParams }: { param
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <CreateYearDialog departmentId={department.id} programId={program.id} />
-                        <EditProgramDialog departmentId={department.id} program={program} variant="button" />
-                        <DeleteProgramDialog departmentId={department.id} program={program} variant="button" onSuccessRedirect={redirectPath} />
+                        <CreateYearDialog departmentId={department.id} programId={program.id} adminEmail={adminEmail} />
+                        <EditProgramDialog departmentId={department.id} program={program} adminEmail={adminEmail} variant="button" />
+                        <DeleteProgramDialog departmentId={department.id} program={program} adminEmail={adminEmail} variant="button" onSuccessRedirect={redirectPath} />
                     </div>
                   </div>
                 </CardHeader>
@@ -74,7 +79,7 @@ export default async function ProgramYearsPage({ params, searchParams }: { param
                     {(program.years || []).map((year: Year) => (
                       <Card key={year.id} className="h-full flex flex-col">
                         <CardHeader className="flex-row items-center justify-between gap-4">
-                          <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}/years/${year.id}?email=${searchParams.email}`} className="flex-grow">
+                          <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}/years/${year.id}?email=${adminEmail}`} className="flex-grow">
                             <div className="flex items-center gap-4">
                                 <div className="rounded-full bg-primary/10 p-3">
                                   <CalendarIcon className="h-6 w-6 text-primary" />
@@ -83,19 +88,19 @@ export default async function ProgramYearsPage({ params, searchParams }: { param
                             </div>
                           </Link>
                           <div className="flex items-center gap-1">
-                              <EditYearDialog departmentId={department.id} programId={program.id} year={year} />
-                              <DeleteYearDialog departmentId={department.id} programId={program.id} year={year} />
+                              <EditYearDialog departmentId={department.id} programId={program.id} year={year} adminEmail={adminEmail} />
+                              <DeleteYearDialog departmentId={department.id} programId={program.id} year={year} adminEmail={adminEmail} />
                           </div>
                         </CardHeader>
                          <CardContent className="flex-grow">
-                          <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}/years/${year.id}?email=${searchParams.email}`} className="block">
+                          <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}/years/${year.id}?email=${adminEmail}`} className="block">
                               <p className="text-sm text-muted-foreground">
                                   {(year.sections || []).length} section(s)
                               </p>
                           </Link>
                         </CardContent>
                         <CardFooter>
-                          <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}/years/${year.id}?email=${searchParams.email}`} className="block w-full">
+                          <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}/years/${year.id}?email=${adminEmail}`} className="block w-full">
                             <p className="text-xs text-muted-foreground">Click to manage sections</p>
                           </Link>
                         </CardFooter>

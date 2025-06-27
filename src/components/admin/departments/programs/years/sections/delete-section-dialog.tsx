@@ -25,9 +25,10 @@ interface DeleteSectionDialogProps {
   programId: string;
   yearId: string;
   sectionId: string;
+  adminEmail: string;
 }
 
-export function DeleteSectionDialog({ departmentId, programId, yearId, sectionId }: DeleteSectionDialogProps) {
+export function DeleteSectionDialog({ departmentId, programId, yearId, sectionId, adminEmail }: DeleteSectionDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -35,7 +36,7 @@ export function DeleteSectionDialog({ departmentId, programId, yearId, sectionId
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteSection(departmentId, programId, yearId, sectionId);
+    const result = await deleteSection(adminEmail, departmentId, programId, yearId, sectionId);
 
     if (result.success) {
       toast({

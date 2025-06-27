@@ -16,9 +16,10 @@ import { PlusCircle } from 'lucide-react';
 
 interface CreateProgramDialogProps {
     departmentId: string;
+    adminEmail: string;
 }
 
-export function CreateProgramDialog({ departmentId }: CreateProgramDialogProps) {
+export function CreateProgramDialog({ departmentId, adminEmail }: CreateProgramDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -37,7 +38,7 @@ export function CreateProgramDialog({ departmentId }: CreateProgramDialogProps) 
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <CreateProgramForm departmentId={departmentId} onSuccess={() => setOpen(false)} />
+            <CreateProgramForm departmentId={departmentId} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

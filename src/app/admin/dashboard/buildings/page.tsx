@@ -5,10 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { getAdminByEmail } from '@/lib/admin';
 import { getBuildings, type Building } from '@/lib/buildings';
 import { CreateBuildingDialog } from '@/components/admin/buildings/create-building-dialog';
+import { notFound } from 'next/navigation';
 
 export default async function BuildingsPage({ searchParams }: { searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
-  const buildings = await getBuildings();
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+  
+  const admin = await getAdminByEmail(adminEmail);
+  const buildings = await getBuildings(adminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -38,7 +44,7 @@ export default async function BuildingsPage({ searchParams }: { searchParams: { 
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard?email=${searchParams.email}`}>
+                        <Link href={`/admin/dashboard?email=${adminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Dashboard</span>
                         </Link>
@@ -48,13 +54,13 @@ export default async function BuildingsPage({ searchParams }: { searchParams: { 
                         <CardDescription>Add, edit, and remove buildings, floors, and rooms.</CardDescription>
                       </div>
                     </div>
-                     <CreateBuildingDialog />
+                     <CreateBuildingDialog adminEmail={adminEmail} />
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {buildings.map((building: Building) => (
-                      <Link key={building.id} href={`/admin/dashboard/buildings/${building.id}?email=${searchParams.email}`}>
+                      <Link key={building.id} href={`/admin/dashboard/buildings/${building.id}?email=${adminEmail}`}>
                         <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="rounded-full bg-primary/10 p-3">

@@ -26,9 +26,10 @@ interface DeleteYearDialogProps {
   year: Year;
   variant?: "button" | "icon";
   onSuccessRedirect?: string;
+  adminEmail: string;
 }
 
-export function DeleteYearDialog({ departmentId, programId, year, variant = "icon", onSuccessRedirect }: DeleteYearDialogProps) {
+export function DeleteYearDialog({ departmentId, programId, year, variant = "icon", onSuccessRedirect, adminEmail }: DeleteYearDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -36,7 +37,7 @@ export function DeleteYearDialog({ departmentId, programId, year, variant = "ico
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteYear(departmentId, programId, year.id);
+    const result = await deleteYear(adminEmail, departmentId, programId, year.id);
 
     if (result.success) {
       toast({

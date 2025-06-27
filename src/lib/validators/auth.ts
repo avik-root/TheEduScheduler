@@ -49,7 +49,7 @@ export const FacultySchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
-  department: z.string().min(2, { message: 'Department must be at least 2 characters.' }),
+  department: z.string().min(1, { message: 'Please select a department.' }),
   weeklyMaxHours: z.coerce.number().min(0, { message: "Weekly max hours can't be negative." }),
   weeklyOffDays: z.array(z.string()).optional(),
 });
@@ -57,7 +57,7 @@ export const FacultySchema = z.object({
 export const UpdateFacultySchema = z.object({
     name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
     email: z.string().email(),
-    department: z.string().min(2, { message: 'Department must be at least 2 characters.' }),
+    department: z.string().min(1, { message: 'Please select a department.' }),
     weeklyMaxHours: z.coerce.number().min(0, { message: "Weekly max hours can't be negative." }),
     weeklyOffDays: z.array(z.string()).optional(),
     password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
@@ -176,4 +176,16 @@ export const UpdateSectionSchema = SectionSchema.extend({
     programId: z.string(),
     yearId: z.string(),
     sectionId: z.string(),
+});
+
+export const SubjectSchema = z.object({
+  name: z.string().min(3, { message: 'Subject name must be at least 3 characters.' }),
+  code: z.string().min(3, { message: 'Subject code must be at least 3 characters.' }),
+  type: z.enum(['Theory', 'Practical', 'Project'], {
+    required_error: "You need to select a subject type.",
+  }),
+});
+
+export const UpdateSubjectSchema = SubjectSchema.extend({
+    id: z.string(),
 });

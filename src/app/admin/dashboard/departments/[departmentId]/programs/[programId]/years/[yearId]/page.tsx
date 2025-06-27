@@ -12,16 +12,21 @@ import { DeleteYearDialog } from '@/components/admin/departments/programs/years/
 import { SectionsList } from '@/components/admin/departments/programs/years/sections/sections-list';
 
 export default async function YearSectionsPage({ params, searchParams }: { params: { departmentId: string, programId: string, yearId: string }, searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
-  const department = await getDepartmentById(params.departmentId);
-  const program = await getProgramById(params.departmentId, params.programId);
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+  
+  const admin = await getAdminByEmail(adminEmail);
+  const department = await getDepartmentById(adminEmail, params.departmentId);
+  const program = await getProgramById(adminEmail, params.departmentId, params.programId);
   const year = program?.years.find(y => y.id === params.yearId);
 
   if (!department || !program || !year) {
     notFound();
   }
 
-  const redirectPath = `/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${searchParams.email}`;
+  const redirectPath = `/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${adminEmail}`;
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -51,7 +56,7 @@ export default async function YearSectionsPage({ params, searchParams }: { param
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${searchParams.email}`}>
+                        <Link href={`/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${adminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Years</span>
                         </Link>
@@ -62,14 +67,14 @@ export default async function YearSectionsPage({ params, searchParams }: { param
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <AddSectionDialog departmentId={department.id} programId={program.id} yearId={year.id} />
-                        <EditYearDialog departmentId={department.id} programId={program.id} year={year} variant="button" />
-                        <DeleteYearDialog departmentId={department.id} programId={program.id} year={year} variant="button" onSuccessRedirect={redirectPath} />
+                        <AddSectionDialog departmentId={department.id} programId={program.id} yearId={year.id} adminEmail={adminEmail} />
+                        <EditYearDialog departmentId={department.id} programId={program.id} year={year} adminEmail={adminEmail} variant="button" />
+                        <DeleteYearDialog departmentId={department.id} programId={program.id} year={year} adminEmail={adminEmail} variant="button" onSuccessRedirect={redirectPath} />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <SectionsList departmentId={department.id} programId={program.id} yearId={year.id} sections={year.sections || []} />
+                  <SectionsList departmentId={department.id} programId={program.id} yearId={year.id} sections={year.sections || []} adminEmail={adminEmail} />
                 </CardContent>
             </Card>
         </div>

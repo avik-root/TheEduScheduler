@@ -25,9 +25,10 @@ interface DeleteProgramDialogProps {
   program: Program;
   variant?: "button" | "icon";
   onSuccessRedirect?: string;
+  adminEmail: string;
 }
 
-export function DeleteProgramDialog({ departmentId, program, variant = "icon", onSuccessRedirect }: DeleteProgramDialogProps) {
+export function DeleteProgramDialog({ departmentId, program, variant = "icon", onSuccessRedirect, adminEmail }: DeleteProgramDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -35,7 +36,7 @@ export function DeleteProgramDialog({ departmentId, program, variant = "icon", o
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteProgram(departmentId, program.id);
+    const result = await deleteProgram(adminEmail, departmentId, program.id);
 
     if (result.success) {
       toast({

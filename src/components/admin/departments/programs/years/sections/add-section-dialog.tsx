@@ -18,9 +18,10 @@ interface AddSectionDialogProps {
     departmentId: string;
     programId: string;
     yearId: string;
+    adminEmail: string;
 }
 
-export function AddSectionDialog({ departmentId, programId, yearId }: AddSectionDialogProps) {
+export function AddSectionDialog({ departmentId, programId, yearId, adminEmail }: AddSectionDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -39,7 +40,7 @@ export function AddSectionDialog({ departmentId, programId, yearId }: AddSection
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-            <AddSectionForm departmentId={departmentId} programId={programId} yearId={yearId} onSuccess={() => setOpen(false)} />
+            <AddSectionForm departmentId={departmentId} programId={programId} yearId={yearId} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

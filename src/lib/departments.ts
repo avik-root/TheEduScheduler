@@ -5,8 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import { DepartmentSchema } from '@/lib/validators/auth';
-
-const departmentsFilePath = path.join(process.cwd(), 'src', 'data', 'departments.json');
+import { getAdminDataPath } from './common';
 
 export interface Section {
     id: string;
@@ -34,10 +33,17 @@ export interface Department {
 
 type DepartmentData = z.infer<typeof DepartmentSchema>;
 
-async function readDepartmentsFile(): Promise<Department[]> {
+async function getDepartmentsFilePath(adminEmail: string): Promise<string> {
+    const adminDataPath = getAdminDataPath(adminEmail);
+    await fs.mkdir(adminDataPath, { recursive: true });
+    return path.join(adminDataPath, 'departments.json');
+}
+
+async function readDepartmentsFile(adminEmail: string): Promise<Department[]> {
     try {
-        await fs.access(departmentsFilePath);
-        const fileContent = await fs.readFile(departmentsFilePath, 'utf-8');
+        const filePath = await getDepartmentsFilePath(adminEmail);
+        await fs.access(filePath);
+        const fileContent = await fs.readFile(filePath, 'utf-8');
         if (!fileContent.trim()) {
             return [];
         }
@@ -47,9 +53,9 @@ async function readDepartmentsFile(): Promise<Department[]> {
     }
 }
 
-async function writeDepartmentsFile(departments: Department[]): Promise<void> {
-    await fs.mkdir(path.dirname(departmentsFilePath), { recursive: true });
-    await fs.writeFile(departmentsFilePath, JSON.stringify(departments, null, 2));
+async function writeDepartmentsFile(adminEmail: string, departments: Department[]): Promise<void> {
+    const filePath = await getDepartmentsFilePath(adminEmail);
+    await fs.writeFile(filePath, JSON.stringify(departments, null, 2));
 }
 
 function ensureHierarchy(departments: Department[]): Department[] {
@@ -65,19 +71,21 @@ function ensureHierarchy(departments: Department[]): Department[] {
     }));
 }
 
-export async function getDepartments(): Promise<Department[]> {
-    const departments = await readDepartmentsFile();
+export async function getDepartments(adminEmail: string): Promise<Department[]> {
+    if (!adminEmail) return [];
+    const departments = await readDepartmentsFile(adminEmail);
     return ensureHierarchy(departments);
 }
 
-export async function getDepartmentById(id: string): Promise<Department | null> {
-    const departments = await getDepartments();
+export async function getDepartmentById(adminEmail: string, id: string): Promise<Department | null> {
+    if (!adminEmail) return null;
+    const departments = await getDepartments(adminEmail);
     const department = departments.find(d => d.id === id);
     return department || null;
 }
 
-export async function createDepartment(data: DepartmentData): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function createDepartment(adminEmail: string, data: DepartmentData): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const newDepartment: Department = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         name: data.name,
@@ -85,7 +93,7 @@ export async function createDepartment(data: DepartmentData): Promise<{ success:
     };
     departments.push(newDepartment);
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Department created successfully.' };
     } catch (error) {
         console.error('Failed to create department:', error);
@@ -93,15 +101,15 @@ export async function createDepartment(data: DepartmentData): Promise<{ success:
     }
 }
 
-export async function updateDepartment(id: string, data: DepartmentData): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function updateDepartment(adminEmail: string, id: string, data: DepartmentData): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const departmentIndex = departments.findIndex(d => d.id === id);
     if (departmentIndex === -1) {
         return { success: false, message: 'Department not found.' };
     }
     departments[departmentIndex].name = data.name;
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Department updated successfully.' };
     } catch (error) {
         console.error('Failed to update department:', error);
@@ -109,14 +117,14 @@ export async function updateDepartment(id: string, data: DepartmentData): Promis
     }
 }
 
-export async function deleteDepartment(id: string): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function deleteDepartment(adminEmail: string, id: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const updatedDepartments = departments.filter(d => d.id !== id);
     if (departments.length === updatedDepartments.length) {
         return { success: false, message: 'Department not found.' };
     }
     try {
-        await writeDepartmentsFile(updatedDepartments);
+        await writeDepartmentsFile(adminEmail, updatedDepartments);
         return { success: true, message: 'Department deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete department:', error);
@@ -125,13 +133,13 @@ export async function deleteDepartment(id: string): Promise<{ success: boolean; 
 }
 
 // Program Functions
-export async function getProgramById(departmentId: string, programId: string): Promise<Program | null> {
-    const department = await getDepartmentById(departmentId);
+export async function getProgramById(adminEmail: string, departmentId: string, programId: string): Promise<Program | null> {
+    const department = await getDepartmentById(adminEmail, departmentId);
     return department?.programs.find(p => p.id === programId) || null;
 }
 
-export async function addProgram(departmentId: string, programName: string): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function addProgram(adminEmail: string, departmentId: string, programName: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const departmentIndex = departments.findIndex(d => d.id === departmentId);
     if (departmentIndex === -1) {
         return { success: false, message: 'Department not found.' };
@@ -143,7 +151,7 @@ export async function addProgram(departmentId: string, programName: string): Pro
     };
     departments[departmentIndex].programs.push(newProgram);
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Program created successfully.' };
     } catch (error) {
         console.error('Failed to add program:', error);
@@ -151,8 +159,8 @@ export async function addProgram(departmentId: string, programName: string): Pro
     }
 }
 
-export async function updateProgram(departmentId: string, programId: string, programName: string): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function updateProgram(adminEmail: string, departmentId: string, programId: string, programName: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const departmentIndex = departments.findIndex(d => d.id === departmentId);
     if (departmentIndex === -1) return { success: false, message: 'Department not found.' };
     const programIndex = departments[departmentIndex].programs.findIndex(p => p.id === programId);
@@ -161,7 +169,7 @@ export async function updateProgram(departmentId: string, programId: string, pro
     departments[departmentIndex].programs[programIndex].name = programName;
     
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Program updated successfully.' };
     } catch (error) {
         console.error('Failed to update program:', error);
@@ -169,8 +177,8 @@ export async function updateProgram(departmentId: string, programId: string, pro
     }
 }
 
-export async function deleteProgram(departmentId: string, programId: string): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function deleteProgram(adminEmail: string, departmentId: string, programId: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const departmentIndex = departments.findIndex(d => d.id === departmentId);
     if (departmentIndex === -1) return { success: false, message: 'Department not found.' };
     
@@ -180,7 +188,7 @@ export async function deleteProgram(departmentId: string, programId: string): Pr
     if (departments[departmentIndex].programs.length === originalCount) return { success: false, message: 'Program not found.' };
     
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Program deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete program:', error);
@@ -189,8 +197,8 @@ export async function deleteProgram(departmentId: string, programId: string): Pr
 }
 
 // Year Functions
-export async function addYears(departmentId: string, programId: string, names: string[]): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function addYears(adminEmail: string, departmentId: string, programId: string, names: string[]): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const deptIdx = departments.findIndex(d => d.id === departmentId);
     if (deptIdx === -1) return { success: false, message: 'Department not found.' };
     const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
@@ -206,15 +214,15 @@ export async function addYears(departmentId: string, programId: string, names: s
     });
 
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: `${names.length} year(s) added successfully.` };
     } catch (e) {
         return { success: false, message: 'Failed to add years.' };
     }
 }
 
-export async function updateYear(departmentId: string, programId: string, yearId: string, name: string): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function updateYear(adminEmail: string, departmentId: string, programId: string, yearId: string, name: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const deptIdx = departments.findIndex(d => d.id === departmentId);
     if (deptIdx === -1) return { success: false, message: 'Department not found.' };
     const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
@@ -225,15 +233,15 @@ export async function updateYear(departmentId: string, programId: string, yearId
     departments[deptIdx].programs[progIdx].years[yearIdx].name = name;
 
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Year updated successfully.' };
     } catch (e) {
         return { success: false, message: 'Failed to update year.' };
     }
 }
 
-export async function deleteYear(departmentId: string, programId: string, yearId: string): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function deleteYear(adminEmail: string, departmentId: string, programId: string, yearId: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const deptIdx = departments.findIndex(d => d.id === departmentId);
     if (deptIdx === -1) return { success: false, message: 'Department not found.' };
     const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
@@ -242,7 +250,7 @@ export async function deleteYear(departmentId: string, programId: string, yearId
     departments[deptIdx].programs[progIdx].years = departments[deptIdx].programs[progIdx].years.filter(y => y.id !== yearId);
 
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Year deleted successfully.' };
     } catch (e) {
         return { success: false, message: 'Failed to delete year.' };
@@ -251,8 +259,8 @@ export async function deleteYear(departmentId: string, programId: string, yearId
 
 
 // Section Functions
-export async function addSections(departmentId: string, programId: string, yearId: string, sections: Omit<Section, 'id'>[]): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function addSections(adminEmail: string, departmentId: string, programId: string, yearId: string, sections: Omit<Section, 'id'>[]): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const deptIdx = departments.findIndex(d => d.id === departmentId);
     if (deptIdx === -1) return { success: false, message: 'Department not found.' };
     const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
@@ -269,15 +277,15 @@ export async function addSections(departmentId: string, programId: string, yearI
     });
 
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: `${sections.length} section(s) added successfully.` };
     } catch (e) {
         return { success: false, message: 'Failed to add sections.' };
     }
 }
 
-export async function updateSection(departmentId: string, programId: string, yearId: string, sectionId: string, data: Omit<Section, 'id'>): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function updateSection(adminEmail: string, departmentId: string, programId: string, yearId: string, sectionId: string, data: Omit<Section, 'id'>): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const deptIdx = departments.findIndex(d => d.id === departmentId);
     if (deptIdx === -1) return { success: false, message: 'Department not found.' };
     const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
@@ -290,15 +298,15 @@ export async function updateSection(departmentId: string, programId: string, yea
     departments[deptIdx].programs[progIdx].years[yearIdx].sections[sectionIdx] = { ...departments[deptIdx].programs[progIdx].years[yearIdx].sections[sectionIdx], ...data };
 
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Section updated successfully.' };
     } catch (e) {
         return { success: false, message: 'Failed to update section.' };
     }
 }
 
-export async function deleteSection(departmentId: string, programId: string, yearId: string, sectionId: string): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function deleteSection(adminEmail: string, departmentId: string, programId: string, yearId: string, sectionId: string): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const deptIdx = departments.findIndex(d => d.id === departmentId);
     if (deptIdx === -1) return { success: false, message: 'Department not found.' };
     const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
@@ -309,15 +317,15 @@ export async function deleteSection(departmentId: string, programId: string, yea
     departments[deptIdx].programs[progIdx].years[yearIdx].sections = departments[deptIdx].programs[progIdx].years[yearIdx].sections.filter(s => s.id !== sectionId);
 
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: 'Section deleted successfully.' };
     } catch (e) {
         return { success: false, message: 'Failed to delete section.' };
     }
 }
 
-export async function deleteSections(departmentId: string, programId: string, yearId: string, sectionIds: string[]): Promise<{ success: boolean; message: string }> {
-    const departments = await getDepartments();
+export async function deleteSections(adminEmail: string, departmentId: string, programId: string, yearId: string, sectionIds: string[]): Promise<{ success: boolean; message: string }> {
+    const departments = await getDepartments(adminEmail);
     const deptIdx = departments.findIndex(d => d.id === departmentId);
     if (deptIdx === -1) return { success: false, message: 'Department not found.' };
     const progIdx = departments[deptIdx].programs.findIndex(p => p.id === programId);
@@ -332,7 +340,7 @@ export async function deleteSections(departmentId: string, programId: string, ye
     if (deletedCount === 0) return { success: false, message: 'No matching sections found.' };
 
     try {
-        await writeDepartmentsFile(departments);
+        await writeDepartmentsFile(adminEmail, departments);
         return { success: true, message: `${deletedCount} section(s) deleted successfully.` };
     } catch (e) {
         return { success: false, message: 'Failed to delete sections.' };

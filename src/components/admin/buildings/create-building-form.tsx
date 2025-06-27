@@ -25,9 +25,10 @@ type FormData = z.infer<typeof BuildingSchema>;
 
 interface CreateBuildingFormProps {
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function CreateBuildingForm({ onSuccess }: CreateBuildingFormProps) {
+export function CreateBuildingForm({ onSuccess, adminEmail }: CreateBuildingFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -42,7 +43,7 @@ export function CreateBuildingForm({ onSuccess }: CreateBuildingFormProps) {
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await createBuilding(data);
+    const result = await createBuilding(adminEmail, data);
 
     if (result.success) {
       toast({

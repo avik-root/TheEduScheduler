@@ -26,9 +26,10 @@ type FormData = z.infer<typeof BuildingSchema>;
 interface EditBuildingFormProps {
   building: Building;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function EditBuildingForm({ building, onSuccess }: EditBuildingFormProps) {
+export function EditBuildingForm({ building, onSuccess, adminEmail }: EditBuildingFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -43,7 +44,7 @@ export function EditBuildingForm({ building, onSuccess }: EditBuildingFormProps)
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateBuilding(building.id, data);
+    const result = await updateBuilding(adminEmail, building.id, data);
 
     if (result.success) {
       toast({

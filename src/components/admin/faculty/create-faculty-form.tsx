@@ -35,11 +35,12 @@ type FormData = z.infer<typeof FacultySchema>;
 interface CreateFacultyFormProps {
   onSuccess?: () => void;
   departments: Department[];
+  adminEmail: string;
 }
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export function CreateFacultyForm({ onSuccess, departments }: CreateFacultyFormProps) {
+export function CreateFacultyForm({ onSuccess, departments, adminEmail }: CreateFacultyFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const { toast } = useToast();
@@ -60,7 +61,7 @@ export function CreateFacultyForm({ onSuccess, departments }: CreateFacultyFormP
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await createFaculty(data);
+    const result = await createFaculty(adminEmail, data);
 
     if (result.success) {
       toast({

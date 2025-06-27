@@ -23,9 +23,10 @@ interface DeleteRoomDialogProps {
   buildingId: string;
   floorId: string;
   roomId: string;
+  adminEmail: string;
 }
 
-export function DeleteRoomDialog({ buildingId, floorId, roomId }: DeleteRoomDialogProps) {
+export function DeleteRoomDialog({ buildingId, floorId, roomId, adminEmail }: DeleteRoomDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -33,7 +34,7 @@ export function DeleteRoomDialog({ buildingId, floorId, roomId }: DeleteRoomDial
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteRoom(buildingId, floorId, roomId);
+    const result = await deleteRoom(adminEmail, buildingId, floorId, roomId);
 
     if (result.success) {
       toast({

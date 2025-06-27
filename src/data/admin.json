@@ -3,5 +3,10 @@
     "name": "SNU",
     "email": "snu@gmail.com",
     "password": "$2b$10$ZzujuPtKdqbO9W2IZKP5OO3phTh4Xd/pYWmYTk.NKIJyEsMUal5pu"
+  },
+  {
+    "name": "TINT",
+    "email": "tint@gmail.com",
+    "password": "$2b$10$vclR9.BlnP31YTcWKn7Oz.qjq.SemXTldpO9crcQE6cLmjBq6eN0."
   }
 ]

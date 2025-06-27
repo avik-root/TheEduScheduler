@@ -16,9 +16,10 @@ import { FilePenLine } from 'lucide-react';
 
 interface EditDepartmentDialogProps {
   department: Department;
+  adminEmail: string;
 }
 
-export function EditDepartmentDialog({ department }: EditDepartmentDialogProps) {
+export function EditDepartmentDialog({ department, adminEmail }: EditDepartmentDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -37,7 +38,7 @@ export function EditDepartmentDialog({ department }: EditDepartmentDialogProps) 
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditDepartmentForm department={department} onSuccess={() => setOpen(false)} />
+          <EditDepartmentForm department={department} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

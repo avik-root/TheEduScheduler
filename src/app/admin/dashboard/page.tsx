@@ -50,7 +50,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           <div className="my-8">
             <h1 className="text-3xl font-semibold">Management Dashboard</h1>
             <p className="text-muted-foreground">
-                Manage your institution's resources from here.
+                Welcome, {admin?.name}. Manage your institution's resources from here.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

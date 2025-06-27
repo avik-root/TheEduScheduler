@@ -10,8 +10,13 @@ import { DeleteBuildingDialog } from '@/components/admin/buildings/delete-buildi
 import { CreateFloorDialog } from '@/components/admin/buildings/create-floor-dialog';
 
 export default async function BuildingFloorsPage({ params, searchParams }: { params: { buildingId: string }, searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
-  const building = await getBuildingById(params.buildingId);
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+
+  const admin = await getAdminByEmail(adminEmail);
+  const building = await getBuildingById(adminEmail, params.buildingId);
 
   if (!building) {
     notFound();
@@ -45,7 +50,7 @@ export default async function BuildingFloorsPage({ params, searchParams }: { par
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard/buildings?email=${searchParams.email}`}>
+                        <Link href={`/admin/dashboard/buildings?email=${adminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Buildings</span>
                         </Link>
@@ -56,16 +61,16 @@ export default async function BuildingFloorsPage({ params, searchParams }: { par
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <CreateFloorDialog buildingId={building.id} />
-                        <EditBuildingDialog building={building} />
-                        <DeleteBuildingDialog buildingId={building.id} />
+                        <CreateFloorDialog buildingId={building.id} adminEmail={adminEmail} />
+                        <EditBuildingDialog building={building} adminEmail={adminEmail} />
+                        <DeleteBuildingDialog buildingId={building.id} adminEmail={adminEmail} />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {building.floors.map((floor: Floor) => (
-                      <Link key={floor.id} href={`/admin/dashboard/buildings/${building.id}/floors/${floor.id}?email=${searchParams.email}`}>
+                      <Link key={floor.id} href={`/admin/dashboard/buildings/${building.id}/floors/${floor.id}?email=${adminEmail}`}>
                         <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="rounded-full bg-primary/10 p-3">

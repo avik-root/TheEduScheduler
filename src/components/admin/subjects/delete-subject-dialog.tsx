@@ -16,18 +16,15 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { deleteRooms } from '@/lib/buildings';
+import { deleteSubject, type Subject } from '@/lib/subjects';
 import { useToast } from '@/hooks/use-toast';
 
-interface DeleteSelectedRoomsDialogProps {
-  buildingId: string;
-  floorId: string;
-  roomIds: string[];
-  onSuccess: () => void;
+interface DeleteSubjectDialogProps {
+  subject: Subject;
   adminEmail: string;
 }
 
-export function DeleteSelectedRoomsDialog({ buildingId, floorId, roomIds, onSuccess, adminEmail }: DeleteSelectedRoomsDialogProps) {
+export function DeleteSubjectDialog({ subject, adminEmail }: DeleteSubjectDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
@@ -35,15 +32,14 @@ export function DeleteSelectedRoomsDialog({ buildingId, floorId, roomIds, onSucc
 
   async function handleDelete() {
     setIsLoading(true);
-    const result = await deleteRooms(adminEmail, buildingId, floorId, roomIds);
+    const result = await deleteSubject(adminEmail, subject.id);
 
     if (result.success) {
       toast({
-        title: 'Rooms Deleted',
-        description: result.message,
+        title: 'Subject Deleted',
+        description: `The subject "${subject.name}" has been successfully deleted.`,
       });
       setOpen(false);
-      onSuccess();
       router.refresh();
     } else {
       toast({
@@ -58,16 +54,20 @@ export function DeleteSelectedRoomsDialog({ buildingId, floorId, roomIds, onSucc
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" disabled={roomIds.length === 0}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete ({roomIds.length})
+        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+          <Trash2 className="h-5 w-5" />
+          <span className="sr-only">Delete Subject</span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the {roomIds.length} selected room(s).
+            This action cannot be undone. This will permanently delete the subject{' '}
+            <span className="font-semibold text-foreground">
+              {subject.name} ({subject.code})
+            </span>
+            .
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="pt-4">

@@ -25,9 +25,10 @@ type FormData = z.infer<typeof DepartmentSchema>;
 
 interface CreateDepartmentFormProps {
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function CreateDepartmentForm({ onSuccess }: CreateDepartmentFormProps) {
+export function CreateDepartmentForm({ onSuccess, adminEmail }: CreateDepartmentFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -42,7 +43,7 @@ export function CreateDepartmentForm({ onSuccess }: CreateDepartmentFormProps) {
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await createDepartment(data);
+    const result = await createDepartment(adminEmail, data);
 
     if (result.success) {
       toast({

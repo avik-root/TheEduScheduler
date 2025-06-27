@@ -15,9 +15,10 @@ interface SectionsListProps {
   programId: string;
   yearId: string;
   sections: Section[];
+  adminEmail: string;
 }
 
-export function SectionsList({ departmentId, programId, yearId, sections }: SectionsListProps) {
+export function SectionsList({ departmentId, programId, yearId, sections, adminEmail }: SectionsListProps) {
   const [selectedSectionIds, setSelectedSectionIds] = React.useState<string[]>([]);
 
   const handleSelectAll = (checked: boolean) => {
@@ -60,6 +61,7 @@ export function SectionsList({ departmentId, programId, yearId, sections }: Sect
                     yearId={yearId}
                     sectionIds={selectedSectionIds}
                     onSuccess={() => setSelectedSectionIds([])}
+                    adminEmail={adminEmail}
                 />
             )}
         </div>
@@ -82,8 +84,8 @@ export function SectionsList({ departmentId, programId, yearId, sections }: Sect
                     {section.name}
                     </CardTitle>
                     <div className="flex items-center gap-1">
-                    <EditSectionDialog departmentId={departmentId} programId={programId} yearId={yearId} section={section} />
-                    <DeleteSectionDialog departmentId={departmentId} programId={programId} yearId={yearId} sectionId={section.id} />
+                    <EditSectionDialog departmentId={departmentId} programId={programId} yearId={yearId} section={section} adminEmail={adminEmail} />
+                    <DeleteSectionDialog departmentId={departmentId} programId={programId} yearId={yearId} sectionId={section.id} adminEmail={adminEmail} />
                     </div>
                 </div>
                 </CardHeader>

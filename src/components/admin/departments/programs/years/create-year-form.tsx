@@ -21,9 +21,10 @@ interface CreateYearFormProps {
   departmentId: string;
   programId: string;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function CreateYearForm({ departmentId, programId, onSuccess }: CreateYearFormProps) {
+export function CreateYearForm({ departmentId, programId, onSuccess, adminEmail }: CreateYearFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [newYearName, setNewYearName] = React.useState('');
   const { toast } = useToast();
@@ -47,7 +48,7 @@ export function CreateYearForm({ departmentId, programId, onSuccess }: CreateYea
     setIsLoading(true);
 
     const names = data.names.map(item => item.name);
-    const result = await addYears(data.departmentId, data.programId, names);
+    const result = await addYears(adminEmail, data.departmentId, data.programId, names);
 
     if (result.success) {
       toast({

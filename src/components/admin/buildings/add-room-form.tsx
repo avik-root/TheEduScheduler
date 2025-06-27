@@ -27,9 +27,10 @@ interface AddRoomFormProps {
   buildingId: string;
   floorId: string;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function AddRoomForm({ buildingId, floorId, onSuccess }: AddRoomFormProps) {
+export function AddRoomForm({ buildingId, floorId, onSuccess, adminEmail }: AddRoomFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -57,7 +58,7 @@ export function AddRoomForm({ buildingId, floorId, onSuccess }: AddRoomFormProps
         });
     }
 
-    const result = await addRooms(data.buildingId, data.floorId, roomsToCreate);
+    const result = await addRooms(adminEmail, data.buildingId, data.floorId, roomsToCreate);
 
     if (result.success) {
       toast({

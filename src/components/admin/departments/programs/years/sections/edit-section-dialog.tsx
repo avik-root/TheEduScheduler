@@ -20,9 +20,10 @@ interface EditSectionDialogProps {
   programId: string;
   yearId: string;
   section: Section;
+  adminEmail: string;
 }
 
-export function EditSectionDialog({ departmentId, programId, yearId, section }: EditSectionDialogProps) {
+export function EditSectionDialog({ departmentId, programId, yearId, section, adminEmail }: EditSectionDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -41,7 +42,7 @@ export function EditSectionDialog({ departmentId, programId, yearId, section }: 
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditSectionForm departmentId={departmentId} programId={programId} yearId={yearId} section={section} onSuccess={() => setOpen(false)} />
+          <EditSectionForm departmentId={departmentId} programId={programId} yearId={yearId} section={section} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

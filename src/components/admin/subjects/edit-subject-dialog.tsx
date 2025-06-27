@@ -10,37 +10,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { EditRoomForm } from '@/components/admin/buildings/edit-room-form';
-import type { Room } from '@/lib/buildings';
+import { EditSubjectForm } from '@/components/admin/subjects/edit-subject-form';
+import type { Subject } from '@/lib/subjects';
 import { FilePenLine } from 'lucide-react';
 
-interface EditRoomDialogProps {
-  buildingId: string;
-  floorId: string;
-  room: Room;
+interface EditSubjectDialogProps {
+  subject: Subject;
   adminEmail: string;
 }
 
-export function EditRoomDialog({ buildingId, floorId, room, adminEmail }: EditRoomDialogProps) {
+export function EditSubjectDialog({ subject, adminEmail }: EditSubjectDialogProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon">
-          <FilePenLine className="h-4 w-4" />
-          <span className="sr-only">Edit Room</span>
+          <FilePenLine className="h-5 w-5" />
+          <span className="sr-only">Edit Subject</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Room</DialogTitle>
+          <DialogTitle>Edit Subject</DialogTitle>
           <DialogDescription>
-            Modify the details for {room.name}.
+            Modify the details for {subject.name}.
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
-          <EditRoomForm buildingId={buildingId} floorId={floorId} room={room} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
+          <EditSubjectForm subject={subject} onSuccess={() => setOpen(false)} adminEmail={adminEmail} />
         </div>
       </DialogContent>
     </Dialog>

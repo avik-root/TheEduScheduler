@@ -28,9 +28,10 @@ interface EditProgramFormProps {
   departmentId: string;
   program: Program;
   onSuccess?: () => void;
+  adminEmail: string;
 }
 
-export function EditProgramForm({ departmentId, program, onSuccess }: EditProgramFormProps) {
+export function EditProgramForm({ departmentId, program, onSuccess, adminEmail }: EditProgramFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -45,7 +46,7 @@ export function EditProgramForm({ departmentId, program, onSuccess }: EditProgra
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await updateProgram(departmentId, program.id, data.name);
+    const result = await updateProgram(adminEmail, departmentId, program.id, data.name);
 
     if (result.success) {
       toast({
