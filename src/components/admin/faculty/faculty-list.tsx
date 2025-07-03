@@ -40,12 +40,12 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredFaculty.map((faculty: Faculty) => (
                   <Card key={faculty.email}>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-                      <div className="flex items-center gap-4">
+                    <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
+                      <div className="flex flex-1 items-start gap-4 min-w-0">
                         <div className="rounded-full bg-primary/10 p-3">
                           <UserCog className="h-6 w-6 text-primary" />
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <CardTitle className="text-xl">{faculty.name} ({faculty.abbreviation})</CardTitle>
                           <CardDescription>{faculty.email}</CardDescription>
                         </div>
