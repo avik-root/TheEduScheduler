@@ -92,11 +92,20 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '08:00', endTime: '08:50', date: new Date() }
+      ? { roomsToCheck: [], startTime: '08:00', endTime: '08:50', date: undefined }
       : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', days: ['Monday'] },
   });
 
   const startTime = form.watch('startTime');
+
+  React.useEffect(() => {
+    if (isFaculty) {
+        // Set the date only on the client side after mount to avoid hydration mismatch
+        form.setValue('date', new Date());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFaculty]);
+
 
   React.useEffect(() => {
     if (isFaculty && startTime) {
@@ -117,7 +126,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
         console.error("Could not auto-calculate end time:", e);
       }
     }
-  }, [startTime, isFaculty, form]);
+  }, [startTime, isFaculty, form.setValue]);
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
