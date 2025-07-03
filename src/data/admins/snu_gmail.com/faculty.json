@@ -1,17 +1,4 @@
-
 [
-  {
-    "name": "Dr. Tester SNU",
-    "email": "test@gmail.com",
-    "password": "$2b$10$RApXa4ms1HgtBRm0YeDNKe6qaNv.gptGkPswO8ep2Jt6Zan16PMlO",
-    "department": "CSE",
-    "weeklyMaxHours": 20,
-    "weeklyOffDays": [
-      "Sunday",
-      "Saturday"
-    ],
-    "abbreviation": "DTS"
-  },
   {
     "name": "BP",
     "email": "bpisbizzy@gmail.com",
@@ -20,5 +7,29 @@
     "weeklyMaxHours": 24,
     "weeklyOffDays": [],
     "abbreviation": "BP"
+  },
+  {
+    "name": "Dr. Anirban Mitra",
+    "abbreviation": "ANM",
+    "email": "anirbanmitra.1@themintfire.com",
+    "password": "$2b$10$w3OVB0W.9r3oDRprWMZx7u3/XGodWjosW7ygpw/bHArXJcPY7Dnga",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Saikat Maity",
+    "abbreviation": "SKM",
+    "email": "saikatmaiti.1@themintfire.com",
+    "password": "$2b$10$7P9E8qgJFa8MnzQLq5IEPeLFwaOQ2TLvRYdrMjhFOKU7XPI3dAAm.",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]

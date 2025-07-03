@@ -14,18 +14,21 @@ import {z} from 'genkit';
 const GenerateScheduleInputSchema = z.object({
   timeConstraints: z
     .string()
-    .describe('Specific time constraints for the schedule.'),
-  resourceAvailability: z
+    .describe('Specific time constraints for the schedule (e.g., "Classes only between 9 AM and 5 PM, Monday to Friday").'),
+  availableRooms: z
+    .number()
+    .describe('The total number of rooms available for scheduling.'),
+  roomAvailabilityTime: z
     .string()
-    .describe('Information about available resources.'),
+    .describe('The specific times the rooms are available (e.g., "9 AM to 5 PM on weekdays").'),
   taskPriorities: z
     .string()
-    .describe('Priorities of tasks to be scheduled.'),
+    .describe('Priorities of tasks or courses to be scheduled (e.g., "Calculus 101 is a high priority course").'),
 });
 export type GenerateScheduleInput = z.infer<typeof GenerateScheduleInputSchema>;
 
 const GenerateScheduleOutputSchema = z.object({
-  schedule: z.string().describe('The generated schedule.'),
+  schedule: z.string().describe('The generated schedule as a well-formatted string, potentially in Markdown for tables.'),
 });
 export type GenerateScheduleOutput = z.infer<typeof GenerateScheduleOutputSchema>;
 
@@ -39,11 +42,14 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateScheduleOutputSchema},
   prompt: `You are an AI scheduling assistant for use by organization admins.
 
-You will generate a schedule based on the provided time constraints, resource availability, and task priorities.
+You will generate a detailed schedule based on the provided time constraints, resource availability, and task priorities.
 
 Time Constraints: {{{timeConstraints}}}
-Resource Availability: {{{resourceAvailability}}}
-Task Priorities: {{{taskPriorities}}}
+Number of Available Rooms: {{{availableRooms}}}
+Room Availability Times: {{{roomAvailabilityTime}}}
+Task/Course Priorities: {{{taskPriorities}}}
+
+Generate a detailed schedule based on this information. Present the schedule clearly, for example using a Markdown table.
 
 Schedule:`,
 });
