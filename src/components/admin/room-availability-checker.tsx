@@ -47,7 +47,25 @@ const FacultyCheckerSchema = z.object({
   date: z.date({
     required_error: "A date is required.",
   }),
-});
+}).refine((data) => {
+    if (!data.startTime || !data.endTime) return true; // Let other validators handle empty fields
+    const start = new Date(`1970-01-01T${data.startTime}:00`);
+    const end = new Date(`1970-01-01T${data.endTime}:00`);
+    return end > start;
+  }, {
+    message: "End time must be after start time.",
+    path: ["endTime"],
+  })
+  .refine((data) => {
+    if (!data.startTime || !data.endTime) return true;
+    const start = new Date(`1970-01-01T${data.startTime}:00`);
+    const end = new Date(`1970-01-01T${data.endTime}:00`);
+    const diffInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+    return diffInMinutes <= 50;
+  }, {
+    message: "Booking duration cannot exceed 50 minutes.",
+    path: ["endTime"],
+  });
 
 type FormData = z.infer<typeof AdminCheckerSchema> | z.infer<typeof FacultyCheckerSchema>;
 
@@ -73,7 +91,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '10:00', endTime: '11:00', date: new Date() }
+      ? { roomsToCheck: [], startTime: '10:00', endTime: '10:50', date: new Date() }
       : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', days: ['Monday'] },
   });
 
@@ -263,6 +281,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                   <FormControl>
                                       <Input type="time" {...field} />
                                   </FormControl>
+                                  <FormMessage />
                               </FormItem>
                           )}
                           />
