@@ -262,7 +262,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0">
                         <Command>
-                          <CommandInput placeholder="Search rooms..." />
+                          <CommandInput placeholder="Search rooms by name, building, or floor..." />
                            <CommandList>
                             <CommandEmpty>No rooms found.</CommandEmpty>
                             <CommandGroup>
@@ -288,7 +288,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                               {allRooms.map((room) => (
                                 <CommandItem
                                   key={room.id}
-                                  value={room.name}
+                                  value={`${room.name} ${room.buildingName} ${room.floorName}`}
                                   onSelect={() => {
                                     const selected = field.value || [];
                                     const isSelected = selected.includes(room.name);
