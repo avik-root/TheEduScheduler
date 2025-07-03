@@ -40,9 +40,14 @@ const ScheduleGeneratorSchema = z.object({
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
 
-export function AiScheduleGenerator({ allRooms }: { allRooms: Room[] }) {
+interface AiScheduleGeneratorProps {
+    allRooms: Room[];
+    generatedSchedule: GenerateScheduleOutput | null;
+    setGeneratedSchedule: (schedule: GenerateScheduleOutput | null) => void;
+}
+
+export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule }: AiScheduleGeneratorProps) {
   const [isLoading, setIsLoading] = React.useState(false);
-  const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
