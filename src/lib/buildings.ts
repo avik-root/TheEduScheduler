@@ -11,6 +11,7 @@ export interface Room {
     name: string;
     capacity: number;
     buildingName?: string;
+    floorName?: string;
 }
 
 export interface Floor {
@@ -73,7 +74,7 @@ export async function getAllRooms(adminEmail: string): Promise<Room[]> {
     for (const building of buildings) {
         for (const floor of building.floors) {
             for (const room of floor.rooms) {
-                allRooms.push({ ...room, buildingName: building.name });
+                allRooms.push({ ...room, buildingName: building.name, floorName: floor.name });
             }
         }
     }
