@@ -44,49 +44,45 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: D
              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               <Link href={`/admin/dashboard/faculty?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">Faculty</CardTitle>
-                          <Users className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-lg font-medium">Faculty</CardTitle>
+                          <Users className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
-                          <div className="text-2xl font-bold">Manage</div>
-                          <p className="text-xs text-muted-foreground">Add, edit, and view faculty members.</p>
+                          <p className="text-sm text-muted-foreground">Add, edit, and view faculty members.</p>
                       </CardContent>
                   </Card>
               </Link>
               <Link href={`/admin/dashboard/buildings?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">Buildings</CardTitle>
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-lg font-medium">Buildings</CardTitle>
+                          <Building2 className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
-                          <div className="text-2xl font-bold">Manage</div>
-                          <p className="text-xs text-muted-foreground">Define campus buildings and rooms.</p>
+                          <p className="text-sm text-muted-foreground">Define campus buildings and rooms.</p>
                       </CardContent>
                   </Card>
               </Link>
               <Link href={`/admin/dashboard/departments?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">Departments</CardTitle>
-                          <Network className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-lg font-medium">Departments</CardTitle>
+                          <Network className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
-                          <div className="text-2xl font-bold">Manage</div>
-                          <p className="text-xs text-muted-foreground">Organize academic departments.</p>
+                          <p className="text-sm text-muted-foreground">Organize academic departments.</p>
                       </CardContent>
                   </Card>
               </Link>
               <Link href={`/admin/dashboard/subjects?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">Subjects</CardTitle>
-                          <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-lg font-medium">Subjects</CardTitle>
+                          <BookOpen className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
-                          <div className="text-2xl font-bold">Manage</div>
-                          <p className="text-xs text-muted-foreground">Create and configure subjects/courses.</p>
+                          <p className="text-sm text-muted-foreground">Create and configure subjects/courses.</p>
                       </CardContent>
                   </Card>
               </Link>
