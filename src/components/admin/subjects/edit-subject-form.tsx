@@ -1,11 +1,10 @@
-
 'use client';
 
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, BookOpen, Hash, Type, Network, BookCopy as ProgramIcon, Calendar, User } from 'lucide-react';
+import { Loader2, BookOpen, Hash, Type, Network, BookCopy as ProgramIcon, Calendar, User, ChevronsUpDown, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { Department, Program, Year } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 type FormData = z.infer<typeof UpdateSubjectSchema>;
 
@@ -52,9 +54,6 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
     },
   });
 
-  const departmentId = form.watch('departmentId');
-  const programId = form.watch('programId');
-
   const [programs, setPrograms] = React.useState<Program[]>(() => {
     const dept = departments.find(d => d.id === form.getValues('departmentId'));
     return dept?.programs || [];
@@ -76,7 +75,8 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
         form.setValue('yearId', '');
         form.setValue('facultyEmail', '');
         const selectedDept = departments.find((d) => d.id === value.departmentId);
-        setPrograms(selectedDept?.programs || []);
+        const newPrograms = selectedDept?.programs || [];
+        setPrograms(newPrograms);
         setFilteredFaculty(selectedDept ? faculty.filter(f => f.department === selectedDept.name) : []);
         setYears([]);
       }
@@ -261,25 +261,58 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
               control={form.control}
               name="facultyEmail"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Faculty</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={!departmentId || filteredFaculty.length === 0}>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <SelectTrigger className="pl-10">
-                          <SelectValue placeholder="Assign a faculty member" />
-                        </SelectTrigger>
-                      </div>
-                    </FormControl>
-                    <SelectContent>
-                      {filteredFaculty.map((f) => (
-                        <SelectItem key={f.email} value={f.email}>
-                          {f.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild disabled={!departmentId || filteredFaculty.length === 0}>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? filteredFaculty.find(
+                                (f) => f.email === field.value
+                              )?.name
+                            : "Assign a faculty member"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-96 p-0">
+                      <Command>
+                        <CommandInput placeholder="Search faculty..." />
+                        <CommandList>
+                            <CommandEmpty>No faculty found.</CommandEmpty>
+                            <CommandGroup>
+                                {filteredFaculty.map((f) => (
+                                <CommandItem
+                                    value={f.name}
+                                    key={f.email}
+                                    onSelect={() => {
+                                      form.setValue("facultyEmail", f.email)
+                                    }}
+                                >
+                                    <Check
+                                    className={cn(
+                                        "mr-2 h-4 w-4",
+                                        f.email === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                    />
+                                    {f.name}
+                                </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
