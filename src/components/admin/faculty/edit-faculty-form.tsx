@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, User, Mail, Lock, Eye, EyeOff, Building, Clock } from 'lucide-react';
+import { Loader2, User, Mail, Lock, Eye, EyeOff, Building, Clock, Type } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
     resolver: zodResolver(UpdateFacultySchema),
     defaultValues: {
       name: faculty.name,
+      abbreviation: faculty.abbreviation || '',
       email: faculty.email,
       department: faculty.department || '',
       weeklyMaxHours: faculty.weeklyMaxHours ?? 40,
@@ -98,6 +100,22 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
                   <Input placeholder="Dr. Alan Grant" {...field} className="pl-10" />
+                </FormControl>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="abbreviation"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Abbreviation</FormLabel>
+              <div className="relative">
+                <Type className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <FormControl>
+                  <Input placeholder="e.g., AG" {...field} className="pl-10" />
                 </FormControl>
               </div>
               <FormMessage />

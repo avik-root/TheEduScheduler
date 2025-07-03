@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { CalendarDays, LogOut, ChevronLeft, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -71,7 +72,7 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                               <UserCog className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                              <CardTitle className="text-xl">{faculty.name}</CardTitle>
+                              <CardTitle className="text-xl">{faculty.name} ({faculty.abbreviation})</CardTitle>
                               <CardDescription>{faculty.email}</CardDescription>
                             </div>
                           </div>

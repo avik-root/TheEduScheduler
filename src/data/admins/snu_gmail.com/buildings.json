@@ -1,0 +1,94 @@
+[
+  {
+    "id": "1751108912837",
+    "name": "Block A",
+    "floors": [
+      {
+        "id": "1751108970599-rmocosl",
+        "name": "Ground Floor",
+        "rooms": []
+      },
+      {
+        "id": "1751108970601-mav0qq9",
+        "name": "Floor 1",
+        "rooms": []
+      },
+      {
+        "id": "1751108970601-le1jy2d",
+        "name": "Floor 2",
+        "rooms": [
+          {
+            "id": "1751109193575-qeuh17o",
+            "name": "Lab1",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-wckrdnf",
+            "name": "Lab2",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-7s4t5ul",
+            "name": "Lab3",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-jab85x5",
+            "name": "Lab4",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-4fskwgo",
+            "name": "Lab5",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-0is05xb",
+            "name": "Lab6",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-gkqpyh7",
+            "name": "Lab7",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-b63t7pp",
+            "name": "Lab8",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-73lpmnk",
+            "name": "Lab9",
+            "capacity": 60
+          },
+          {
+            "id": "1751109193575-b07tsvv",
+            "name": "Lab10",
+            "capacity": 60
+          },
+          {
+            "id": "1751109222578-9aepqh6",
+            "name": "Lab11",
+            "capacity": 60
+          },
+          {
+            "id": "1751109222578-j23csr5",
+            "name": "Lab12",
+            "capacity": 60
+          }
+        ]
+      },
+      {
+        "id": "1751109164497-5j93zft",
+        "name": "Floor 3",
+        "rooms": []
+      },
+      {
+        "id": "1751109164497-p4cyzsn",
+        "name": "Floor 4",
+        "rooms": []
+      }
+    ]
+  }
+]

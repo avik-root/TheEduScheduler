@@ -1,3 +1,4 @@
+
 'use server';
 
 import fs from 'fs/promises';
@@ -83,6 +84,7 @@ export async function updateFaculty(adminEmail: string, data: UpdateFacultyData)
     
     const facultyToUpdate = facultyList[facultyIndex];
     facultyToUpdate.name = data.name;
+    facultyToUpdate.abbreviation = data.abbreviation;
     facultyToUpdate.department = data.department;
     facultyToUpdate.weeklyMaxHours = data.weeklyMaxHours;
     facultyToUpdate.weeklyOffDays = data.weeklyOffDays || [];

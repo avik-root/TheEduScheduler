@@ -1,0 +1,24 @@
+
+[
+  {
+    "name": "Dr. Tester SNU",
+    "email": "test@gmail.com",
+    "password": "$2b$10$RApXa4ms1HgtBRm0YeDNKe6qaNv.gptGkPswO8ep2Jt6Zan16PMlO",
+    "department": "CSE",
+    "weeklyMaxHours": 20,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ],
+    "abbreviation": "DTS"
+  },
+  {
+    "name": "BP",
+    "email": "bpisbizzy@gmail.com",
+    "password": "$2b$10$cHmd09I0VFydWMUVUOW1fOpRPl31OobA7ElH8e16RLevbRo3PLye.",
+    "department": "CSE",
+    "weeklyMaxHours": 24,
+    "weeklyOffDays": [],
+    "abbreviation": "BP"
+  }
+]
