@@ -93,19 +93,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
               </Card>
           </div>
           <div className="pt-8 grid gap-6">
-             <RoomAvailabilityChecker
-                userRole="faculty"
-                allRooms={allRooms}
-                schedule={schedule}
-                adminEmail={adminEmail}
-                facultyInfo={{ email: faculty.email, name: faculty.name }}
-            />
-            <MyRequestsList 
-                initialRequests={initialRequests} 
-                adminEmail={adminEmail} 
-                facultyEmail={faculty.email}
-            />
-             <Card>
+            <Card>
                 <CardHeader>
                     <CardTitle>My Weekly Schedule</CardTitle>
                     <CardDescription>Your class schedule for the upcoming week. This is filtered to show only your classes.</CardDescription>
@@ -124,6 +112,18 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     </div>
                 </CardContent>
             </Card>
+            <RoomAvailabilityChecker
+                userRole="faculty"
+                allRooms={allRooms}
+                schedule={schedule}
+                adminEmail={adminEmail}
+                facultyInfo={{ email: faculty.email, name: faculty.name }}
+            />
+            <MyRequestsList 
+                initialRequests={initialRequests} 
+                adminEmail={adminEmail} 
+                facultyEmail={faculty.email}
+            />
           </div>
         </div>
   );
