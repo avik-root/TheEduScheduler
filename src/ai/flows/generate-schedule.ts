@@ -17,7 +17,6 @@ const GenerateScheduleInputSchema = z.object({
     .describe('Specific time constraints for the schedule (e.g., "Lunch break from 1 PM to 2 PM").'),
   availableRooms: z
     .array(z.string())
-    .min(1, 'At least one room must be selected.')
     .describe('The names of the specific rooms available for scheduling.'),
   roomAvailability: z
     .object({
