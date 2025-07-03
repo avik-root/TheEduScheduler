@@ -16,6 +16,7 @@ const CheckRoomAvailabilityInputSchema = z.object({
     .array(z.string())
     .min(1, 'At least one room must be selected.')
     .describe('The names of the specific rooms to check for availability.'),
+  isCheckingAll: z.boolean().optional().describe('If true, it implies the user is searching for any available room from a large list.'),
   startTime: z.string().describe('The start of the time range to check (e.g., "10:30").'),
   endTime: z.string().describe('The end of the time range to check (e.g., "11:00").'),
   date: z.string().optional().describe('The specific date to check (e.g., "2024-07-26").'),
@@ -50,9 +51,11 @@ const prompt = ai.definePrompt({
   output: {schema: CheckRoomAvailabilityOutputSchema},
   prompt: `You are an AI assistant that checks room availability based on a provided schedule.
 
-You will be given a list of rooms to check, a time range, and specific days or a specific date. You will also receive the current schedule.
-
+{{#if isCheckingAll}}
+IMPORTANT: The user wants to find *any* available room. Your response in the 'availability' array should ONLY include rooms that are 'Available'. Do not include 'Unavailable' or 'Partially Available' rooms in the list.
+{{else}}
 Your task is to analyze the schedule and determine for each of the requested rooms whether it is 'Available', 'Unavailable', or 'Partially Available' during the specified time slot on the given days/date.
+{{/if}}
 
 - **If 'Available'**: The room is not booked during the specified time. In the 'reason' field, analyze the rest of the day's schedule for that room and state until what time it remains free. For example: "Available until 3:00 PM". If it's free for the rest of the working day, state "Available for the rest of the day".
 
@@ -60,7 +63,10 @@ Your task is to analyze the schedule and determine for each of the requested roo
 
 - **If 'Partially Available'**: The room is booked for some, but not all, of the specified time or days. Provide details in the reason, explaining the conflict.
 
+{{#unless isCheckingAll}}
 Rooms to check: {{#each roomsToCheck}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+{{/unless}}
+
 Time range: From {{startTime}} to {{endTime}}
 {{#if date}}
 Date: {{date}}
@@ -73,7 +79,12 @@ Current Schedule to analyze:
 {{{schedule}}}
 \`\`\`
 
-Based on your analysis, provide the status for each room and a final summary. The summary should be a concise overview.`,
+Based on your analysis, provide the status for each room and a final summary.
+{{#if isCheckingAll}}
+The summary should state how many rooms are available in total. For example: "Found 5 available rooms."
+{{else}}
+The summary should be a concise overview. For example: "3 of 5 rooms are fully available."
+{{/if}}`,
 });
 
 const checkRoomAvailabilityFlow = ai.defineFlow(

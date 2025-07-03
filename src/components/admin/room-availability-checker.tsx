@@ -29,7 +29,7 @@ const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sat
 
 const AdminCheckerSchema = z.object({
   roomsToCheck: z.array(z.string()).refine((value) => value.length > 0, {
-    message: 'You have to select at least one room to check.',
+    message: 'You have to select at least one room or "Any Room".',
   }),
   startTime: z.string().min(1, 'Start time is required.'),
   endTime: z.string().min(1, 'End time is required.'),
@@ -40,7 +40,7 @@ const AdminCheckerSchema = z.object({
 
 const FacultyCheckerSchema = z.object({
   roomsToCheck: z.array(z.string()).refine((value) => value.length > 0, {
-    message: 'You have to select at least one room to check.',
+    message: 'You have to select at least one room or "Any Room".',
   }),
   startTime: z.string().min(1, 'Start time is required.'),
   endTime: z.string().min(1, 'End time is required.'),
@@ -123,17 +123,24 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
     setIsLoading(true);
     setAvailabilityResult(null);
 
+    const isCheckingAll = data.roomsToCheck.includes('__ANY_ROOM__');
+    const roomsForApi = isCheckingAll ? allRooms.map(r => r.name) : data.roomsToCheck;
+
     let input: CheckRoomAvailabilityInput;
 
     if ('date' in data && data.date) {
         input = {
             ...data,
+            roomsToCheck: roomsForApi,
+            isCheckingAll,
             date: format(data.date, 'yyyy-MM-dd'),
             schedule
         };
     } else if ('days' in data) {
          input = {
             ...data,
+            roomsToCheck: roomsForApi,
+            isCheckingAll,
             days: data.days,
             schedule,
         };
@@ -225,6 +232,9 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                           >
                             <div className="flex flex-wrap gap-1">
                               {field.value?.length > 0 ? (
+                                field.value[0] === '__ANY_ROOM__' ? (
+                                    <Badge variant="secondary">Any Room</Badge>
+                                ) : (
                                 field.value.map((roomName) => {
                                   const room = allRooms.find(r => r.name === roomName);
                                   return (
@@ -241,6 +251,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                     </Badge>
                                   )
                                 })
+                                )
                               ) : (
                                 "Select rooms to check..."
                               )}
@@ -255,6 +266,25 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                            <CommandList>
                             <CommandEmpty>No rooms found.</CommandEmpty>
                             <CommandGroup>
+                                <CommandItem
+                                    key="__ANY_ROOM__"
+                                    value="__ANY_ROOM__"
+                                    onSelect={() => {
+                                        const isAnySelected = field.value?.includes('__ANY_ROOM__');
+                                        field.onChange(isAnySelected ? [] : ['__ANY_ROOM__']);
+                                    }}
+                                >
+                                    <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value?.includes('__ANY_ROOM__')
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                    />
+                                    <span>Any Room</span>
+                                </CommandItem>
+                                <Separator className="my-1" />
                               {allRooms.map((room) => (
                                 <CommandItem
                                   key={room.id}
@@ -262,9 +292,12 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                   onSelect={() => {
                                     const selected = field.value || [];
                                     const isSelected = selected.includes(room.name);
-                                    const newSelected = isSelected
+                                    let newSelected = isSelected
                                       ? selected.filter((r) => r !== room.name)
                                       : [...selected, room.name];
+                                    
+                                    newSelected = newSelected.filter(r => r !== '__ANY_ROOM__');
+
                                     field.onChange(newSelected);
                                   }}
                                   className="flex items-center justify-between"
