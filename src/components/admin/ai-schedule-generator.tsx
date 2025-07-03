@@ -8,25 +8,14 @@ import { Loader2, BrainCircuit } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
-import { Checkbox } from '@/components/ui/checkbox';
 import type { Room } from '@/lib/buildings';
-
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
 
 const ScheduleGeneratorSchema = z.object({
   timeConstraints: z.string().min(1, 'Time constraints are required.'),
-  roomAvailability: z.object({
-    startTime: z.string().min(1, 'Start time is required.'),
-    endTime: z.string().min(1, 'End time is required.'),
-    days: z.array(z.string()).refine((value) => value.some((item) => item), {
-        message: "You have to select at least one day.",
-    }),
-  }),
   theoryPriorities: z.string().min(1, 'Theory priorities are required.'),
   labPriorities: z.string().min(1, 'Lab priorities are required.'),
 });
@@ -46,12 +35,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   const form = useForm<FormData>({
     resolver: zodResolver(ScheduleGeneratorSchema),
     defaultValues: {
-      timeConstraints: 'Classes only between 9 AM and 5 PM. Lunch break from 1 PM to 2 PM.',
-      roomAvailability: {
-        startTime: '09:00',
-        endTime: '17:00',
-        days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-      },
+      timeConstraints: 'Classes only between 9 AM and 5 PM on weekdays (Monday to Friday). Lunch break from 1 PM to 2 PM.',
       theoryPriorities: 'High priority: Calculus 101, Physics 101. Medium priority: History 202.',
       labPriorities: 'High priority: Chemistry Lab. Must be in a lab room. Low priority: Computer Lab session.',
     },
@@ -102,7 +86,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                     <FormLabel>Global Time Constraints</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., Lunch break from 1 PM to 2 PM."
+                        placeholder="e.g., Classes from 9 AM to 5 PM, Monday to Friday. Lunch break from 1 PM to 2 PM."
                         {...field}
                       />
                     </FormControl>
@@ -110,83 +94,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                   </FormItem>
                 )}
               />
-              
-              <div className="grid grid-cols-1 gap-6">
-                <FormField
-                  control={form.control}
-                  name="roomAvailability"
-                  render={() => (
-                     <FormItem>
-                        <FormLabel>Room Availability Times</FormLabel>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="roomAvailability.startTime"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs text-muted-foreground">Start Time</FormLabel>
-                                        <FormControl>
-                                            <Input type="time" {...field} />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="roomAvailability.endTime"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs text-muted-foreground">End Time</FormLabel>
-                                        <FormControl>
-                                            <Input type="time" {...field} />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                             />
-                        </div>
-                         <div className="pt-2">
-                            <FormLabel className="text-xs text-muted-foreground">Available Days</FormLabel>
-                             <div className="grid grid-cols-3 gap-2 rounded-lg border p-2 sm:grid-cols-4">
-                                {daysOfWeek.map((day) => (
-                                  <FormField
-                                    key={day}
-                                    control={form.control}
-                                    name="roomAvailability.days"
-                                    render={({ field }) => {
-                                      return (
-                                        <FormItem
-                                          key={day}
-                                          className="flex flex-row items-start space-x-2 space-y-0"
-                                        >
-                                          <FormControl>
-                                            <Checkbox
-                                              checked={field.value?.includes(day)}
-                                              onCheckedChange={(checked) => {
-                                                return checked
-                                                  ? field.onChange([...(field.value || []), day])
-                                                  : field.onChange(
-                                                      field.value?.filter(
-                                                        (value) => value !== day
-                                                      )
-                                                    )
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="text-sm font-normal">
-                                            {day}
-                                          </FormLabel>
-                                        </FormItem>
-                                      )
-                                    }}
-                                  />
-                                ))}
-                              </div>
-                            <FormMessage>{form.formState.errors.roomAvailability?.days?.message}</FormMessage>
-                        </div>
-                     </FormItem>
-                  )}
-                />
-              </div>
 
                <FormField
                 control={form.control}

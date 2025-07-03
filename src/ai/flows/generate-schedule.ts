@@ -14,17 +14,10 @@ import {z} from 'genkit';
 const GenerateScheduleInputSchema = z.object({
   timeConstraints: z
     .string()
-    .describe('Specific time constraints for the schedule (e.g., "Lunch break from 1 PM to 2 PM").'),
+    .describe('Specific time constraints for the schedule (e.g., "Classes only between 9 AM and 5 PM on weekdays. Lunch break from 1 PM to 2 PM.").'),
   availableRooms: z
     .array(z.string())
     .describe('The names of the specific rooms available for scheduling.'),
-  roomAvailability: z
-    .object({
-      startTime: z.string().describe('The start time for room availability (e.g., "09:00").'),
-      endTime: z.string().describe('The end time for room availability (e.g., "17:00").'),
-      days: z.array(z.string()).describe('The days of the week when rooms are available (e.g., ["Monday", "Friday"]).'),
-    })
-    .describe('The specific times and days the rooms are available.'),
   theoryPriorities: z
     .string()
     .describe('Priorities for theory-based courses.'),
@@ -55,13 +48,12 @@ Global Time Constraints: {{{timeConstraints}}}
 
 Resource Availability:
 - Available Rooms: {{#if availableRooms}}{{#each availableRooms}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}No rooms specified.{{/if}}
-- Room Availability Times: From {{roomAvailability.startTime}} to {{roomAvailability.endTime}} on {{#each roomAvailability.days}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
 
 Task and Course Priorities:
 - Theory Classes: {{{theoryPriorities}}}
 - Lab/Practical Sessions: {{{labPriorities}}}
 
-Generate a detailed schedule based on this information. Present the schedule clearly, for example using a Markdown table. Ensure lab sessions are scheduled within the available times and consider that they might require specific types of rooms if mentioned in the priorities.
+Generate a detailed schedule based on this information. Present the schedule clearly, for example using a Markdown table. Ensure all sessions are scheduled within the global time constraints and in the rooms provided. Consider that lab sessions might require specific types of rooms if mentioned in the priorities.
 
 Schedule:`,
 });
