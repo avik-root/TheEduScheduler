@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Room } from '@/lib/buildings';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator';
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
 
@@ -91,184 +92,180 @@ export function RoomAvailabilityChecker({ allRooms, schedule }: RoomAvailability
   };
 
   return (
-    <div className="grid gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Room Availability Checker</CardTitle>
-          <CardDescription>
-            Check room availability against the currently generated schedule. First, generate a schedule, then use this tool to query it.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="roomsToCheck"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Rooms to Check</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              className={cn(
-                                "w-full justify-between h-auto min-h-10",
-                                !field.value?.length && "text-muted-foreground"
-                              )}
-                            >
-                              <div className="flex flex-wrap gap-1">
-                                {field.value?.length > 0 ? (
-                                  field.value.map((roomName) => (
-                                    <Badge
-                                      key={roomName}
-                                      variant="secondary"
-                                    >
-                                      {roomName}
-                                    </Badge>
-                                  ))
-                                ) : (
-                                  "Select rooms to check..."
-                                )}
-                              </div>
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
-                          <Command>
-                            <CommandInput placeholder="Search rooms..." />
-                             <CommandList>
-                              <CommandEmpty>No rooms found.</CommandEmpty>
-                              <CommandGroup>
-                                {allRooms.map((room) => (
-                                  <CommandItem
-                                    key={room.id}
-                                    value={room.name}
-                                    onSelect={() => {
-                                      const selected = field.value || [];
-                                      const isSelected = selected.includes(room.name);
-                                      const newSelected = isSelected
-                                        ? selected.filter((r) => r !== room.name)
-                                        : [...selected, room.name];
-                                      field.onChange(newSelected);
-                                    }}
+    <Card>
+      <CardHeader>
+        <CardTitle>Room Availability Checker</CardTitle>
+        <CardDescription>
+          Check room availability against the currently generated schedule. First, generate a schedule, then use this tool to query it.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="roomsToCheck"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Rooms to Check</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between h-auto min-h-10",
+                              !field.value?.length && "text-muted-foreground"
+                            )}
+                          >
+                            <div className="flex flex-wrap gap-1">
+                              {field.value?.length > 0 ? (
+                                field.value.map((roomName) => (
+                                  <Badge
+                                    key={roomName}
+                                    variant="secondary"
                                   >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        (field.value || []).includes(room.name)
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {room.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormItem>
-                    <FormLabel>Availability Time & Days</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="startTime"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> Start Time</FormLabel>
-                                    <FormControl>
-                                        <Input type="time" {...field} />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="endTime"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> End Time</FormLabel>
-                                    <FormControl>
-                                        <Input type="time" {...field} />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                            />
-                    </div>
-                        <div className="pt-2">
-                        <FormLabel className="text-xs text-muted-foreground flex items-center gap-2 mb-2"><Calendar className="h-3 w-3" /> Available Days</FormLabel>
-                            <div className="grid grid-cols-3 gap-2 rounded-lg border p-2 sm:grid-cols-4">
-                            {daysOfWeek.map((day) => (
-                                <FormField
-                                key={day}
-                                control={form.control}
-                                name="days"
-                                render={({ field }) => {
-                                    return (
-                                    <FormItem
-                                        key={day}
-                                        className="flex flex-row items-start space-x-2 space-y-0"
-                                    >
-                                        <FormControl>
-                                        <Checkbox
-                                            checked={field.value?.includes(day)}
-                                            onCheckedChange={(checked) => {
-                                            return checked
-                                                ? field.onChange([...(field.value || []), day])
-                                                : field.onChange(
-                                                    field.value?.filter(
-                                                    (value) => value !== day
-                                                    )
-                                                )
-                                            }}
-                                        />
-                                        </FormControl>
-                                        <FormLabel className="text-sm font-normal">
-                                        {day}
-                                        </FormLabel>
-                                    </FormItem>
-                                    )
-                                }}
-                                />
-                            ))}
+                                    {roomName}
+                                  </Badge>
+                                ))
+                              ) : (
+                                "Select rooms to check..."
+                              )}
                             </div>
-                        <FormMessage>{form.formState.errors.days?.message}</FormMessage>
-                    </div>
-                </FormItem>
-              </div>
-
-              <Button type="submit" className="w-fit" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="mr-2 h-4 w-4" />
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search rooms..." />
+                           <CommandList>
+                            <CommandEmpty>No rooms found.</CommandEmpty>
+                            <CommandGroup>
+                              {allRooms.map((room) => (
+                                <CommandItem
+                                  key={room.id}
+                                  value={room.name}
+                                  onSelect={() => {
+                                    const selected = field.value || [];
+                                    const isSelected = selected.includes(room.name);
+                                    const newSelected = isSelected
+                                      ? selected.filter((r) => r !== room.name)
+                                      : [...selected, room.name];
+                                    field.onChange(newSelected);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      (field.value || []).includes(room.name)
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {room.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                Check Availability
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+              />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Availability Results</CardTitle>
-          <CardDescription>
+              <FormItem>
+                  <FormLabel>Availability Time & Days</FormLabel>
+                  <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                          control={form.control}
+                          name="startTime"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> Start Time</FormLabel>
+                                  <FormControl>
+                                      <Input type="time" {...field} />
+                                  </FormControl>
+                              </FormItem>
+                          )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="endTime"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> End Time</FormLabel>
+                                  <FormControl>
+                                      <Input type="time" {...field} />
+                                  </FormControl>
+                              </FormItem>
+                          )}
+                          />
+                  </div>
+                      <div className="pt-2">
+                      <FormLabel className="text-xs text-muted-foreground flex items-center gap-2 mb-2"><Calendar className="h-3 w-3" /> Available Days</FormLabel>
+                          <div className="grid grid-cols-3 gap-2 rounded-lg border p-2 sm:grid-cols-4">
+                          {daysOfWeek.map((day) => (
+                              <FormField
+                              key={day}
+                              control={form.control}
+                              name="days"
+                              render={({ field }) => {
+                                  return (
+                                  <FormItem
+                                      key={day}
+                                      className="flex flex-row items-start space-x-2 space-y-0"
+                                  >
+                                      <FormControl>
+                                      <Checkbox
+                                          checked={field.value?.includes(day)}
+                                          onCheckedChange={(checked) => {
+                                          return checked
+                                              ? field.onChange([...(field.value || []), day])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                  (value) => value !== day
+                                                  )
+                                              )
+                                          }}
+                                      />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal">
+                                      {day}
+                                      </FormLabel>
+                                  </FormItem>
+                                  )
+                              }}
+                              />
+                          ))}
+                          </div>
+                      <FormMessage>{form.formState.errors.days?.message}</FormMessage>
+                  </div>
+              </FormItem>
+            </div>
+
+            <Button type="submit" className="w-fit" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="mr-2 h-4 w-4" />
+              )}
+              Check Availability
+            </Button>
+          </form>
+        </Form>
+        
+        <Separator />
+
+        <div>
+          <h3 className="text-lg font-medium">Availability Results</h3>
+          <p className="text-sm text-muted-foreground mb-4">
             The table below shows the availability status of the selected rooms.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
           {isLoading ? (
               <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -309,8 +306,8 @@ export function RoomAvailabilityChecker({ allRooms, schedule }: RoomAvailability
               <p className="text-muted-foreground">Availability results will appear here...</p>
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
