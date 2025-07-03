@@ -27,7 +27,9 @@ export type CheckRoomAvailabilityInput = z.infer<typeof CheckRoomAvailabilityInp
 const RoomStatusSchema = z.object({
   name: z.string().describe('The name of the room.'),
   status: z.enum(['Available', 'Unavailable', 'Partially Available']).describe('The availability status of the room.'),
-  reason: z.string().optional().describe('Reason for unavailability or partial availability (e.g., "Booked for Physics 101 from 10:00-11:00").'),
+  reason: z.string().optional().describe(
+    'Detailed information about the status. If unavailable, specify the class, section, year, and time (e.g., "Booked for Physics 101 (Year 1, Section A) from 10:00-11:00"). If available, specify until when (e.g., "Available until 2:00 PM").'
+  ),
 });
 
 const CheckRoomAvailabilityOutputSchema = z.object({
@@ -52,9 +54,11 @@ You will be given a list of rooms to check, a time range, and specific days or a
 
 Your task is to analyze the schedule and determine for each of the requested rooms whether it is 'Available', 'Unavailable', or 'Partially Available' during the specified time slot on the given days/date.
 
-- 'Available': The room is not booked at all during the specified time.
-- 'Unavailable': The room is fully booked during the specified time. Provide the reason (e.g., what class it's booked for).
-- 'Partially Available': The room is booked for some, but not all, of the specified time or days. Provide details in the reason.
+- **If 'Available'**: The room is not booked during the specified time. In the 'reason' field, analyze the rest of the day's schedule for that room and state until what time it remains free. For example: "Available until 3:00 PM". If it's free for the rest of the working day, state "Available for the rest of the day".
+
+- **If 'Unavailable'**: The room is fully booked during the specified time. In the 'reason' field, provide the full details of the conflict from the schedule, including the Class name, Section, Year, and the exact booking time. For example: "Booked for Physics 101 (Year 2, Section A) from 10:00-11:00".
+
+- **If 'Partially Available'**: The room is booked for some, but not all, of the specified time or days. Provide details in the reason, explaining the conflict.
 
 Rooms to check: {{#each roomsToCheck}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 Time range: From {{startTime}} to {{endTime}}
@@ -69,7 +73,7 @@ Current Schedule to analyze:
 {{{schedule}}}
 \`\`\`
 
-Based on your analysis, provide the status for each room and a final summary.`,
+Based on your analysis, provide the status for each room and a final summary. The summary should be a concise overview.`,
 });
 
 const checkRoomAvailabilityFlow = ai.defineFlow(
