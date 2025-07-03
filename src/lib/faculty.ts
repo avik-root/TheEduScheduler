@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { FacultySchema, UpdateFacultySchema, LoginSchema } from '@/lib/validators/auth';
+import { FacultySchema, UpdateFacultySchema, LoginSchema, FacultyChangePasswordSchema } from '@/lib/validators/auth';
 import { getAdminDataPath } from './common';
 import { getAdminEmails } from './admin';
 
@@ -14,6 +14,8 @@ const facultyFileName = 'faculty.json';
 export type Faculty = z.infer<typeof FacultySchema>;
 type UpdateFacultyData = z.infer<typeof UpdateFacultySchema>;
 type LoginData = z.infer<typeof LoginSchema>;
+type ChangePasswordData = z.infer<typeof FacultyChangePasswordSchema>;
+
 
 async function getFacultyFilePath(adminEmail: string): Promise<string> {
     const adminDataPath = await getAdminDataPath(adminEmail);
@@ -138,4 +140,39 @@ export async function loginFaculty(credentials: LoginData): Promise<{ success: b
     }
 
     return { success: false, message: 'Invalid email or password.' };
+}
+
+export async function changeFacultyPassword(data: ChangePasswordData): Promise<{ success: boolean; message: string }> {
+    const { adminEmail, email, currentPassword, password: newPassword } = data;
+    
+    if (!adminEmail) {
+        return { success: false, message: 'Admin context is missing.' };
+    }
+
+    const facultyList = await readFacultyFile(adminEmail);
+
+    const facultyIndex = facultyList.findIndex(f => f.email === email);
+    if (facultyIndex === -1) {
+        return { success: false, message: 'Faculty member not found.' };
+    }
+    
+    const facultyToUpdate = facultyList[facultyIndex];
+
+    const passwordMatch = await bcrypt.compare(currentPassword, facultyToUpdate.password);
+    if (!passwordMatch) {
+        return { success: false, message: "Incorrect current password." };
+    }
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    facultyToUpdate.password = hashedPassword;
+    
+    facultyList[facultyIndex] = facultyToUpdate;
+
+    try {
+        await writeFacultyFile(adminEmail, facultyList);
+        return { success: true, message: 'Password changed successfully.' };
+    } catch (error) {
+        console.error('Failed to change faculty password:', error);
+        return { success: false, message: 'An internal error occurred. Please try again.' };
+    }
 }

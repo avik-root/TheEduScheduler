@@ -82,6 +82,17 @@ export const UpdateFacultySchema = z.object({
     path: ["confirmPassword"],
 });
 
+export const FacultyChangePasswordSchema = z.object({
+  email: z.string().email(),
+  adminEmail: z.string().email(),
+  currentPassword: z.string().min(1, { message: 'Current password is required.' }),
+  password: z.string().min(8, { message: 'New password must be at least 8 characters.' }),
+  confirmPassword: z.string().min(8, { message: 'Please confirm your new password.' }),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "New passwords do not match.",
+  path: ["confirmPassword"],
+});
+
 export const BuildingSchema = z.object({
   name: z.string().min(2, { message: 'Building name must be at least 2 characters.' }),
 });
