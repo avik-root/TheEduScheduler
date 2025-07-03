@@ -45,7 +45,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: D
               <Link href={`/admin/dashboard/faculty?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-lg font-medium">Faculty</CardTitle>
+                          <CardTitle className="text-lg font-semibold">Faculty</CardTitle>
                           <Users className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
@@ -56,7 +56,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: D
               <Link href={`/admin/dashboard/buildings?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-lg font-medium">Buildings</CardTitle>
+                          <CardTitle className="text-lg font-semibold">Buildings</CardTitle>
                           <Building2 className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
@@ -67,7 +67,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: D
               <Link href={`/admin/dashboard/departments?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-lg font-medium">Departments</CardTitle>
+                          <CardTitle className="text-lg font-semibold">Departments</CardTitle>
                           <Network className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
@@ -78,7 +78,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: D
               <Link href={`/admin/dashboard/subjects?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-lg font-medium">Subjects</CardTitle>
+                          <CardTitle className="text-lg font-semibold">Subjects</CardTitle>
                           <BookOpen className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
