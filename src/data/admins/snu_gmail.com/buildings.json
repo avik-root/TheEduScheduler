@@ -94,6 +94,78 @@
   {
     "id": "1751563341222",
     "name": "Block B",
-    "floors": []
+    "floors": [
+      {
+        "id": "1751563454404-6p54ptl",
+        "name": "Floor 2",
+        "rooms": [
+          {
+            "id": "1751563471627-0dw27cf",
+            "name": "Room 1",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-g7ybqdv",
+            "name": "Room 2",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-q67y130",
+            "name": "Room 3",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-li3ml76",
+            "name": "Room 4",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-cv5cw50",
+            "name": "Room 5",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-my0ch6l",
+            "name": "Room 6",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-61i8p7l",
+            "name": "Room 7",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-qygplih",
+            "name": "Room 8",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-xoyopw3",
+            "name": "Room 9",
+            "capacity": 60
+          },
+          {
+            "id": "1751563471627-jwpi07y",
+            "name": "Room 10",
+            "capacity": 60
+          }
+        ]
+      },
+      {
+        "id": "1751563454404-xgi4z2u",
+        "name": "Floor 3",
+        "rooms": []
+      },
+      {
+        "id": "1751563454404-v4l0evj",
+        "name": "Floor 4",
+        "rooms": []
+      },
+      {
+        "id": "1751563454404-lguv8lq",
+        "name": "Floor 5",
+        "rooms": []
+      }
+    ]
   }
 ]

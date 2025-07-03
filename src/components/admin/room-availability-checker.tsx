@@ -98,6 +98,15 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
 
   const startTime = form.watch('startTime');
 
+  const roomToBuildingMap = React.useMemo(() => {
+    return allRooms.reduce((acc, room) => {
+        if (room.buildingName) {
+            acc[room.name] = room.buildingName;
+        }
+        return acc;
+    }, {} as Record<string, string>);
+  }, [allRooms]);
+
   React.useEffect(() => {
     if (isFaculty && startTime) {
       try {
@@ -225,14 +234,17 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                           >
                             <div className="flex flex-wrap gap-1">
                               {field.value?.length > 0 ? (
-                                field.value.map((roomName) => (
-                                  <Badge
-                                    key={roomName}
-                                    variant="secondary"
-                                  >
-                                    {roomName}
-                                  </Badge>
-                                ))
+                                field.value.map((roomName) => {
+                                  const room = allRooms.find(r => r.name === roomName);
+                                  return (
+                                    <Badge
+                                      key={roomName}
+                                      variant="secondary"
+                                    >
+                                      {roomName} {room?.buildingName && `(${room.buildingName})`}
+                                    </Badge>
+                                  )
+                                })
                               ) : (
                                 "Select rooms to check..."
                               )}
@@ -269,6 +281,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                     )}
                                   />
                                   {room.name}
+                                  {room.buildingName && <span className="ml-2 text-xs text-muted-foreground">({room.buildingName})</span>}
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -436,7 +449,14 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                         <TableBody>
                             {availabilityResult.availability.map((room) => (
                                 <TableRow key={room.name}>
-                                    <TableCell className="font-medium">{room.name}</TableCell>
+                                    <TableCell className="font-medium">
+                                        <div>{room.name}</div>
+                                        {roomToBuildingMap[room.name] && (
+                                            <div className="text-xs text-muted-foreground">
+                                                ({roomToBuildingMap[room.name]})
+                                            </div>
+                                        )}
+                                    </TableCell>
                                     <TableCell>
                                         <Badge className={cn("text-xs", getStatusColor(room.status))}>
                                             {room.status}
