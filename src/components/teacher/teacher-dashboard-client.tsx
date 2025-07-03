@@ -1,13 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { User, Clock, CalendarOff, Building, Settings, SearchCheck } from 'lucide-react';
+import { User, Clock, CalendarOff, Settings, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Faculty } from '@/lib/faculty';
 import type { Admin } from '@/lib/admin';
 import type { Room } from '@/lib/buildings';
 import { ChangePasswordDialog } from '@/components/teacher/change-password-dialog';
 import { RoomAvailabilityChecker } from '../admin/room-availability-checker';
+import type { RoomRequest } from '@/lib/requests';
+import { MyRequestsList } from './my-requests-list';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -15,9 +17,23 @@ interface TeacherDashboardClientProps {
     adminEmail: string;
     allRooms: Room[];
     schedule: string;
+    initialRequests: RoomRequest[];
 }
 
-export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule }: TeacherDashboardClientProps) {
+export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule, initialRequests }: TeacherDashboardClientProps) {
+
+  const mySchedule = React.useMemo(() => {
+    if (!schedule || !faculty.abbreviation) return '';
+    const lines = schedule.split('\n');
+    const header = lines[0];
+    const separator = lines[1];
+    const myLines = lines.slice(2).filter(line => line.includes(`(${faculty.abbreviation})`));
+    
+    if (myLines.length === 0) return '';
+    
+    return [header, separator, ...myLines].join('\n');
+  }, [schedule, faculty.abbreviation]);
+
   return (
      <div className="mx-auto grid w-full max-w-6xl gap-6">
           <div className="my-8">
@@ -84,14 +100,27 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                 adminEmail={adminEmail}
                 facultyInfo={{ email: faculty.email, name: faculty.name }}
             />
+            <MyRequestsList 
+                initialRequests={initialRequests} 
+                adminEmail={adminEmail} 
+                facultyEmail={faculty.email}
+            />
              <Card>
                 <CardHeader>
                     <CardTitle>My Weekly Schedule</CardTitle>
-                    <CardDescription>Your class schedule for the upcoming week.</CardDescription>
+                    <CardDescription>Your class schedule for the upcoming week. This is filtered to show only your classes.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     <div className="rounded-lg border bg-muted p-4 text-center">
-                        <p className="text-muted-foreground">Your generated schedule will appear here once it is published by the admin.</p>
+                     <div className="min-h-[200px] rounded-lg border bg-muted p-4 whitespace-pre-wrap">
+                        {mySchedule ? (
+                            <p>{mySchedule}</p>
+                        ) : (
+                            <div className="flex h-full items-center justify-center pt-16">
+                                <p className="text-muted-foreground text-center">
+                                    {schedule ? "You have no classes in the published schedule." : "Your schedule will appear here once it is published by the admin."}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Check, X, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RoomRequest } from '@/lib/requests';
-import { updateRequestStatus } from '@/lib/requests';
+import { updateRequestStatus, getRoomRequests } from '@/lib/requests';
 
 interface RoomRequestsProps {
     initialRequests: RoomRequest[];
@@ -20,6 +20,15 @@ export function RoomRequests({ initialRequests, adminEmail }: RoomRequestsProps)
     const [requests, setRequests] = React.useState<RoomRequest[]>(initialRequests);
     const [loadingStates, setLoadingStates] = React.useState<Record<string, boolean>>({});
     const { toast } = useToast();
+
+    React.useEffect(() => {
+        const interval = setInterval(async () => {
+            const latestRequests = await getRoomRequests(adminEmail);
+            setRequests(latestRequests);
+        }, 5000); // Poll every 5 seconds
+
+        return () => clearInterval(interval); // Cleanup on component unmount
+    }, [adminEmail]);
 
     const handleUpdateStatus = async (requestId: string, status: 'approved' | 'rejected') => {
         setLoadingStates(prev => ({ ...prev, [requestId]: true }));
@@ -58,7 +67,7 @@ export function RoomRequests({ initialRequests, adminEmail }: RoomRequestsProps)
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Inbox /> Room Requests</CardTitle>
                 <CardDescription>
-                    Review and respond to temporary room booking requests from faculty.
+                    Review and respond to temporary room booking requests from faculty. This list updates automatically.
                 </CardDescription>
             </CardHeader>
             <CardContent>

@@ -11,6 +11,7 @@ import { getAdminByEmail } from '@/lib/admin';
 import { TeacherDashboardClient } from '@/components/teacher/teacher-dashboard-client';
 import { getAllRooms } from '@/lib/buildings';
 import { getPublishedSchedule } from '@/lib/schedule';
+import { getFacultyRoomRequests } from '@/lib/requests';
 
 export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
   const facultyEmail = searchParams.email;
@@ -24,6 +25,7 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
   const admin = await getAdminByEmail(adminEmail);
   const allRooms = await getAllRooms(adminEmail);
   const publishedSchedule = await getPublishedSchedule(adminEmail);
+  const myRequests = await getFacultyRoomRequests(adminEmail, facultyEmail);
   
   if (!faculty) {
       notFound();
@@ -52,7 +54,14 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
           </div>
       </header>
       <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-        <TeacherDashboardClient faculty={faculty} admin={admin} adminEmail={adminEmail} allRooms={allRooms} schedule={publishedSchedule} />
+        <TeacherDashboardClient 
+            faculty={faculty} 
+            admin={admin} 
+            adminEmail={adminEmail} 
+            allRooms={allRooms} 
+            schedule={publishedSchedule}
+            initialRequests={myRequests}
+        />
       </main>
        <footer className="mt-auto border-t bg-background px-4 py-4 md:px-6">
         <div className="container mx-auto flex items-center justify-center">

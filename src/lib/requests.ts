@@ -52,6 +52,12 @@ export async function getRoomRequests(adminEmail: string): Promise<RoomRequest[]
     return await readRequestsFile(adminEmail);
 }
 
+export async function getFacultyRoomRequests(adminEmail: string, facultyEmail: string): Promise<RoomRequest[]> {
+    if (!adminEmail || !facultyEmail) return [];
+    const allRequests = await readRequestsFile(adminEmail);
+    return allRequests.filter(req => req.facultyEmail === facultyEmail);
+}
+
 export async function createRoomRequest(adminEmail: string, requestData: RoomRequestData): Promise<{ success: boolean; message: string }> {
     const requests = await readRequestsFile(adminEmail);
     const newRequest: RoomRequest = {
