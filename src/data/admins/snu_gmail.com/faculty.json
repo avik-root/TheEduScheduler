@@ -55,5 +55,17 @@
       "Sunday",
       "Saturday"
     ]
+  },
+  {
+    "name": "Dr. Sadip Midya",
+    "abbreviation": "SM",
+    "email": "sadipmidya.1@themintfire.com",
+    "password": "$2b$10$1furahN6MQRrPdUGAPhbB.gzQi3U/UoQAOHBpLaLS6p78T5qiufoS",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]

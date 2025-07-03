@@ -65,6 +65,20 @@ export async function getBuildingById(adminEmail: string, id: string): Promise<B
     return buildings.find(b => b.id === id) || null;
 }
 
+export async function getAllRooms(adminEmail: string): Promise<Room[]> {
+    if (!adminEmail) return [];
+    const buildings = await readBuildingsFile(adminEmail);
+    const allRooms: Room[] = [];
+    for (const building of buildings) {
+        for (const floor of building.floors) {
+            for (const room of floor.rooms) {
+                allRooms.push(room);
+            }
+        }
+    }
+    return allRooms;
+}
+
 export async function createBuilding(adminEmail: string, data: BuildingData): Promise<{ success: boolean; message: string }> {
     const buildings = await readBuildingsFile(adminEmail);
     const newBuilding: Building = {

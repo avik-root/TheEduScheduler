@@ -18,9 +18,17 @@ import {
 } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
 import { AiScheduleGenerator } from '@/components/admin/ai-schedule-generator';
+import { getAllRooms } from '@/lib/buildings';
+import { notFound } from 'next/navigation';
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
-  const admin = searchParams.email ? await getAdminByEmail(searchParams.email) : null;
+  const adminEmail = searchParams.email;
+  if (!adminEmail) {
+    notFound();
+  }
+  
+  const admin = await getAdminByEmail(adminEmail);
+  const allRooms = await getAllRooms(adminEmail);
   
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -102,7 +110,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               </Link>
           </div>
           <div className="grid gap-6 pt-8">
-            <AiScheduleGenerator />
+            <AiScheduleGenerator allRooms={allRooms} />
           </div>
         </div>
       </main>

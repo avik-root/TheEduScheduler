@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, BrainCircuit } from 'lucide-react';
+import { Loader2, BrainCircuit, ChevronsUpDown, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -14,12 +14,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
+import type { Room } from '@/lib/buildings';
+import { cn } from '@/lib/utils';
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
 
 const ScheduleGeneratorSchema = z.object({
   timeConstraints: z.string().min(1, 'Time constraints are required.'),
-  availableRooms: z.coerce.number().min(1, 'At least one room is required.'),
+  availableRooms: z.array(z.string()).refine((value) => value.length > 0, {
+    message: 'You have to select at least one room.',
+  }),
   roomAvailability: z.object({
     startTime: z.string().min(1, 'Start time is required.'),
     endTime: z.string().min(1, 'End time is required.'),
@@ -33,7 +40,7 @@ const ScheduleGeneratorSchema = z.object({
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
 
-export function AiScheduleGenerator() {
+export function AiScheduleGenerator({ allRooms }: { allRooms: Room[] }) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
   const { toast } = useToast();
@@ -42,7 +49,7 @@ export function AiScheduleGenerator() {
     resolver: zodResolver(ScheduleGeneratorSchema),
     defaultValues: {
       timeConstraints: 'Classes only between 9 AM and 5 PM. Lunch break from 1 PM to 2 PM.',
-      availableRooms: 10,
+      availableRooms: [],
       roomAvailability: {
         startTime: '09:00',
         endTime: '17:00',
@@ -109,22 +116,83 @@ export function AiScheduleGenerator() {
                   control={form.control}
                   name="availableRooms"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Available Rooms</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="e.g., 10" {...field} />
-                      </FormControl>
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Available Rooms</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between h-auto min-h-10",
+                                !field.value?.length && "text-muted-foreground"
+                              )}
+                            >
+                              <div className="flex flex-wrap gap-1">
+                                {field.value?.length > 0 ? (
+                                  field.value.map((roomName) => (
+                                    <Badge
+                                      key={roomName}
+                                      variant="secondary"
+                                    >
+                                      {roomName}
+                                    </Badge>
+                                  ))
+                                ) : (
+                                  "Select rooms..."
+                                )}
+                              </div>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search rooms..." />
+                            <CommandList>
+                              <CommandEmpty>No rooms found.</CommandEmpty>
+                              <CommandGroup>
+                                {allRooms.map((room) => (
+                                  <CommandItem
+                                    key={room.id}
+                                    value={room.name}
+                                    onSelect={() => {
+                                      const selected = field.value || [];
+                                      const isSelected = selected.includes(room.name);
+                                      const newSelected = isSelected
+                                        ? selected.filter((r) => r !== room.name)
+                                        : [...selected, room.name];
+                                      field.onChange(newSelected);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        (field.value || []).includes(room.name)
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {room.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="roomAvailability"
                   render={() => (
                      <FormItem>
-                        <FormLabel>Room Availability</FormLabel>
+                        <FormLabel>Room Availability Times</FormLabel>
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}

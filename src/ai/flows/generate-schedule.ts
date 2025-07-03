@@ -16,8 +16,9 @@ const GenerateScheduleInputSchema = z.object({
     .string()
     .describe('Specific time constraints for the schedule (e.g., "Lunch break from 1 PM to 2 PM").'),
   availableRooms: z
-    .number()
-    .describe('The total number of rooms available for scheduling.'),
+    .array(z.string())
+    .min(1, 'At least one room must be selected.')
+    .describe('The names of the specific rooms available for scheduling.'),
   roomAvailability: z
     .object({
       startTime: z.string().describe('The start time for room availability (e.g., "09:00").'),
@@ -54,8 +55,8 @@ You will generate a detailed schedule based on the provided constraints. Differe
 Global Time Constraints: {{{timeConstraints}}}
 
 Resource Availability:
-- Number of Available Rooms: {{{availableRooms}}}
-- Room Availability: From {{roomAvailability.startTime}} to {{roomAvailability.endTime}} on {{#each roomAvailability.days}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
+- Available Rooms: {{#if availableRooms}}{{#each availableRooms}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}No rooms specified.{{/if}}
+- Room Availability Times: From {{roomAvailability.startTime}} to {{roomAvailability.endTime}} on {{#each roomAvailability.days}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
 
 Task and Course Priorities:
 - Theory Classes: {{{theoryPriorities}}}
