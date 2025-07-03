@@ -61,9 +61,10 @@ const FacultyCheckerSchema = z.object({
     const start = new Date(`1970-01-01T${data.startTime}:00`);
     const end = new Date(`1970-01-01T${data.endTime}:00`);
     const diffInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-    return diffInMinutes <= 50;
+    // Use a small tolerance for floating point issues
+    return diffInMinutes > 49.9 && diffInMinutes < 50.1;
   }, {
-    message: "Booking duration cannot exceed 50 minutes.",
+    message: "Booking duration must be exactly 50 minutes.",
     path: ["endTime"],
   });
 
@@ -91,9 +92,32 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '10:00', endTime: '10:50', date: new Date() }
+      ? { roomsToCheck: [], startTime: '08:00', endTime: '08:50', date: new Date() }
       : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', days: ['Monday'] },
   });
+
+  const startTime = form.watch('startTime');
+
+  React.useEffect(() => {
+    if (isFaculty && startTime) {
+      try {
+        const [hours, minutes] = startTime.split(':').map(Number);
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          const startDate = new Date();
+          startDate.setHours(hours, minutes, 0, 0);
+          const endDate = new Date(startDate.getTime() + 50 * 60 * 1000); // Add 50 minutes
+
+          const endHours = endDate.getHours().toString().padStart(2, '0');
+          const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
+          
+          const newEndTime = `${endHours}:${endMinutes}`;
+          form.setValue('endTime', newEndTime, { shouldValidate: true });
+        }
+      } catch (e) {
+        console.error("Could not auto-calculate end time:", e);
+      }
+    }
+  }, [startTime, isFaculty, form]);
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
@@ -279,7 +303,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                               <FormItem>
                                   <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> End Time</FormLabel>
                                   <FormControl>
-                                      <Input type="time" {...field} />
+                                      <Input type="time" {...field} readOnly={isFaculty} className={isFaculty ? 'bg-muted/50 cursor-not-allowed' : ''}/>
                                   </FormControl>
                                   <FormMessage />
                               </FormItem>
