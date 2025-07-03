@@ -9,6 +9,7 @@ import { getAdminByEmail } from '@/lib/admin';
 import { getAllRooms } from '@/lib/buildings';
 import { notFound } from 'next/navigation';
 import { DashboardClient } from '@/components/admin/dashboard-client';
+import { getRoomRequests } from '@/lib/requests';
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -18,6 +19,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   
   const admin = await getAdminByEmail(adminEmail);
   const allRooms = await getAllRooms(adminEmail);
+  const roomRequests = await getRoomRequests(adminEmail);
   
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -41,7 +43,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           </div>
       </header>
       <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-        <DashboardClient admin={admin} allRooms={allRooms} adminEmail={adminEmail} />
+        <DashboardClient admin={admin} allRooms={allRooms} adminEmail={adminEmail} roomRequests={roomRequests} />
       </main>
        <footer className="mt-auto border-t bg-background px-4 py-4 md:px-6">
         <div className="container mx-auto flex items-center justify-center">

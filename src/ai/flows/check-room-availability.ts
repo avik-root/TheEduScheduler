@@ -18,7 +18,8 @@ const CheckRoomAvailabilityInputSchema = z.object({
     .describe('The names of the specific rooms to check for availability.'),
   startTime: z.string().describe('The start of the time range to check (e.g., "10:30").'),
   endTime: z.string().describe('The end of the time range to check (e.g., "11:00").'),
-  days: z.array(z.string()).min(1, 'At least one day must be selected.').describe('The days of the week to check.'),
+  date: z.string().optional().describe('The specific date to check (e.g., "2024-07-26").'),
+  days: z.array(z.string()).optional().describe('The days of the week to check.'),
   schedule: z.string().describe('The current schedule, possibly in Markdown format, to check against for conflicts.'),
 });
 export type CheckRoomAvailabilityInput = z.infer<typeof CheckRoomAvailabilityInputSchema>;
@@ -47,17 +48,21 @@ const prompt = ai.definePrompt({
   output: {schema: CheckRoomAvailabilityOutputSchema},
   prompt: `You are an AI assistant that checks room availability based on a provided schedule.
 
-You will be given a list of rooms to check, a time range, and specific days. You will also receive the current schedule.
+You will be given a list of rooms to check, a time range, and specific days or a specific date. You will also receive the current schedule.
 
-Your task is to analyze the schedule and determine for each of the requested rooms whether it is 'Available', 'Unavailable', or 'Partially Available' during the specified time slot on the given days.
+Your task is to analyze the schedule and determine for each of the requested rooms whether it is 'Available', 'Unavailable', or 'Partially Available' during the specified time slot on the given days/date.
 
-- 'Available': The room is not booked at all during the specified time on the specified days.
-- 'Unavailable': The room is fully booked during the specified time on the specified days. Provide the reason (e.g., what class it's booked for).
+- 'Available': The room is not booked at all during the specified time.
+- 'Unavailable': The room is fully booked during the specified time. Provide the reason (e.g., what class it's booked for).
 - 'Partially Available': The room is booked for some, but not all, of the specified time or days. Provide details in the reason.
 
 Rooms to check: {{#each roomsToCheck}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 Time range: From {{startTime}} to {{endTime}}
+{{#if date}}
+Date: {{date}}
+{{else}}
 Days: {{#each days}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+{{/if}}
 
 Current Schedule to analyze:
 \`\`\`

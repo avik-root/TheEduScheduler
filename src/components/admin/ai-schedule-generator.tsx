@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, BrainCircuit } from 'lucide-react';
+import { Loader2, BrainCircuit, Upload } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 import type { Room } from '@/lib/buildings';
+import { publishSchedule } from '@/lib/schedule';
 
 const ScheduleGeneratorSchema = z.object({
   timeConstraints: z.string().min(1, 'Time constraints are required.'),
@@ -26,10 +27,12 @@ interface AiScheduleGeneratorProps {
     allRooms: Room[];
     generatedSchedule: GenerateScheduleOutput | null;
     setGeneratedSchedule: (schedule: GenerateScheduleOutput | null) => void;
+    adminEmail: string;
 }
 
-export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule }: AiScheduleGeneratorProps) {
+export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule, adminEmail }: AiScheduleGeneratorProps) {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isPublishing, setIsPublishing] = React.useState(false);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -64,6 +67,25 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     } finally {
       setIsLoading(false);
     }
+  }
+  
+  async function handlePublish() {
+      if (!generatedSchedule?.schedule) return;
+      setIsPublishing(true);
+      const result = await publishSchedule(adminEmail, generatedSchedule.schedule);
+      if (result.success) {
+          toast({
+              title: 'Schedule Published',
+              description: 'The schedule is now available for faculty members.'
+          });
+      } else {
+          toast({
+              variant: 'destructive',
+              title: 'Publish Failed',
+              description: result.message
+          });
+      }
+      setIsPublishing(false);
   }
 
   return (
@@ -128,14 +150,24 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                 )}
               />
 
-              <Button type="submit" className="w-fit" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <BrainCircuit className="mr-2 h-4 w-4" />
-                )}
-                Generate Schedule
-              </Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="w-fit" disabled={isLoading}>
+                  {isLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <BrainCircuit className="mr-2 h-4 w-4" />
+                  )}
+                  Generate Schedule
+                </Button>
+                <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
+                    {isPublishing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    Publish Schedule
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>

@@ -20,14 +20,17 @@ import type { Room } from '@/lib/buildings';
 import type { GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 import { AiScheduleGenerator } from '@/components/admin/ai-schedule-generator';
 import { RoomAvailabilityChecker } from '@/components/admin/room-availability-checker';
+import { RoomRequests } from './room-requests';
+import type { RoomRequest } from '@/lib/requests';
 
 interface DashboardClientProps {
     admin: Admin | null;
     allRooms: Room[];
     adminEmail: string;
+    roomRequests: RoomRequest[];
 }
 
-export function DashboardClient({ admin, allRooms, adminEmail }: DashboardClientProps) {
+export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: DashboardClientProps) {
     const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
 
     return (
@@ -89,14 +92,18 @@ export function DashboardClient({ admin, allRooms, adminEmail }: DashboardClient
               </Link>
           </div>
             <div className="grid gap-6 pt-8">
+                <RoomRequests initialRequests={roomRequests} adminEmail={adminEmail} />
                 <AiScheduleGenerator
                     allRooms={allRooms}
                     generatedSchedule={generatedSchedule}
                     setGeneratedSchedule={setGeneratedSchedule}
+                    adminEmail={adminEmail}
                 />
                 <RoomAvailabilityChecker
+                    userRole="admin"
                     allRooms={allRooms}
                     schedule={generatedSchedule?.schedule || ''}
+                    adminEmail={adminEmail}
                 />
             </div>
       </div>

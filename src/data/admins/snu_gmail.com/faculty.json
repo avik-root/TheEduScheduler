@@ -14,7 +14,7 @@
     "email": "anirbanmitra.1@themintfire.com",
     "password": "$2b$10$w3OVB0W.9r3oDRprWMZx7u3/XGodWjosW7ygpw/bHArXJcPY7Dnga",
     "department": "CSE",
-    "weeklyMaxHours": 40,
+    "weeklyMaxHours": 16,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
@@ -134,7 +134,7 @@
     "email": "alamgirsardar.1@themintfire.com",
     "password": "$2b$10$U//L5qxZ0ieYkkfz94LjI.AsNxynK4pvk0XdpwvMrCJcpbVFA.XOe",
     "department": "CSE",
-    "weeklyMaxHours": 40,
+    "weeklyMaxHours": 20,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
