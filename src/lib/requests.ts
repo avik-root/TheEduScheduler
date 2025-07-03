@@ -49,13 +49,20 @@ async function writeRequestsFile(adminEmail: string, requests: RoomRequest[]): P
 
 export async function getRoomRequests(adminEmail: string): Promise<RoomRequest[]> {
     if (!adminEmail) return [];
-    return await readRequestsFile(adminEmail);
+    const requests = await readRequestsFile(adminEmail);
+    return requests.sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
 }
 
 export async function getFacultyRoomRequests(adminEmail: string, facultyEmail: string): Promise<RoomRequest[]> {
     if (!adminEmail || !facultyEmail) return [];
-    const allRequests = await readRequestsFile(adminEmail);
+    const allRequests = await getRoomRequests(adminEmail);
     return allRequests.filter(req => req.facultyEmail === facultyEmail);
+}
+
+export async function getApprovedRequests(adminEmail: string): Promise<RoomRequest[]> {
+    if (!adminEmail) return [];
+    const allRequests = await readRequestsFile(adminEmail);
+    return allRequests.filter(req => req.status === 'approved');
 }
 
 export async function createRoomRequest(adminEmail: string, requestData: RoomRequestData): Promise<{ success: boolean; message: string }> {
@@ -66,7 +73,7 @@ export async function createRoomRequest(adminEmail: string, requestData: RoomReq
         status: 'pending',
         requestedAt: new Date().toISOString(),
     };
-    requests.unshift(newRequest);
+    requests.push(newRequest);
     try {
         await writeRequestsFile(adminEmail, requests);
         return { success: true, message: 'Room request submitted successfully.' };

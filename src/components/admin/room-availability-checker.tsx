@@ -92,20 +92,17 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '08:00', endTime: '08:50', date: undefined }
+      ? { roomsToCheck: [], startTime: '08:00', endTime: '08:50' }
       : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', days: ['Monday'] },
   });
 
   const startTime = form.watch('startTime');
 
   React.useEffect(() => {
-    if (isFaculty) {
-        // Set the date only on the client side after mount to avoid hydration mismatch
-        form.setValue('date', new Date());
+    if (isFaculty && form.getValues('date') === undefined) {
+      form.setValue('date', new Date());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFaculty]);
-
+  }, [isFaculty, form]);
 
   React.useEffect(() => {
     if (isFaculty && startTime) {
@@ -126,7 +123,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
         console.error("Could not auto-calculate end time:", e);
       }
     }
-  }, [startTime, isFaculty, form.setValue]);
+  }, [startTime, isFaculty, form]);
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
@@ -143,7 +140,8 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
             roomsToCheck: roomsForApi,
             isCheckingAll,
             date: format(data.date, 'yyyy-MM-dd'),
-            schedule
+            schedule,
+            adminEmail
         };
     } else if ('days' in data) {
          input = {
@@ -152,6 +150,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
             isCheckingAll,
             days: data.days,
             schedule,
+            adminEmail
         };
     } else {
         toast({ variant: 'destructive', title: 'Invalid Form Data' });

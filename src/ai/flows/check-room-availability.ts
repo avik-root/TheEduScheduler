@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getApprovedRequests } from '@/lib/requests';
 
 const CheckRoomAvailabilityInputSchema = z.object({
   roomsToCheck: z
@@ -22,6 +23,7 @@ const CheckRoomAvailabilityInputSchema = z.object({
   date: z.string().optional().describe('The specific date to check (e.g., "2024-07-26").'),
   days: z.array(z.string()).optional().describe('The days of the week to check.'),
   schedule: z.string().describe('The current schedule, possibly in Markdown format, to check against for conflicts.'),
+  adminEmail: z.string().email().describe('The email of the admin account for context.'),
 });
 export type CheckRoomAvailabilityInput = z.infer<typeof CheckRoomAvailabilityInputSchema>;
 
@@ -59,7 +61,7 @@ Your task is to analyze the schedule and determine for each of the requested roo
 
 - **If 'Available'**: The room is not booked during the specified time. In the 'reason' field, analyze the rest of the day's schedule for that room and state until what time it remains free. For example: "Available until 3:00 PM". If it's free for the rest of the working day, state "Available for the rest of the day".
 
-- **If 'Unavailable'**: The room is fully booked during the specified time. In the 'reason' field, provide the full details of the conflict from the schedule, including the Class name, Section, Year, and the exact booking time. For example: "Booked for Physics 101 (Year 2, Section A) from 10:00-11:00".
+- **If 'Unavailable'**: The room is fully booked during the specified time. In the 'reason' field, provide the full details of the conflict from the schedule. For a regular class, this includes the Class name, Section, Year, and the exact booking time (e.g., "Booked for Physics 101 (Year 2, Section A) from 10:00-11:00"). For an ad-hoc booking, specify the faculty member and the time (e.g., "Booked by Dr. Alan Grant from 10:00-10:50").
 
 - **If 'Partially Available'**: The room is booked for some, but not all, of the specified time or days. Provide details in the reason, explaining the conflict.
 
@@ -78,6 +80,7 @@ Current Schedule to analyze:
 \`\`\`
 {{{schedule}}}
 \`\`\`
+IMPORTANT: You must consider both the main schedule table and any "Additional Approved Bookings" section when checking for conflicts. The ad-hoc requests are also firm bookings.
 
 Based on your analysis, provide the status for each room and a final summary.
 {{#if isCheckingAll}}
@@ -94,18 +97,34 @@ const checkRoomAvailabilityFlow = ai.defineFlow(
     outputSchema: CheckRoomAvailabilityOutputSchema,
   },
   async input => {
-    // If no schedule is provided, assume all rooms are available.
-    if (!input.schedule || input.schedule.trim() === '' || input.schedule.includes("Your generated schedule will appear here...")) {
-        return {
-            availability: input.roomsToCheck.map(roomName => ({
-                name: roomName,
-                status: 'Available',
-                reason: 'No schedule provided to check against.'
-            })),
-            summary: `${input.roomsToCheck.length} rooms are available as no schedule has been generated yet.`
-        };
+    const approvedRequests = await getApprovedRequests(input.adminEmail);
+    let augmentedSchedule = input.schedule;
+
+    const hasMainSchedule = input.schedule && input.schedule.trim() !== '' && !input.schedule.includes("Your generated schedule will appear here...");
+
+    if (!hasMainSchedule && approvedRequests.length === 0) {
+      return {
+        availability: input.roomsToCheck.map(roomName => ({
+            name: roomName,
+            status: 'Available',
+            reason: 'No schedule or approved bookings found to check against.'
+        })),
+        summary: `${input.roomsToCheck.length} rooms are available as no schedule has been generated and no ad-hoc bookings exist.`
+      };
     }
-    const {output} = await prompt(input);
+
+    if (approvedRequests.length > 0) {
+        const requestsInfo = approvedRequests.map(req => 
+            `- Room: ${req.roomName}, Date: ${req.date}, Time: ${req.startTime}-${req.endTime}, Booked by: ${req.facultyName} for: ${req.reason}`
+        ).join('\n');
+        
+        augmentedSchedule = hasMainSchedule
+            ? augmentedSchedule + `\n\n--- Additional Approved Bookings ---\n${requestsInfo}`
+            : `--- Additional Approved Bookings ---\n${requestsInfo}`;
+    }
+
+    const finalInput = { ...input, schedule: augmentedSchedule };
+    const {output} = await prompt(finalInput);
     return output!;
   }
 );
