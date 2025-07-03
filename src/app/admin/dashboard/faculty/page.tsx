@@ -1,15 +1,14 @@
 
 import Link from 'next/link';
-import { CalendarDays, LogOut, ChevronLeft, UserCog } from 'lucide-react';
+import { CalendarDays, LogOut, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
-import { getFaculty, type Faculty } from '@/lib/faculty';
+import { getFaculty } from '@/lib/faculty';
 import { CreateFacultyDialog } from '@/components/admin/faculty/create-faculty-dialog';
-import { EditFacultyDialog } from '@/components/admin/faculty/edit-faculty-dialog';
-import { DeleteFacultyDialog } from '@/components/admin/faculty/delete-faculty-dialog';
 import { getDepartments } from '@/lib/departments';
 import { notFound } from 'next/navigation';
+import { FacultyList } from '@/components/admin/faculty/faculty-list';
 
 export default async function FacultyPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -63,52 +62,7 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {facultyList.map((faculty: Faculty) => (
-                      <Card key={faculty.email}>
-                        <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-                          <div className="flex items-center gap-4">
-                            <div className="rounded-full bg-primary/10 p-3">
-                              <UserCog className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                              <CardTitle className="text-xl">{faculty.name} ({faculty.abbreviation})</CardTitle>
-                              <CardDescription>{faculty.email}</CardDescription>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
-                            <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">
-                                Department: <span className="font-medium text-foreground">{faculty.department}</span>
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-2">
-                                Weekly Max Hours: <span className="font-medium text-foreground">{faculty.weeklyMaxHours}</span>
-                            </p>
-                            {faculty.weeklyOffDays && faculty.weeklyOffDays.length > 0 && (
-                              <p className="text-sm text-muted-foreground mt-2">
-                                  Weekly Off: <span className="font-medium text-foreground">{faculty.weeklyOffDays.join(', ')}</span>
-                              </p>
-                            )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {facultyList.length === 0 && (
-                      <div className="col-span-1 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 sm:col-span-2 lg:col-span-3">
-                        <div className="text-center">
-                          <p className="text-muted-foreground">
-                            No faculty accounts found.
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Click &apos;Create New Faculty&apos; to get started.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <FacultyList initialFaculty={facultyList} departments={departments} adminEmail={adminEmail} />
                 </CardContent>
             </Card>
         </div>

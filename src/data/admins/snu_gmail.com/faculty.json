@@ -67,5 +67,17 @@
       "Sunday",
       "Saturday"
     ]
+  },
+  {
+    "name": "Dr. Soma Datta",
+    "abbreviation": "SD",
+    "email": "somadutta.1@themintfire.com",
+    "password": "$2b$10$qlSd68po4s1BkujUzGfDoeK.axzTthj1WBKbQMeNakamSPtVUyeo6",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]
