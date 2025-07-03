@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import {
   CalendarDays,
@@ -30,7 +31,7 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler
+              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -49,6 +50,13 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
       <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <TeacherDashboardClient faculty={faculty} admin={admin} adminEmail={adminEmail} />
       </main>
+       <footer className="mt-auto border-t bg-background px-4 py-4 md:px-6">
+        <div className="container mx-auto flex items-center justify-center">
+            <p className="text-sm font-semibold text-muted-foreground">
+                Secured by MintFire
+            </p>
+        </div>
+      </footer>
     </div>
   );
 }

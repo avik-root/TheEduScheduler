@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { CalendarCog, LogOut, School, Shield, UserCog } from 'lucide-react';
 
@@ -22,7 +23,7 @@ export default async function SuperAdminDashboardPage() {
         <Link href="/super-admin/dashboard" className="flex items-center gap-3">
           <CalendarCog className="h-8 w-8 text-primary" />
           <span className="text-2xl font-bold text-primary">
-            EduScheduler
+            EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
           </span>
         </Link>
         <div className="flex items-center gap-4">
@@ -88,6 +89,9 @@ export default async function SuperAdminDashboardPage() {
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:flex-row">
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} EduScheduler. All rights reserved.
+          </p>
+          <p className="text-sm font-semibold text-muted-foreground">
+            Secured by MintFire
           </p>
           <nav className="flex gap-4 sm:gap-6">
             <Link

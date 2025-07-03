@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from "@/components/auth/login-form";
@@ -10,14 +11,14 @@ export default async function Home() {
   const superAdminExists = await checkSuperAdminExists();
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+    <main className="relative flex min-h-screen w-full items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         
         <div className="space-y-6 text-center md:text-left">
           <div className="flex items-center gap-3 justify-center md:justify-start">
             <CalendarCog className="h-10 w-10 text-primary" />
             <h1 className="text-4xl font-bold tracking-tighter text-primary">
-              EduScheduler
+              EduScheduler <span className="text-2xl font-normal text-muted-foreground">by MintFire</span>
             </h1>
           </div>
           <p className="text-2xl font-semibold tracking-tight text-foreground">
@@ -56,6 +57,11 @@ export default async function Home() {
         </Card>
 
       </div>
+      <footer className="absolute bottom-6 w-full text-center">
+        <p className="text-sm font-semibold text-muted-foreground">
+            Secured by MintFire
+        </p>
+      </footer>
     </main>
   );
 }
