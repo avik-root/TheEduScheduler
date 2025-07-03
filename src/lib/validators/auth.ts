@@ -194,7 +194,7 @@ export const UpdateSectionSchema = SectionSchema.extend({
 export const SubjectSchema = z.object({
   name: z.string().min(3, { message: 'Subject name must be at least 3 characters.' }),
   code: z.string().min(3, { message: 'Subject code must be at least 3 characters.' }),
-  type: z.enum(['Theory', 'Practical', 'Project'], {
+  type: z.enum(['Theory', 'Lab', 'Theory+Lab', 'Project'], {
     required_error: "You need to select a subject type.",
   }),
   departmentId: z.string({ required_error: "Please select a department." }).min(1, { message: 'Please select a department.' }),

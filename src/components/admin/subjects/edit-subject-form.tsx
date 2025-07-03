@@ -63,14 +63,21 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
       const prog = programs.find(p => p.id === form.getValues('programId'));
       return prog?.years || [];
   });
+   const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>(() => {
+      const dept = departments.find(d => d.id === form.getValues('departmentId'));
+      return dept ? faculty.filter(f => f.department === dept.name) : [];
+  });
+
 
   React.useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'departmentId') {
         form.setValue('programId', '');
         form.setValue('yearId', '');
+        form.setValue('facultyEmail', '');
         const selectedDept = departments.find((d) => d.id === value.departmentId);
         setPrograms(selectedDept?.programs || []);
+        setFilteredFaculty(selectedDept ? faculty.filter(f => f.department === selectedDept.name) : []);
         setYears([]);
       }
       if (name === 'programId') {
@@ -80,7 +87,7 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
       }
     });
     return () => subscription.unsubscribe();
-  }, [form, departments, programs]);
+  }, [form, departments, faculty, programs]);
 
 
   async function onSubmit(data: FormData) {
@@ -160,7 +167,8 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="Theory">Theory</SelectItem>
-                      <SelectItem value="Practical">Practical</SelectItem>
+                      <SelectItem value="Lab">Lab</SelectItem>
+                      <SelectItem value="Theory+Lab">Theory+Lab</SelectItem>
                       <SelectItem value="Project">Project</SelectItem>
                     </SelectContent>
                   </Select>
@@ -255,7 +263,7 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Faculty</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={!departmentId || filteredFaculty.length === 0}>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -265,7 +273,7 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
                       </div>
                     </FormControl>
                     <SelectContent>
-                      {faculty.map((f) => (
+                      {filteredFaculty.map((f) => (
                         <SelectItem key={f.email} value={f.email}>
                           {f.name}
                         </SelectItem>

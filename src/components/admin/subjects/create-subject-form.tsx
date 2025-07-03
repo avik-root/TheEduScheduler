@@ -43,6 +43,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
 
   const [programs, setPrograms] = React.useState<Program[]>([]);
   const [years, setYears] = React.useState<Year[]>([]);
+  const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(SubjectSchema),
@@ -63,14 +64,18 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
   React.useEffect(() => {
     form.setValue('programId', '');
     form.setValue('yearId', '');
+    form.setValue('facultyEmail', '');
+
     if (departmentId) {
       const selectedDept = departments.find((d) => d.id === departmentId);
       setPrograms(selectedDept?.programs || []);
+      setFilteredFaculty(selectedDept ? faculty.filter(f => f.department === selectedDept.name) : []);
     } else {
       setPrograms([]);
+      setFilteredFaculty([]);
     }
     setYears([]);
-  }, [departmentId, departments, form]);
+  }, [departmentId, departments, faculty, form]);
 
   React.useEffect(() => {
     form.setValue('yearId', '');
@@ -161,7 +166,8 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="Theory">Theory</SelectItem>
-                      <SelectItem value="Practical">Practical</SelectItem>
+                      <SelectItem value="Lab">Lab</SelectItem>
+                      <SelectItem value="Theory+Lab">Theory+Lab</SelectItem>
                       <SelectItem value="Project">Project</SelectItem>
                     </SelectContent>
                   </Select>
@@ -256,7 +262,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Faculty</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={!departmentId || filteredFaculty.length === 0}>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -266,7 +272,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
                       </div>
                     </FormControl>
                     <SelectContent>
-                      {faculty.map((f) => (
+                      {filteredFaculty.map((f) => (
                         <SelectItem key={f.email} value={f.email}>
                           {f.name}
                         </SelectItem>

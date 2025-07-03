@@ -79,7 +79,7 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3">
-                            <Badge variant={subject.type === 'Theory' ? 'default' : subject.type === 'Practical' ? 'secondary' : 'outline'}>
+                            <Badge variant={subject.type === 'Theory' || subject.type === 'Theory+Lab' ? 'default' : subject.type === 'Lab' ? 'secondary' : 'outline'}>
                                 {subject.type}
                             </Badge>
                             <div className="space-y-2 pt-2 text-sm text-muted-foreground">
