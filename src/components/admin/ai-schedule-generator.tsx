@@ -13,12 +13,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
 
 const ScheduleGeneratorSchema = z.object({
   timeConstraints: z.string().min(1, 'Time constraints are required.'),
   availableRooms: z.coerce.number().min(1, 'At least one room is required.'),
-  roomAvailabilityTime: z.string().min(1, 'Room availability time is required.'),
-  taskPriorities: z.string().min(1, 'Task priorities are required.'),
+  roomAvailability: z.object({
+    startTime: z.string().min(1, 'Start time is required.'),
+    endTime: z.string().min(1, 'End time is required.'),
+    days: z.array(z.string()).refine((value) => value.some((item) => item), {
+        message: "You have to select at least one day.",
+    }),
+  }),
+  theoryPriorities: z.string().min(1, 'Theory priorities are required.'),
+  labPriorities: z.string().min(1, 'Lab priorities are required.'),
 });
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
@@ -31,10 +41,15 @@ export function AiScheduleGenerator() {
   const form = useForm<FormData>({
     resolver: zodResolver(ScheduleGeneratorSchema),
     defaultValues: {
-      timeConstraints: '',
-      availableRooms: 1,
-      roomAvailabilityTime: '',
-      taskPriorities: '',
+      timeConstraints: 'Classes only between 9 AM and 5 PM. Lunch break from 1 PM to 2 PM.',
+      availableRooms: 10,
+      roomAvailability: {
+        startTime: '09:00',
+        endTime: '17:00',
+        days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      },
+      theoryPriorities: 'High priority: Calculus 101, Physics 101. Medium priority: History 202.',
+      labPriorities: 'High priority: Chemistry Lab. Must be in a lab room. Low priority: Computer Lab session.',
     },
   });
 
@@ -71,16 +86,16 @@ export function AiScheduleGenerator() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
               <FormField
                 control={form.control}
                 name="timeConstraints"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time Constraints</FormLabel>
+                    <FormLabel>Global Time Constraints</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., Classes only between 9 AM and 5 PM, Monday to Friday."
+                        placeholder="e.g., Lunch break from 1 PM to 2 PM."
                         {...field}
                       />
                     </FormControl>
@@ -88,7 +103,8 @@ export function AiScheduleGenerator() {
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="availableRooms"
@@ -102,30 +118,92 @@ export function AiScheduleGenerator() {
                     </FormItem>
                   )}
                 />
+                
                 <FormField
                   control={form.control}
-                  name="roomAvailabilityTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Room Availability Times</FormLabel>
-                       <FormControl>
-                        <Input placeholder="e.g., 9 AM - 5 PM, Mon-Fri" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                  name="roomAvailability"
+                  render={() => (
+                     <FormItem>
+                        <FormLabel>Room Availability</FormLabel>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="roomAvailability.startTime"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs text-muted-foreground">Start Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="roomAvailability.endTime"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs text-muted-foreground">End Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                             />
+                        </div>
+                         <div className="pt-2">
+                            <FormLabel className="text-xs text-muted-foreground">Available Days</FormLabel>
+                             <div className="grid grid-cols-3 gap-2 rounded-lg border p-2 sm:grid-cols-4">
+                                {daysOfWeek.map((day) => (
+                                  <FormField
+                                    key={day}
+                                    control={form.control}
+                                    name="roomAvailability.days"
+                                    render={({ field }) => {
+                                      return (
+                                        <FormItem
+                                          key={day}
+                                          className="flex flex-row items-start space-x-2 space-y-0"
+                                        >
+                                          <FormControl>
+                                            <Checkbox
+                                              checked={field.value?.includes(day)}
+                                              onCheckedChange={(checked) => {
+                                                return checked
+                                                  ? field.onChange([...(field.value || []), day])
+                                                  : field.onChange(
+                                                      field.value?.filter(
+                                                        (value) => value !== day
+                                                      )
+                                                    )
+                                              }}
+                                            />
+                                          </FormControl>
+                                          <FormLabel className="text-sm font-normal">
+                                            {day}
+                                          </FormLabel>
+                                        </FormItem>
+                                      )
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            <FormMessage>{form.formState.errors.roomAvailability?.days?.message}</FormMessage>
+                        </div>
+                     </FormItem>
                   )}
                 />
               </div>
 
-              <FormField
+               <FormField
                 control={form.control}
-                name="taskPriorities"
+                name="theoryPriorities"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Task/Course Priorities</FormLabel>
+                    <FormLabel>Theory Course Priorities</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., 'Calculus 101' is a high priority course. 'Beginner's Yoga' is a low priority."
+                        placeholder="e.g., 'Calculus 101' is a high priority course."
                         {...field}
                       />
                     </FormControl>
@@ -133,6 +211,23 @@ export function AiScheduleGenerator() {
                   </FormItem>
                 )}
               />
+               <FormField
+                control={form.control}
+                name="labPriorities"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lab/Practical Course Priorities</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="e.g., 'Chemistry Lab' requires a wet lab and is high priority."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <Button type="submit" className="w-fit" disabled={isLoading}>
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

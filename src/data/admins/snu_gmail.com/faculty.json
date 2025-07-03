@@ -31,5 +31,29 @@
       "Sunday",
       "Saturday"
     ]
+  },
+  {
+    "name": "Dr. Mousumi Bhattacharyya",
+    "abbreviation": "MB",
+    "email": "mousumi.1@themintfire.com",
+    "password": "$2b$10$ZuxlVS92QfT.7gIr7nucEuC3.hgxxayzEVo.agpt.i05tr/IA5wYC",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Swarup Kr Ghosh",
+    "abbreviation": "SKG",
+    "email": "swarupkrghosh.1@themintfire.com",
+    "password": "$2b$10$yatsPkoi8D0qV56HAv206ul7xg6gbvxrhwqKh1AdGV.ypT0xurwbC",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]
