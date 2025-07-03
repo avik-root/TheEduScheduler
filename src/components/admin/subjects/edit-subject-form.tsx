@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -53,6 +54,9 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
       facultyEmail: subject.facultyEmail || '',
     },
   });
+
+  const departmentId = form.watch('departmentId');
+  const programId = form.watch('programId');
 
   const [programs, setPrograms] = React.useState<Program[]>(() => {
     const dept = departments.find(d => d.id === form.getValues('departmentId'));
