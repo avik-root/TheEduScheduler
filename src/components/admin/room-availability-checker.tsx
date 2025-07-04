@@ -100,7 +100,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
     // Remove date from defaultValues to prevent hydration mismatch
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '', endTime: '' }
+      ? { roomsToCheck: [], startTime: '' }
       : { roomsToCheck: [], startTime: '10:00', endTime: '11:00' },
   });
 
@@ -109,9 +109,8 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
     setIsClient(true);
     
     // Set date client-side after mount to avoid hydration mismatch
-    setValue('date', new Date(), { shouldValidate: true });
-
     if (isFaculty) {
+      setValue('date', new Date(), { shouldValidate: true });
       const now = new Date();
       const minutes = now.getMinutes();
       const roundedMinutes = Math.ceil(minutes / 10) * 10;
@@ -122,6 +121,8 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
 
       const formattedTime = format(roundedTime, 'HH:mm');
       setValue('startTime', formattedTime, { shouldValidate: true });
+    } else {
+        setValue('date', new Date(), { shouldValidate: true });
     }
   }, [isFaculty, setValue]);
 
@@ -228,7 +229,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
         <CardDescription>
           {isFaculty 
             ? 'Check room availability for a specific date and time for a temporary booking.'
-            : 'Check room availability for a specific date and time. This tool queries the generated schedule and any ad-hoc bookings.'}
+            : 'Check room availability against the currently generated schedule. First, generate a schedule, then use this tool to query it.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -464,10 +465,10 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {availabilityResult.availability.map((room) => {
+                            {availabilityResult.availability.map((room, index) => {
                                 const fullRoom = allRooms.find(r => r.name === room.name);
                                 return (
-                                <TableRow key={`${room.name}-${room.reason}`}>
+                                <TableRow key={`${room.name}-${room.reason}-${index}`}>
                                     <TableCell className="font-medium">
                                         <div>{room.name}</div>
                                         {fullRoom && (
