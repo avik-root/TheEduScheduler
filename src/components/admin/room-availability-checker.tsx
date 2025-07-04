@@ -243,11 +243,11 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                 field.value[0] === '__ANY_ROOM__' ? (
                                     <Badge variant="secondary">Any Room</Badge>
                                 ) : (
-                                field.value.map((roomName) => {
+                                field.value.map((roomName, index) => {
                                   const room = allRooms.find(r => r.name === roomName);
                                   return (
                                     <Badge
-                                      key={roomName}
+                                      key={`${roomName}-${index}`}
                                       variant="secondary"
                                     >
                                       {roomName}
@@ -489,10 +489,10 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {availabilityResult.availability.map((room) => {
+                            {availabilityResult.availability.map((room, index) => {
                                 const fullRoom = allRooms.find(r => r.name === room.name);
                                 return (
-                                <TableRow key={room.name}>
+                                <TableRow key={`${room.name}-${index}`}>
                                     <TableCell className="font-medium">
                                         <div>{room.name}</div>
                                         {fullRoom && (
