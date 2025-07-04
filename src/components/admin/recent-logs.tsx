@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Clock, Search } from 'lucide-react';
+import { User, Mail, Clock, Search, LogIn, LogOut } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import type { FacultyLog } from '@/lib/logs';
 
@@ -56,6 +57,7 @@ export function RecentLogs({ logs }: RecentLogsProps) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Faculty</TableHead>
+                                <TableHead>Event</TableHead>
                                 <TableHead>Timestamp</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -65,6 +67,12 @@ export function RecentLogs({ logs }: RecentLogsProps) {
                                     <TableCell>
                                         <div className="font-medium flex items-center gap-2"><User className="h-4 w-4" />{log.facultyName}</div>
                                         <div className="text-xs text-muted-foreground flex items-center gap-2 ml-6"><Mail className="h-3 w-3" />{log.facultyEmail}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            {log.type === 'login' ? <LogIn className="h-4 w-4 text-green-500" /> : <LogOut className="h-4 w-4 text-red-500" />}
+                                            <span className="capitalize">{log.type}</span>
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2"><Clock className="h-4 w-4" />{isClient ? formatDistanceToNow(new Date(log.timestamp), { addSuffix: true }) : '...'}</div>

@@ -12,7 +12,7 @@ export interface FacultyLog {
     facultyName: string;
     facultyEmail: string;
     timestamp: string;
-    type: 'login';
+    type: 'login' | 'logout';
 }
 
 async function getLogsFilePath(adminEmail: string): Promise<string> {
@@ -47,14 +47,14 @@ export async function getFacultyLogs(adminEmail: string): Promise<FacultyLog[]> 
     return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 
-export async function addLoginLog(adminEmail: string, facultyName: string, facultyEmail: string): Promise<void> {
+export async function addFacultyLog(adminEmail: string, facultyName: string, facultyEmail: string, type: 'login' | 'logout'): Promise<void> {
     const logs = await readLogsFile(adminEmail);
     const newLog: FacultyLog = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         facultyName,
         facultyEmail,
         timestamp: new Date().toISOString(),
-        type: 'login',
+        type,
     };
     
     // Keep the log file from growing indefinitely, cap at 100 entries
@@ -63,6 +63,6 @@ export async function addLoginLog(adminEmail: string, facultyName: string, facul
     try {
         await writeLogsFile(adminEmail, updatedLogs);
     } catch (error) {
-        console.error('Failed to add login log:', error);
+        console.error(`Failed to add ${type} log:`, error);
     }
 }

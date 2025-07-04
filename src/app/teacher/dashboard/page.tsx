@@ -2,10 +2,8 @@
 import Link from 'next/link';
 import {
   CalendarDays,
-  LogOut,
   Shield,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { getFacultyByEmail } from '@/lib/faculty';
 import { notFound } from 'next/navigation';
 import { getAdminByEmail } from '@/lib/admin';
@@ -13,6 +11,7 @@ import { TeacherDashboardClient } from '@/components/teacher/teacher-dashboard-c
 import { getAllRooms } from '@/lib/buildings';
 import { getPublishedSchedule } from '@/lib/schedule';
 import { getFacultyRoomRequests } from '@/lib/requests';
+import { LogoutButton } from '@/components/auth/logout-button';
 
 export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
   const facultyEmail = searchParams.email;
@@ -46,12 +45,11 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
                 <p className="font-medium text-foreground">{faculty.name}</p>
                 <p className="text-xs text-muted-foreground">{admin?.name || 'Institution'}</p>
             </div>
-            <Button variant="outline" size="icon" asChild>
-              <Link href="/teacher/login">
-                <LogOut className="h-4 w-4" />
-                <span className="sr-only">Logout</span>
-              </Link>
-            </Button>
+            <LogoutButton
+                adminEmail={adminEmail}
+                facultyEmail={faculty.email}
+                facultyName={faculty.name}
+            />
           </div>
       </header>
       <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">

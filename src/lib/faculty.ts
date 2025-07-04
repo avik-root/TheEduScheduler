@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt';
 import { FacultySchema, UpdateFacultySchema, LoginSchema, FacultyChangePasswordSchema } from '@/lib/validators/auth';
 import { getAdminDataPath } from './common';
 import { getAdminEmails } from './admin';
-import { addLoginLog } from './logs';
+import { addFacultyLog } from './logs';
 
 const facultyFileName = 'faculty.json';
 
@@ -135,7 +135,7 @@ export async function loginFaculty(credentials: LoginData): Promise<{ success: b
         if (faculty) {
             const passwordMatch = await bcrypt.compare(credentials.password, faculty.password);
             if (passwordMatch) {
-                await addLoginLog(adminEmail, faculty.name, faculty.email);
+                await addFacultyLog(adminEmail, faculty.name, faculty.email, 'login');
                 return { success: true, message: 'Login successful!', adminEmail };
             }
         }
