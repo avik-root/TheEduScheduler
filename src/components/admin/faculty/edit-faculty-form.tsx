@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UpdateFacultySchema } from '@/lib/validators/auth';
 import { useToast } from '@/hooks/use-toast';
-import { updateFaculty, type Faculty } from '@/lib/faculty';
+import { updateFaculty, type Faculty, isFacultyAbbreviationTaken } from '@/lib/faculty';
 import type { Department } from '@/lib/departments';
 import {
   Select,
@@ -47,6 +47,8 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isChangingPassword, setIsChangingPassword] = React.useState(false);
+  const [isCheckingAbbreviation, setIsCheckingAbbreviation] = React.useState(false);
+  const abbreviationDebounceTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -63,9 +65,50 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
       confirmPassword: '',
     },
   });
+  
+  const { setError, clearErrors } = form;
+
+  const handleAbbreviationCheck = React.useCallback(async (abbreviation: string) => {
+    setIsCheckingAbbreviation(true);
+    if (!abbreviation || abbreviation.toLowerCase() === (faculty.abbreviation || '').toLowerCase()) {
+      clearErrors("abbreviation");
+      setIsCheckingAbbreviation(false);
+      return;
+    }
+
+    try {
+      const isTaken = await isFacultyAbbreviationTaken(abbreviation, faculty.email);
+      if (isTaken) {
+        setError("abbreviation", { type: "manual", message: "This abbreviation is already in use." });
+      } else {
+        clearErrors("abbreviation");
+      }
+    } catch (error) {
+       console.error("Abbreviation check failed:", error);
+       setError("abbreviation", {type: "manual", message: "Could not verify abbreviation."});
+    } finally {
+        setIsCheckingAbbreviation(false);
+    }
+  }, [faculty.email, faculty.abbreviation, setError, clearErrors]);
+  
+  const debouncedAbbreviationCheck = React.useCallback((abbreviation: string) => {
+      if (abbreviationDebounceTimeoutRef.current) {
+          clearTimeout(abbreviationDebounceTimeoutRef.current);
+      }
+      abbreviationDebounceTimeoutRef.current = setTimeout(() => {
+          handleAbbreviationCheck(abbreviation);
+      }, 500);
+  }, [handleAbbreviationCheck]);
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
+    
+    const isAbbrTaken = await isFacultyAbbreviationTaken(data.abbreviation, faculty.email);
+    if (isAbbrTaken) {
+        setError("abbreviation", { type: "manual", message: "This abbreviation is already in use." });
+        setIsLoading(false);
+        return;
+    }
 
     const result = await updateFaculty(adminEmail, data);
 
@@ -115,10 +158,26 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
               <div className="relative">
                 <Type className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
-                  <Input placeholder="e.g., AG" {...field} className="pl-10" />
+                   <Input
+                    placeholder="e.g., AG"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      debouncedAbbreviationCheck(e.target.value);
+                    }}
+                    className="pl-10"
+                  />
                 </FormControl>
               </div>
-              <FormMessage />
+               <div className="h-5 pt-1">
+                 {isCheckingAbbreviation ? (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Checking availability...
+                    </p>
+                ) : (
+                    <FormMessage />
+                )}
+               </div>
             </FormItem>
           )}
         />
@@ -314,8 +373,8 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
           </Button>
         )}
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" className="w-full" disabled={isLoading || isCheckingAbbreviation}>
+          {(isLoading || isCheckingAbbreviation) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save Changes
         </Button>
       </form>

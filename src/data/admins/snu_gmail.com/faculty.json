@@ -103,5 +103,53 @@
       "Sunday",
       "Saturday"
     ]
+  },
+  {
+    "name": "Dr. Anirban Mitra",
+    "abbreviation": "ANM",
+    "email": "anirban.cse@themintfire.com",
+    "password": "$2b$10$U6qz2uC7kX7UsXfCVs8a5eFwEPgDy1RLNGK698wrrvkrM8YKh6ZtG",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Saikat Maity",
+    "abbreviation": "SKM",
+    "email": "saikat.cse@themintfire.com",
+    "password": "$2b$10$IlZOdYNp08iSfptC0/8x..rWZqsZ2a.YkB/585PyIePsQJC2wQH5W",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Mousumi Bhattacharyya",
+    "abbreviation": "MB",
+    "email": "mousumi.cse@themintfire.com",
+    "password": "$2b$10$6Y7rnDr7fKV8yzV.NWo.GuS0x4ifZXVUOqpbSPcNz4Lt3nFobDliq",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  {
+    "name": "Dr. Swarup Kr Ghosh",
+    "abbreviation": "SKG",
+    "email": "swarup.cse@themintfire.com",
+    "password": "$2b$10$TJi/SwCV2js7typmPHv9L.tOvvBqdRqyQ/hr/TLj4Z5mBbbim5pVW",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]

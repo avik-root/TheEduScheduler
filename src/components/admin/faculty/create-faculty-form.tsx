@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { CreateFacultyFormSchema, type FacultySchema } from '@/lib/validators/auth';
 import { useToast } from '@/hooks/use-toast';
-import { createFaculty, isFacultyEmailTaken } from '@/lib/faculty';
+import { createFaculty, isFacultyEmailTaken, isFacultyAbbreviationTaken } from '@/lib/faculty';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Department } from '@/lib/departments';
 import {
@@ -48,7 +48,9 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
   const { toast } = useToast();
   const router = useRouter();
   const [isCheckingEmail, setIsCheckingEmail] = React.useState(false);
-  const debounceTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isCheckingAbbreviation, setIsCheckingAbbreviation] = React.useState(false);
+  const emailDebounceTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const abbreviationDebounceTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(CreateFacultyFormSchema),
@@ -91,13 +93,45 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
   }, [setError, clearErrors]);
   
   const debouncedEmailCheck = React.useCallback((username: string) => {
-      if (debounceTimeoutRef.current) {
-          clearTimeout(debounceTimeoutRef.current);
+      if (emailDebounceTimeoutRef.current) {
+          clearTimeout(emailDebounceTimeoutRef.current);
       }
-      debounceTimeoutRef.current = setTimeout(() => {
+      emailDebounceTimeoutRef.current = setTimeout(() => {
           handleEmailCheck(username);
       }, 500);
   }, [handleEmailCheck]);
+  
+  const handleAbbreviationCheck = React.useCallback(async (abbreviation: string) => {
+    setIsCheckingAbbreviation(true);
+    if (!abbreviation) {
+      clearErrors("abbreviation");
+      setIsCheckingAbbreviation(false);
+      return;
+    }
+
+    try {
+      const isTaken = await isFacultyAbbreviationTaken(abbreviation);
+      if (isTaken) {
+        setError("abbreviation", { type: "manual", message: "This abbreviation is already in use." });
+      } else {
+        clearErrors("abbreviation");
+      }
+    } catch (error) {
+       console.error("Abbreviation check failed:", error);
+       setError("abbreviation", {type: "manual", message: "Could not verify abbreviation."});
+    } finally {
+        setIsCheckingAbbreviation(false);
+    }
+  }, [setError, clearErrors]);
+  
+  const debouncedAbbreviationCheck = React.useCallback((abbreviation: string) => {
+      if (abbreviationDebounceTimeoutRef.current) {
+          clearTimeout(abbreviationDebounceTimeoutRef.current);
+      }
+      abbreviationDebounceTimeoutRef.current = setTimeout(() => {
+          handleAbbreviationCheck(abbreviation);
+      }, 500);
+  }, [handleAbbreviationCheck]);
 
 
   async function onSubmit(data: FormData) {
@@ -105,9 +139,22 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
 
     const fullEmail = `${data.email}${EMAIL_DOMAIN}`;
     
-    const isTaken = await isFacultyEmailTaken(fullEmail);
-    if (isTaken) {
+    const [isEmailTakenResult, isAbbrTakenResult] = await Promise.all([
+        isFacultyEmailTaken(fullEmail),
+        isFacultyAbbreviationTaken(data.abbreviation)
+    ]);
+
+    let hasError = false;
+    if (isEmailTakenResult) {
         setError("email", { type: "manual", message: "This email is already taken." });
+        hasError = true;
+    }
+     if (isAbbrTakenResult) {
+        setError("abbreviation", { type: "manual", message: "This abbreviation is already in use." });
+        hasError = true;
+    }
+
+    if(hasError) {
         setIsLoading(false);
         return;
     }
@@ -163,10 +210,26 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
               <div className="relative">
                 <Type className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <FormControl>
-                  <Input placeholder="e.g., AG" {...field} className="pl-10" />
+                   <Input
+                    placeholder="e.g., AG"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      debouncedAbbreviationCheck(e.target.value);
+                    }}
+                    className="pl-10"
+                  />
                 </FormControl>
               </div>
-              <FormMessage />
+               <div className="h-5 pt-1">
+                 {isCheckingAbbreviation ? (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Checking availability...
+                    </p>
+                ) : (
+                    <FormMessage />
+                )}
+               </div>
             </FormItem>
           )}
         />
@@ -332,8 +395,8 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading || isCheckingEmail}>
-          {(isLoading || isCheckingEmail) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" className="w-full" disabled={isLoading || isCheckingEmail || isCheckingAbbreviation}>
+          {(isLoading || isCheckingEmail || isCheckingAbbreviation) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Faculty Account
         </Button>
       </form>

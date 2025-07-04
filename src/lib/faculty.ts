@@ -55,6 +55,23 @@ export async function isFacultyEmailTaken(email: string): Promise<boolean> {
     return false;
 }
 
+export async function isFacultyAbbreviationTaken(abbreviation: string, currentEmail?: string): Promise<boolean> {
+    if (!abbreviation) return false;
+    const adminEmails = await getAdminEmails();
+    const lowerAbbreviation = abbreviation.toLowerCase();
+    
+    for (const adminEmail of adminEmails) {
+        const facultyList = await readFacultyFile(adminEmail);
+        if (facultyList.some(f => 
+            f.abbreviation && f.abbreviation.toLowerCase() === lowerAbbreviation &&
+            (!currentEmail || f.email !== currentEmail)
+        )) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export async function getFaculty(adminEmail: string): Promise<Faculty[]> {
     if (!adminEmail) return [];
     return await readFacultyFile(adminEmail);
@@ -72,6 +89,12 @@ export async function createFaculty(adminEmail: string, data: Faculty): Promise<
     if (isTaken) {
         return { success: false, message: 'A faculty member with this email already exists in the system.' };
     }
+    
+    const isAbbrTaken = await isFacultyAbbreviationTaken(data.abbreviation);
+    if (isAbbrTaken) {
+        return { success: false, message: 'This abbreviation is already in use.' };
+    }
+
 
     const facultyList = await readFacultyFile(adminEmail);
 
@@ -95,6 +118,11 @@ export async function updateFaculty(adminEmail: string, data: UpdateFacultyData)
     const facultyIndex = facultyList.findIndex(f => f.email === data.email);
     if (facultyIndex === -1) {
         return { success: false, message: 'Faculty member not found.' };
+    }
+
+    const isAbbrTaken = await isFacultyAbbreviationTaken(data.abbreviation, data.email);
+    if (isAbbrTaken) {
+        return { success: false, message: 'This abbreviation is already in use by another faculty member.' };
     }
     
     const facultyToUpdate = facultyList[facultyIndex];
