@@ -36,9 +36,9 @@ export default function DeveloperPage() {
     <main className="relative flex min-h-screen w-full flex-col items-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="absolute top-4 left-4">
         <Button asChild variant="outline">
-          <Link href="/">
+          <Link href="/teacher/login">
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Home
+            Back to Faculty Login
           </Link>
         </Button>
       </div>
