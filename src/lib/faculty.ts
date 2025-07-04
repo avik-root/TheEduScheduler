@@ -44,6 +44,17 @@ async function writeFacultyFile(adminEmail: string, faculty: Faculty[]): Promise
     await fs.writeFile(filePath, JSON.stringify(faculty, null, 2));
 }
 
+export async function isFacultyEmailTaken(email: string): Promise<boolean> {
+    const adminEmails = await getAdminEmails();
+    for (const adminEmail of adminEmails) {
+        const facultyList = await readFacultyFile(adminEmail);
+        if (facultyList.some(f => f.email === email)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export async function getFaculty(adminEmail: string): Promise<Faculty[]> {
     if (!adminEmail) return [];
     return await readFacultyFile(adminEmail);
@@ -57,12 +68,12 @@ export async function getFacultyByEmail(adminEmail: string, email: string): Prom
 }
 
 export async function createFaculty(adminEmail: string, data: Faculty): Promise<{ success: boolean; message: string }> {
-    const facultyList = await readFacultyFile(adminEmail);
-
-    const existingFaculty = facultyList.find(f => f.email === data.email);
-    if (existingFaculty) {
-        return { success: false, message: 'A faculty member with this email already exists.' };
+    const isTaken = await isFacultyEmailTaken(data.email);
+    if (isTaken) {
+        return { success: false, message: 'A faculty member with this email already exists in the system.' };
     }
+
+    const facultyList = await readFacultyFile(adminEmail);
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const newFaculty = { ...data, password: hashedPassword };

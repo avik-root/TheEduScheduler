@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -18,9 +17,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { FacultySchema } from '@/lib/validators/auth';
+import { CreateFacultyFormSchema, type FacultySchema } from '@/lib/validators/auth';
 import { useToast } from '@/hooks/use-toast';
-import { createFaculty } from '@/lib/faculty';
+import { createFaculty, isFacultyEmailTaken } from '@/lib/faculty';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Department } from '@/lib/departments';
 import {
@@ -31,7 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type FormData = z.infer<typeof FacultySchema>;
+type FormData = z.infer<typeof CreateFacultyFormSchema>;
+type FacultyData = z.infer<typeof FacultySchema>;
 
 interface CreateFacultyFormProps {
   onSuccess?: () => void;
@@ -40,15 +40,18 @@ interface CreateFacultyFormProps {
 }
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const EMAIL_DOMAIN = '@themintfire.com';
 
 export function CreateFacultyForm({ onSuccess, departments, adminEmail }: CreateFacultyFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const [isCheckingEmail, setIsCheckingEmail] = React.useState(false);
+  const debounceTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(FacultySchema),
+    resolver: zodResolver(CreateFacultyFormSchema),
     defaultValues: {
       name: '',
       abbreviation: '',
@@ -58,12 +61,60 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
       weeklyMaxHours: 40,
       weeklyOffDays: [],
     },
+    mode: 'onTouched',
   });
+
+  const { setError, clearErrors } = form;
+
+  const handleEmailCheck = React.useCallback(async (username: string) => {
+    setIsCheckingEmail(true);
+    if (!username) {
+      clearErrors("email");
+      setIsCheckingEmail(false);
+      return;
+    }
+
+    const fullEmail = `${username}${EMAIL_DOMAIN}`;
+    try {
+      const isTaken = await isFacultyEmailTaken(fullEmail);
+      if (isTaken) {
+        setError("email", { type: "manual", message: "This email is already taken." });
+      } else {
+        clearErrors("email");
+      }
+    } catch (error) {
+       console.error("Email check failed:", error);
+       setError("email", {type: "manual", message: "Could not verify email."});
+    } finally {
+        setIsCheckingEmail(false);
+    }
+  }, [setError, clearErrors]);
+  
+  const debouncedEmailCheck = React.useCallback((username: string) => {
+      if (debounceTimeoutRef.current) {
+          clearTimeout(debounceTimeoutRef.current);
+      }
+      debounceTimeoutRef.current = setTimeout(() => {
+          handleEmailCheck(username);
+      }, 500);
+  }, [handleEmailCheck]);
+
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const result = await createFaculty(adminEmail, data);
+    const fullEmail = `${data.email}${EMAIL_DOMAIN}`;
+    
+    const isTaken = await isFacultyEmailTaken(fullEmail);
+    if (isTaken) {
+        setError("email", { type: "manual", message: "This email is already taken." });
+        setIsLoading(false);
+        return;
+    }
+
+    const submissionData: FacultyData = { ...data, email: fullEmail };
+
+    const result = await createFaculty(adminEmail, submissionData);
 
     if (result.success) {
       toast({
@@ -125,18 +176,34 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="agrant@university.edu"
-                    {...field}
-                    className="pl-10"
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
+               <div className="flex items-center">
+                    <div className="relative flex-grow">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                            <Input
+                                placeholder="username"
+                                {...field}
+                                onChange={(e) => {
+                                    field.onChange(e);
+                                    debouncedEmailCheck(e.target.value);
+                                }}
+                                className="pl-10 rounded-r-none focus:ring-0 focus:z-10"
+                            />
+                        </FormControl>
+                    </div>
+                    <span className="inline-flex h-10 items-center rounded-r-md border border-l-0 border-input bg-muted px-3 text-sm text-muted-foreground">
+                        {EMAIL_DOMAIN}
+                    </span>
+                </div>
+                <div className="h-5 pt-1">
+                 {isCheckingEmail ? (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Checking availability...
+                    </p>
+                ) : (
+                    <FormMessage />
+                )}
+               </div>
             </FormItem>
           )}
         />
@@ -265,8 +332,8 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" className="w-full" disabled={isLoading || isCheckingEmail}>
+          {(isLoading || isCheckingEmail) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Faculty Account
         </Button>
       </form>
