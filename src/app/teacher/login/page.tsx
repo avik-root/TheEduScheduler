@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TeacherLoginForm } from "@/components/auth/teacher-login-form";
 import { School, Shield } from 'lucide-react';
+import { TypingAnimation } from "@/components/common/typing-animation";
 
 export default function TeacherLoginPage() {
   return (
@@ -10,7 +11,7 @@ export default function TeacherLoginPage() {
         <div className="flex flex-col items-center space-y-4 mb-8">
           <School className="h-10 w-10 text-primary" />
           <h1 className="text-3xl font-bold tracking-tighter text-primary">
-            EduScheduler <span className="text-lg font-normal text-muted-foreground">by MintFire</span>
+            EduScheduler <TypingAnimation text="by MintFire" className="text-lg font-normal text-muted-foreground" />
           </h1>
           <p className="text-muted-foreground">Faculty Portal</p>
         </div>

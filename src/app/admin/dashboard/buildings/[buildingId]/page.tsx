@@ -9,6 +9,7 @@ import { getBuildingById, type Floor } from '@/lib/buildings';
 import { EditBuildingDialog } from '@/components/admin/buildings/edit-building-dialog';
 import { DeleteBuildingDialog } from '@/components/admin/buildings/delete-building-dialog';
 import { CreateFloorDialog } from '@/components/admin/buildings/create-floor-dialog';
+import { TypingAnimation } from '@/components/common/typing-animation';
 
 export default async function BuildingFloorsPage({ params, searchParams }: { params: { buildingId: string }, searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -29,7 +30,7 @@ export default async function BuildingFloorsPage({ params, searchParams }: { par
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
+              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
             </span>
           </div>
           <div className="flex items-center gap-4">

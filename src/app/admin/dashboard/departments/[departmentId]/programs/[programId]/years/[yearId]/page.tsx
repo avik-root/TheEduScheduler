@@ -10,6 +10,7 @@ import { AddSectionDialog } from '@/components/admin/departments/programs/years/
 import { EditYearDialog } from '@/components/admin/departments/programs/years/edit-year-dialog';
 import { DeleteYearDialog } from '@/components/admin/departments/programs/years/delete-year-dialog';
 import { SectionsList } from '@/components/admin/departments/programs/years/sections/sections-list';
+import { TypingAnimation } from '@/components/common/typing-animation';
 
 export default async function YearSectionsPage({ params, searchParams }: { params: { departmentId: string, programId: string, yearId: string }, searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -34,7 +35,7 @@ export default async function YearSectionsPage({ params, searchParams }: { param
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
+              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
             </span>
           </div>
           <div className="flex items-center gap-4">

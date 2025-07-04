@@ -11,6 +11,7 @@ import { getAllRooms } from '@/lib/buildings';
 import { notFound } from 'next/navigation';
 import { DashboardClient } from '@/components/admin/dashboard-client';
 import { getRoomRequests } from '@/lib/requests';
+import { TypingAnimation } from '@/components/common/typing-animation';
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -28,7 +29,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
+              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
             </span>
           </div>
           <div className="flex items-center gap-4">

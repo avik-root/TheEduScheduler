@@ -11,6 +11,7 @@ import { DeleteProgramDialog } from '@/components/admin/departments/programs/del
 import { CreateYearDialog } from '@/components/admin/departments/programs/years/create-year-dialog';
 import { EditYearDialog } from '@/components/admin/departments/programs/years/edit-year-dialog';
 import { DeleteYearDialog } from '@/components/admin/departments/programs/years/delete-year-dialog';
+import { TypingAnimation } from '@/components/common/typing-animation';
 
 
 export default async function ProgramYearsPage({ params, searchParams }: { params: { departmentId: string, programId: string }, searchParams: { email?: string } }) {
@@ -35,7 +36,7 @@ export default async function ProgramYearsPage({ params, searchParams }: { param
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
+              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
             </span>
           </div>
           <div className="flex items-center gap-4">

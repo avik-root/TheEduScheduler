@@ -6,6 +6,7 @@ import { SignupForm } from "@/components/auth/signup-form";
 import { CalendarCog, Terminal, Shield } from 'lucide-react';
 import { checkSuperAdminExists } from "@/lib/super-admin";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TypingAnimation } from "@/components/common/typing-animation";
 
 export default async function Home() {
   const superAdminExists = await checkSuperAdminExists();
@@ -18,7 +19,7 @@ export default async function Home() {
           <div className="flex items-center gap-3 justify-center md:justify-start">
             <CalendarCog className="h-10 w-10 text-primary" />
             <h1 className="text-4xl font-bold tracking-tighter text-primary">
-              EduScheduler <span className="text-2xl font-normal text-muted-foreground">by MintFire</span>
+              EduScheduler <TypingAnimation text="by MintFire" className="text-2xl font-normal text-muted-foreground" />
             </h1>
           </div>
           <p className="text-2xl font-semibold tracking-tight text-foreground">

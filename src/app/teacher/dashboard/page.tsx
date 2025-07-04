@@ -13,6 +13,7 @@ import { TeacherDashboardClient } from '@/components/teacher/teacher-dashboard-c
 import { getAllRooms } from '@/lib/buildings';
 import { getPublishedSchedule } from '@/lib/schedule';
 import { getFacultyRoomRequests } from '@/lib/requests';
+import { TypingAnimation } from '@/components/common/typing-animation';
 
 export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
   const facultyEmail = searchParams.email;
@@ -38,7 +39,7 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
+              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
             </span>
           </div>
           <div className="flex items-center gap-4">

@@ -7,6 +7,7 @@ import { getAdminByEmail } from '@/lib/admin';
 import { getDepartments, type Department } from '@/lib/departments';
 import { CreateDepartmentDialog } from '@/components/admin/departments/create-department-dialog';
 import { notFound } from 'next/navigation';
+import { TypingAnimation } from '@/components/common/typing-animation';
 
 export default async function DepartmentsPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -23,7 +24,7 @@ export default async function DepartmentsPage({ searchParams }: { searchParams: 
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
+              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
             </span>
           </div>
           <div className="flex items-center gap-4">
