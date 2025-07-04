@@ -14,6 +14,12 @@ interface RecentLogsProps {
 
 export function RecentLogs({ logs }: RecentLogsProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+
 
     const filteredLogs = logs.filter(log => 
         log.facultyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -61,7 +67,7 @@ export function RecentLogs({ logs }: RecentLogsProps) {
                                         <div className="text-xs text-muted-foreground flex items-center gap-2 ml-6"><Mail className="h-3 w-3" />{log.facultyEmail}</div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex items-center gap-2"><Clock className="h-4 w-4" />{formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}</div>
+                                        <div className="flex items-center gap-2"><Clock className="h-4 w-4" />{isClient ? formatDistanceToNow(new Date(log.timestamp), { addSuffix: true }) : '...'}</div>
                                         <div className="text-xs text-muted-foreground ml-6">{format(new Date(log.timestamp), 'PPP p')}</div>
                                     </TableCell>
                                 </TableRow>
