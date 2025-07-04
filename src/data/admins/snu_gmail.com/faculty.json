@@ -151,5 +151,413 @@
       "Sunday",
       "Saturday"
     ]
+  },
+  {
+    "name": "Dr. Sadip Midya",
+    "abbreviation": "SM",
+    "email": "sadip.cse@themintfire.com",
+    "password": "$2b$10$jjKoRSszl8jpgG1bm2xnKOwoM0ucAnnd2mkZKXThEgpLc0/TAjYSa",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Soma Datta",
+    "abbreviation": "SD",
+    "email": "soma.cse@themintfire.com",
+    "password": "$2b$10$F7pqiAyLcFVmelN3FXGrIupiWZG3TQdtltA3jW5if7taZoRT2Lo6K",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Souvik Pal",
+    "abbreviation": "SP",
+    "email": "souvik.cse@themintfire.com",
+    "password": "$2b$10$iR54a030yZFjANd65g/kpu/DkjmYc7o8ahyZVEfd/In3c2PK1M9Z.",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Asmita Roy",
+    "abbreviation": "AR",
+    "email": "asmita.cse@themintfire.com",
+    "password": "$2b$10$mWtxFmz.CPF59yJ4JidT0.pmPZjWjvypldlVbE9j1vuKyZw4QwVlC",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Indranil Sarkar",
+    "abbreviation": "IS",
+    "email": "indranil.cse@themintfire.com",
+    "password": "$2b$10$5dE/Xkv5cKw8Wg4wAv7R2OdIw7Zx38A/gw1q6iEM9JDhY9pwEVQI.",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Ankita Dhar",
+    "abbreviation": "AKD",
+    "email": "ankita.cse@themintfire.com",
+    "password": "$2b$10$dY8Jqs1o/TWk9VNbQdZ0ZOUb5zGziUjTYyOln9oJOQwe.Ie/TiRUK",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Alamgir Sardar",
+    "abbreviation": "ALS",
+    "email": "alamgir.cse@themintfire.com",
+    "password": "$2b$10$8q3yr5iqpewJUhSDTdWJMe99vGQoon6wvLzbs3hPBLJsVNAVrFB7m",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  {
+    "name": "Dr. Rana Majumdar ",
+    "abbreviation": "RM",
+    "email": "rana.cse@themintfire.com",
+    "password": "$2b$10$j2Ex9Zuh9pkAHQj2WYSONO/VNHBm0wse5ubijFbAdUZ.dEXxzWTLG",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Pratik Bhattacharjee",
+    "abbreviation": "PB",
+    "email": "pratik.cse@themintfire.com",
+    "password": "$2b$10$LLj2cuBXyhf7QJswjSouT.28XcJFDBoaujt8S1GAHzM2E0vZOrECS",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Arkaprava Bhaduri Mandal",
+    "abbreviation": "ABM",
+    "email": "arkaprava.cse@themintfire.com",
+    "password": "$2b$10$t/ySRWcSi.gvF7WKEGdKr.6SdGUW2jBPatLWCgl6eANa8vt/7x9Vi",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Soma Hazra",
+    "abbreviation": "SH",
+    "email": "somah.cse@themintfire.com",
+    "password": "$2b$10$.BYTbFION1Kh9MhlMQ4gleyworOg2tjUnxUsrbr3zQpGn.8/DhBb.",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Basudev Saha",
+    "abbreviation": "BS",
+    "email": "basudev.cse@themintfire.com",
+    "password": "$2b$10$MSaq5U0h.bfJXTepNN0wTu23cOI.mLNyCeHGsADX2oYsfH0Ku6Cwq",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Aritra Ghosh",
+    "abbreviation": "ARG",
+    "email": "aritra.cse@themintfire.com",
+    "password": "$2b$10$76IQMnN.KUCPv7nTJcotBOk1mMp.v7MuavV3RMJFzR2SEWGjossFa",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  {
+    "name": "Dr. Parthasarathi De",
+    "abbreviation": "PSD",
+    "email": "parthasarathi.cse@themintfire.com",
+    "password": "$2b$10$dMTMTjFQWvC5JDovqWJesuRyeWtGZbLrnJAFMp3ZLCCZgCd5/5XdO",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Soumi Dutta",
+    "abbreviation": "SUD",
+    "email": "soumi.cse@themintfire.com",
+    "password": "$2b$10$t2908JZ5xeWWI3ck488vz.2dEzJ12EiC344k.Q5q8haqzTiS9.O66",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Abhishek Bhattacharya",
+    "abbreviation": "ASB",
+    "email": "abhishek.cse@themintfire.com",
+    "password": "$2b$10$6kAWmul6kNoP7NgqtS8b0O/HkIf6Eg07Gz/0HepJkIUUm5DgryNyi",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Subhra Halder",
+    "abbreviation": "SBH",
+    "email": "subhra.cse@themintfire.com",
+    "password": "$2b$10$9N05avMcIyq5tD2IxVJrlOHHoEW1U.WI44f6aGAZX0TnRRJMTfsXK",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Biswaroop Maiti",
+    "abbreviation": "BRM",
+    "email": "biswaroop.cse@themintfire.com",
+    "password": "$2b$10$087ncMdT1IVrk3d47OF1g.u6YePUAqS2Rc5HY5Yilzz3llqc5wt/u",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Pritam Goswami",
+    "abbreviation": "PTG",
+    "email": "pritam.cse@themintfire.com",
+    "password": "$2b$10$nEWYJKrvDAmWT2YUhJnnaejqsjc1OEhithSDzg.rnYxKSZvzUxIOS",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Arkaprava Das",
+    "abbreviation": "APD",
+    "email": "arkapravad.cse@themintfire.com",
+    "password": "$2b$10$AwLFsL7SNOf4EBR8u9FkMui.XrphRW1j22pV58hrj9lZTC94OjSZW",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Sourajit Maity",
+    "abbreviation": "SRM",
+    "email": "sourajit.cse@themintfire.com",
+    "password": "$2b$10$j1c3OpwfeuRKPzXqwwr3mO4TzoGLznY.evo6HtI.hDpZFyLqM.vVq",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Debasmita Bhoumik",
+    "abbreviation": "DMB",
+    "email": "debasmita.cse@themintfire.com",
+    "password": "$2b$10$NDXn85K9o4VSsDr5Mna89eaAM/5nPbdpmc32xHfSV5Vzr68kWgIvy",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Aritra Sinha",
+    "abbreviation": "ARS",
+    "email": "aritras.cse@themintfire.com",
+    "password": "$2b$10$68rFLMhfalAcLY.lwQDybuLka59B00FPqGXr8g0aM3TxUt.xvdXWa",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Arijit Joardar",
+    "abbreviation": "AJ",
+    "email": "arijit.cse@themintfire.com",
+    "password": "$2b$10$1FuGtnUdO0GgNww4HTJ2s.Cfw1Xj6kekMe6/x.b3ZS/BNL7Vwmu3a",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  {
+    "name": "Kritanta Saha",
+    "abbreviation": "KRS",
+    "email": "kritanta.cse@themintfire.com",
+    "password": "$2b$10$nj81yjdJGtwqUcRWHi3zU.rItRhNsiWR138aP7P1PBb5m4Ypd592y",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Raina Paul",
+    "abbreviation": "RNP",
+    "email": "raina.cse@themintfire.com",
+    "password": "$2b$10$YcjaQXK7bEvlUEonz0nn9.y28R6odL6E9efwCA4CQAkBJnx1LBZji",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Sayani Mondal",
+    "abbreviation": "SNM",
+    "email": "sayani.cse@themintfire.com",
+    "password": "$2b$10$MMlr/oCPF2WF2tjBoSGeAO.bCGefesPWVvopCKEk/AJBGs47hWQyK",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Bhabani Prasad Sinha",
+    "abbreviation": "BPS",
+    "email": "bhabani.cse@themintfire.com",
+    "password": "$2b$10$xYI25gog1DQtvaTYbnpNVOiPT2HNW2GRnU58.SV2.1sujBfxMQQQS",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  {
+    "name": "Dr. Atal Chowdhury",
+    "abbreviation": "AC",
+    "email": "atal.cse@themintfire.com",
+    "password": "$2b$10$jL8f8QZIVwP1Sb7B.sCNjOkivraiooxtNx4uR/2fHWwl71VU/9NyG",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Dr. Debasis Majumder",
+    "abbreviation": "DM",
+    "email": "debasis.cse@themintfire.com",
+    "password": "$2b$10$VcvgCnMTAoGRGNNj1ukZZu/W69VeezLGvIaCi.MAj3iUDN1Q1SRn6",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Arijit Pal",
+    "abbreviation": "ARP",
+    "email": "arijitp.cse@themintfire.com",
+    "password": "$2b$10$JTtqI.ULhUE6AQ6QfKDBbO7CN8klTEGSkVShzMsHdIYbjLPJBtTX6",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Ditu Barai",
+    "abbreviation": "DUB",
+    "email": "ditu.cse@themintfire.com",
+    "password": "$2b$10$waiPBnFSi99tYyabAoIoiOuKC/2fOVzJrgTa4d71Bn0nPi/FWa23K",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Santlal Prajapati",
+    "abbreviation": "SLP",
+    "email": "santlal.cse@themintfire.com",
+    "password": "$2b$10$tUoLVuRNsK3dV/3W13ehbeyaxm.Sj1kAbyjMj.Yfl2NaL3II6z.De",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Bidyut Saha",
+    "abbreviation": "BDS",
+    "email": "bidyut.cse@themintfire.com",
+    "password": "$2b$10$kug2j541Bqra58GaWnplO..uXI9pRfIVBR1XulC4FzvXdMjj7Ccym",
+    "department": "CSE",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]
