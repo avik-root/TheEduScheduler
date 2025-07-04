@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Search, LogIn, LogOut, CheckCircle, XCircle, Download, ChevronsUpDown, Check, Globe } from 'lucide-react';
-import { format, formatDistanceToNow, subDays, startOfWeek, endOfWeek, subWeeks, isWithinInterval } from 'date-fns';
+import { format, formatDistanceToNow, subDays, startOfWeek, endOfWeek, subWeeks, isWithinInterval, subMonths, subYears } from 'date-fns';
 import type { FacultyLog } from '@/lib/logs';
 import { getFacultyLogs } from '@/lib/logs';
 import { Badge } from '@/components/ui/badge';
@@ -132,6 +132,10 @@ export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLog
                 interval = { start: lastWeekStart, end: endOfWeek(lastWeekStart) };
             } else if (dateRange === 'last_30_days') {
                 interval = { start: subDays(now, 30), end: now };
+            } else if (dateRange === 'last_6_months') {
+                interval = { start: subMonths(now, 6), end: now };
+            } else if (dateRange === 'last_year') {
+                interval = { start: subYears(now, 1), end: now };
             } else {
                 interval = { start: new Date(0), end: now };
             }
@@ -275,6 +279,8 @@ export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLog
                             <SelectItem value="current_week">This Week</SelectItem>
                             <SelectItem value="last_week">Last Week</SelectItem>
                             <SelectItem value="last_30_days">Last 30 Days</SelectItem>
+                            <SelectItem value="last_6_months">Last 6 Months</SelectItem>
+                            <SelectItem value="last_year">Last Year</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
