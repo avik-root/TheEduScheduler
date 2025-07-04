@@ -1,19 +1,24 @@
+
 'use client';
 
 import * as React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Search, LogIn, LogOut, CheckCircle, XCircle } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { User, Mail, Search, LogIn, LogOut, CheckCircle, XCircle, Download } from 'lucide-react';
+import { format, formatDistanceToNow, subDays, startOfWeek, endOfWeek, subWeeks, isWithinInterval } from 'date-fns';
 import type { FacultyLog } from '@/lib/logs';
 import { getFacultyLogs } from '@/lib/logs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Faculty } from '@/lib/faculty';
+import { Button } from '@/components/ui/button';
 
 interface RecentLogsProps {
     logs: FacultyLog[];
     adminEmail: string;
+    faculty: Faculty[];
 }
 
 interface Session {
@@ -84,10 +89,12 @@ function processLogsToSessions(logs: FacultyLog[]): Session[] {
 }
 
 
-export function RecentLogs({ logs: initialLogs, adminEmail }: RecentLogsProps) {
+export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLogsProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [isClient, setIsClient] = React.useState(false);
     const [sessions, setSessions] = React.useState<Session[]>(() => processLogsToSessions(initialLogs));
+    const [selectedFaculty, setSelectedFaculty] = React.useState<string>('all');
+    const [dateRange, setDateRange] = React.useState<string>('all');
 
     React.useEffect(() => {
         setIsClient(true);
@@ -100,11 +107,66 @@ export function RecentLogs({ logs: initialLogs, adminEmail }: RecentLogsProps) {
     }, [adminEmail]);
 
 
-    const filteredSessions = sessions.filter(session => 
-        session.facultyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.facultyEmail.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredSessions = React.useMemo(() => {
+        let sessionsToFilter = sessions;
+
+        if (selectedFaculty !== 'all') {
+            sessionsToFilter = sessionsToFilter.filter(s => s.facultyEmail === selectedFaculty);
+        }
+
+        if (dateRange !== 'all') {
+            const now = new Date();
+            let interval: { start: Date, end: Date };
+
+            if (dateRange === 'current_week') {
+                interval = { start: startOfWeek(now), end: endOfWeek(now) };
+            } else if (dateRange === 'last_week') {
+                const lastWeekStart = startOfWeek(subWeeks(now, 1));
+                interval = { start: lastWeekStart, end: endOfWeek(lastWeekStart) };
+            } else if (dateRange === 'last_30_days') {
+                interval = { start: subDays(now, 30), end: now };
+            } else {
+                interval = { start: new Date(0), end: now };
+            }
+
+            sessionsToFilter = sessionsToFilter.filter(s => {
+                const loginDate = new Date(s.loginTime);
+                return isWithinInterval(loginDate, interval);
+            });
+        }
+        
+        if (searchQuery) {
+            return sessionsToFilter.filter(session => 
+                session.facultyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                session.facultyEmail.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        return sessionsToFilter;
+    }, [sessions, selectedFaculty, dateRange, searchQuery]);
     
+    const handleDownload = () => {
+        const headers = ['Faculty Name', 'Faculty Email', 'Status', 'Login Time', 'Logout Time'];
+        const rows = filteredSessions.map(session => [
+            `"${session.facultyName.replace(/"/g, '""')}"`,
+            `"${session.facultyEmail}"`,
+            `"${session.status}"`,
+            `"${format(new Date(session.loginTime), 'yyyy-MM-dd HH:mm:ss')}"`,
+            session.logoutTime ? `"${format(new Date(session.logoutTime), 'yyyy-MM-dd HH:mm:ss')}"` : '""'
+        ]);
+
+        const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+        
+        const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `faculty-logs-${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const getStatusInfo = (status: 'Active' | 'Logged Out') => {
         if (status === 'Active') {
             return {
@@ -120,7 +182,7 @@ export function RecentLogs({ logs: initialLogs, adminEmail }: RecentLogsProps) {
         };
     }
 
-    if (sessions.length === 0) {
+    if (initialLogs.length === 0) {
         return (
             <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
                 <p className="text-muted-foreground">No login events have been recorded yet.</p>
@@ -130,10 +192,45 @@ export function RecentLogs({ logs: initialLogs, adminEmail }: RecentLogsProps) {
 
     return (
         <div>
+            <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-end">
+                <div className="grid gap-2 flex-1 min-w-[200px]">
+                    <label htmlFor="faculty-filter" className="text-sm font-medium">Filter by Faculty</label>
+                    <Select value={selectedFaculty} onValueChange={setSelectedFaculty}>
+                        <SelectTrigger id="faculty-filter">
+                            <SelectValue placeholder="Select Faculty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Faculty</SelectItem>
+                            {faculty.map(f => <SelectItem key={f.email} value={f.email}>{f.name} ({f.abbreviation})</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="grid gap-2 flex-1 min-w-[200px]">
+                    <label htmlFor="daterange-filter" className="text-sm font-medium">Filter by Date</label>
+                    <Select value={dateRange} onValueChange={setDateRange}>
+                        <SelectTrigger id="daterange-filter">
+                            <SelectValue placeholder="Select Date Range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Time</SelectItem>
+                            <SelectItem value="current_week">This Week</SelectItem>
+                            <SelectItem value="last_week">Last Week</SelectItem>
+                            <SelectItem value="last_30_days">Last 30 Days</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex-shrink-0">
+                    <Button onClick={handleDownload} disabled={filteredSessions.length === 0}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download CSV
+                    </Button>
+                </div>
+            </div>
+
             <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                    placeholder="Search by faculty name or email..."
+                    placeholder="Search current results by name or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -142,10 +239,10 @@ export function RecentLogs({ logs: initialLogs, adminEmail }: RecentLogsProps) {
 
             {filteredSessions.length === 0 ? (
                 <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
-                    <p className="text-muted-foreground">No sessions found matching your search.</p>
+                    <p className="text-muted-foreground">No sessions found matching your filters.</p>
                 </div>
             ) : (
-                <ScrollArea className="h-[70vh] rounded-md border">
+                <ScrollArea className="h-[60vh] rounded-md border">
                     <Table>
                         <TableHeader>
                             <TableRow>

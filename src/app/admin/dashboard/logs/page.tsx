@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getAdminByEmail } from '@/lib/admin';
 import { getFacultyLogs } from '@/lib/logs';
 import { RecentLogs } from '@/components/admin/recent-logs';
+import { getFaculty } from '@/lib/faculty';
 
 export default async function LogsPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -16,6 +17,7 @@ export default async function LogsPage({ searchParams }: { searchParams: { email
   
   const admin = await getAdminByEmail(adminEmail);
   const facultyLogs = await getFacultyLogs(adminEmail);
+  const facultyList = await getFaculty(adminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -58,7 +60,7 @@ export default async function LogsPage({ searchParams }: { searchParams: { email
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <RecentLogs logs={facultyLogs} adminEmail={adminEmail} />
+                  <RecentLogs logs={facultyLogs} adminEmail={adminEmail} faculty={facultyList} />
                 </CardContent>
             </Card>
         </div>
