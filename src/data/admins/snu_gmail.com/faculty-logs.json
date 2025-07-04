@@ -1,5 +1,29 @@
 [
   {
+    "id": "1751644386866-iqt2n6g",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-04T15:53:06.866Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1751644364399-lt0wind",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-04T15:52:44.399Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1751644273887-mi5przk",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-04T15:51:13.887Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1751640371537-vda1xbm",
     "facultyName": "Rohit Roy Choudhury ",
     "facultyEmail": "rohit.c3a@themintfire.com",
