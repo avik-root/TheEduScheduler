@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { checkRoomAvailability, type CheckRoomAvailabilityOutput, type CheckRoomAvailabilityInput } from '@/ai/flows/check-room-availability';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
@@ -25,18 +24,24 @@ import { Calendar } from '@/components/ui/calendar';
 import { RequestRoomDialog } from '../teacher/request-room-dialog';
 import type { RoomRequestData } from '@/lib/requests';
 
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
-
 const AdminCheckerSchema = z.object({
   roomsToCheck: z.array(z.string()).refine((value) => value.length > 0, {
     message: 'You have to select at least one room or "Any Room".',
   }),
   startTime: z.string().min(1, 'Start time is required.'),
   endTime: z.string().min(1, 'End time is required.'),
-  days: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: 'You have to select at least one day.',
+  date: z.date({
+    required_error: "A date is required.",
   }),
-});
+}).refine((data) => {
+    if (!data.startTime || !data.endTime) return true; // Let other validators handle empty fields
+    const start = new Date(`1970-01-01T${data.startTime}:00`);
+    const end = new Date(`1970-01-01T${data.endTime}:00`);
+    return end > start;
+  }, {
+    message: "End time must be after start time.",
+    path: ["endTime"],
+  });
 
 const FacultyCheckerSchema = z.object({
   roomsToCheck: z.array(z.string()).refine((value) => value.length > 0, {
@@ -95,7 +100,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
     defaultValues: isFaculty
       ? { roomsToCheck: [], startTime: '', date: new Date(), endTime: '' }
-      : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', days: ['Monday'] },
+      : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', date: new Date() },
   });
 
   const { setValue } = form;
@@ -150,31 +155,17 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
     const isCheckingAll = data.roomsToCheck.includes('__ANY_ROOM__');
     const roomsForApi = isCheckingAll ? allRooms.map(r => r.name) : data.roomsToCheck;
 
-    let input: CheckRoomAvailabilityInput;
+    const finalData = data as { date: Date; [key: string]: any };
 
-    if ('date' in data && data.date) {
-        input = {
-            ...data,
-            roomsToCheck: roomsForApi,
-            isCheckingAll,
-            date: format(data.date, 'yyyy-MM-dd'),
-            schedule,
-            adminEmail
-        };
-    } else if ('days' in data) {
-         input = {
-            ...data,
-            roomsToCheck: roomsForApi,
-            isCheckingAll,
-            days: data.days,
-            schedule,
-            adminEmail
-        };
-    } else {
-        toast({ variant: 'destructive', title: 'Invalid Form Data' });
-        setIsLoading(false);
-        return;
-    }
+    const input: CheckRoomAvailabilityInput = {
+        ...finalData,
+        roomsToCheck: roomsForApi,
+        isCheckingAll,
+        date: format(finalData.date, 'yyyy-MM-dd'),
+        days: undefined,
+        schedule,
+        adminEmail
+    };
 
     try {
       const result = await checkRoomAvailability(input);
@@ -232,7 +223,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
         <CardDescription>
           {isFaculty 
             ? 'Check room availability for a specific date and time for a temporary booking.'
-            : 'Check room availability against the currently generated schedule. First, generate a schedule, then use this tool to query it.'}
+            : 'Check room availability for a specific date and time. This tool queries the generated schedule and any ad-hoc bookings.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -355,7 +346,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
               />
 
               <FormItem>
-                  <FormLabel>Availability Time & {isFaculty ? 'Date' : 'Days'}</FormLabel>
+                  <FormLabel>Availability Time & Date</FormLabel>
                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                           control={form.control}
@@ -364,7 +355,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                               <FormItem>
                                   <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> Start Time</FormLabel>
                                   <FormControl>
-                                      <Input type="time" {...field} min={isFaculty ? minTime : undefined} />
+                                      <Input type="time" {...field} min={minTime} />
                                   </FormControl>
                               </FormItem>
                           )}
@@ -384,7 +375,6 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                           />
                   </div>
                     <div className="pt-2">
-                    {isFaculty ? (
                         <FormField
                             control={form.control}
                             name="date"
@@ -402,7 +392,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                         )}
                                         >
                                         {field.value ? (
-                                            format(field.value, "PPP")
+                                            format(field.value as Date, "PPP")
                                         ) : (
                                             <span>Pick a date</span>
                                         )}
@@ -426,44 +416,6 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                 </FormItem>
                             )}
                         />
-                    ) : (
-                        <>
-                        <FormLabel className="text-xs text-muted-foreground flex items-center gap-2 mb-2"><CalendarIcon className="h-3 w-3" /> Available Days</FormLabel>
-                          <div className="grid grid-cols-3 gap-2 rounded-lg border p-2 sm:grid-cols-4">
-                          {daysOfWeek.map((day) => (
-                              <FormField
-                              key={day}
-                              control={form.control}
-                              name="days"
-                              render={({ field }) => {
-                                  return (
-                                  <FormItem
-                                      key={day}
-                                      className="flex flex-row items-start space-x-2 space-y-0"
-                                  >
-                                      <FormControl>
-                                      <Checkbox
-                                          checked={field.value?.includes(day)}
-                                          onCheckedChange={(checked) => {
-                                            const currentDays = Array.isArray(field.value) ? field.value : [];
-                                            return checked
-                                                ? field.onChange([...currentDays, day])
-                                                : field.onChange(currentDays?.filter((value) => value !== day))
-                                          }}
-                                      />
-                                      </FormControl>
-                                      <FormLabel className="text-sm font-normal">
-                                      {day}
-                                      </FormLabel>
-                                  </FormItem>
-                                  )
-                              }}
-                              />
-                          ))}
-                          </div>
-                      <FormMessage>{form.formState.errors.days?.message}</FormMessage>
-                      </>
-                    )}
                   </div>
               </FormItem>
             </div>
