@@ -246,3 +246,10 @@ export const DeveloperSchema = z.object({
     github: z.string().url("GitHub link must be a valid URL."),
     linkedin: z.string().url("LinkedIn link must be a valid URL."),
 });
+
+export const DeveloperPageContentSchema = z.object({
+    aboutTitle: z.string().min(1, "About title is required."),
+    aboutDescription: z.string().min(1, "About description is required."),
+    teamTitle: z.string().min(1, "Team title is required."),
+    teamDescription: z.string().min(1, "Team description is required."),
+});

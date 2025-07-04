@@ -3,12 +3,14 @@ import Link from 'next/link';
 import { CalendarCog, LogOut, Shield, ChevronLeft, BookUser } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getDevelopers, type Developer } from '@/lib/developer';
+import { getDevelopers, type Developer, getDeveloperPageContent } from '@/lib/developer';
 import { EditDeveloperDialog } from '@/components/super-admin/developer/edit-developer-dialog';
 import Image from 'next/image';
+import { EditPageContentDialog } from '@/components/super-admin/developer/edit-page-content-dialog';
 
 export default async function DeveloperSettingsPage() {
     const developers = await getDevelopers();
+    const pageContent = await getDeveloperPageContent();
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-950">
@@ -33,7 +35,7 @@ export default async function DeveloperSettingsPage() {
             </header>
             <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
                 <div className="mx-auto w-full max-w-6xl">
-                    <div className="mb-6 flex items-center justify-between gap-4">
+                    <div className="mb-8 flex items-center justify-between gap-4">
                         <div className="flex items-start gap-4">
                             <Button variant="outline" size="icon" className="h-8 w-8" asChild>
                                 <Link href={`/super-admin/dashboard`}>
@@ -50,6 +52,20 @@ export default async function DeveloperSettingsPage() {
                         </div>
                     </div>
 
+                    <Card className="mb-8">
+                        <CardHeader className="flex-row items-center justify-between">
+                            <div className="grid gap-1">
+                                <CardTitle>Page Content</CardTitle>
+                                <CardDescription>Edit the introductory text on the developer page.</CardDescription>
+                            </div>
+                            <EditPageContentDialog content={pageContent} />
+                        </CardHeader>
+                    </Card>
+
+                    <div className="mb-4">
+                        <h2 className="text-2xl font-semibold">Developer Profiles</h2>
+                        <p className="text-muted-foreground">Modify individual developer profiles.</p>
+                    </div>
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                         {developers.map((dev: Developer) => (
                             <Card key={dev.id} className="flex flex-col">

@@ -1,12 +1,14 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ChevronLeft, Shield, Mail, Github, Linkedin } from 'lucide-react';
-import { getDevelopers } from '@/lib/developer';
+import { getDevelopers, getDeveloperPageContent } from '@/lib/developer';
 
 export default async function DeveloperPage() {
   const developers = await getDevelopers();
+  const content = await getDeveloperPageContent();
 
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center bg-muted/40 px-4 py-12 sm:px-6 lg:px-8">
@@ -21,19 +23,19 @@ export default async function DeveloperPage() {
 
       <div className="w-full max-w-5xl space-y-20">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tighter text-primary sm:text-5xl">About MintFire</h1>
+          <h1 className="text-4xl font-bold tracking-tighter text-primary sm:text-5xl">{content.aboutTitle}</h1>
           <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground md:text-xl">
-            At MintFire, we believe in the power of intelligent automation to solve complex problems. We are a passionate team of developers and engineers dedicated to creating innovative solutions that are both powerful and user-friendly. Our flagship product, EduScheduler, is a testament to this commitment, revolutionizing academic scheduling with cutting-edge AI.
+            {content.aboutDescription}
           </p>
         </div>
 
         <div>
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tighter text-primary sm:text-4xl">
-              Meet the Team
+              {content.teamTitle}
             </h2>
             <p className="mt-2 text-lg text-muted-foreground">
-              The minds behind{' '}
+              {content.teamDescription}{' '}
               <span className="font-semibold">
                  <span className="text-red-500">Mint</span><span className="text-green-500">Fire</span>
               </span>
