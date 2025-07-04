@@ -29,7 +29,7 @@ export function EditDeveloperDialog({ developer }: EditDeveloperDialogProps) {
           Edit Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Developer Profile</DialogTitle>
           <DialogDescription>
