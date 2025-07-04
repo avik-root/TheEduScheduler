@@ -92,25 +92,24 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const [requestDialogOpen, setRequestDialogOpen] = React.useState(false);
   const [currentRequestData, setCurrentRequestData] = React.useState<Omit<RoomRequestData, 'reason'> | null>(null);
   const { toast } = useToast();
+  const [minTime, setMinTime] = React.useState('');
   
-  const [isClient, setIsClient] = React.useState(false);
-
   const isFaculty = userRole === 'faculty';
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
-    // Remove date from defaultValues to prevent hydration mismatch
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '' }
+      ? { roomsToCheck: [], startTime: '', endTime: '' }
       : { roomsToCheck: [], startTime: '10:00', endTime: '11:00' },
   });
 
-  const { setValue } = form;
+  const { setValue, watch } = form;
+  
   React.useEffect(() => {
-    setIsClient(true);
+    // This effect runs only on the client, after hydration.
+    // It sets the initial date and time for the form to avoid server/client mismatch.
+    setValue('date', new Date(), { shouldValidate: true });
     
-    // Set date client-side after mount to avoid hydration mismatch
     if (isFaculty) {
-      setValue('date', new Date(), { shouldValidate: true });
       const now = new Date();
       const minutes = now.getMinutes();
       const roundedMinutes = Math.ceil(minutes / 10) * 10;
@@ -121,13 +120,11 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
 
       const formattedTime = format(roundedTime, 'HH:mm');
       setValue('startTime', formattedTime, { shouldValidate: true });
-    } else {
-        setValue('date', new Date(), { shouldValidate: true });
     }
   }, [isFaculty, setValue]);
 
-  const startTime = form.watch('startTime');
-  const selectedDate = form.watch('date') as Date;
+  const startTime = watch('startTime');
+  const selectedDate = watch('date') as Date;
 
   React.useEffect(() => {
     if (isFaculty && startTime) {
@@ -149,9 +146,15 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
       }
     }
   }, [startTime, isFaculty, setValue]);
-
-  const isSelectedDateToday = !!selectedDate && isToday(selectedDate);
-  const minTime = isClient && isSelectedDateToday ? format(new Date(), "HH:mm") : "";
+  
+  React.useEffect(() => {
+    // This effect sets the minTime for the input only on the client side.
+    if (selectedDate && isToday(selectedDate)) {
+      setMinTime(format(new Date(), "HH:mm"));
+    } else {
+      setMinTime("");
+    }
+  }, [selectedDate]);
 
 
   async function onSubmit(data: FormData) {

@@ -1,2 +1,10 @@
-
-[]
+[
+  {
+    "id": "1751672687111-ba267x0",
+    "facultyName": "Dr. Anirban Mitra",
+    "facultyEmail": "anirban.cse@themintfire.com",
+    "timestamp": "2025-07-04T23:44:47.111Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  }
+]
