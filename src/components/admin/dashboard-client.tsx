@@ -8,6 +8,7 @@ import {
   Building2,
   Network,
   BookOpen,
+  ClipboardList,
 } from 'lucide-react';
 import {
   Card,
@@ -23,18 +24,15 @@ import { AiScheduleGenerator } from '@/components/admin/ai-schedule-generator';
 import { RoomAvailabilityChecker } from '@/components/admin/room-availability-checker';
 import { RoomRequests } from './room-requests';
 import type { RoomRequest } from '@/lib/requests';
-import type { FacultyLog } from '@/lib/logs';
-import { RecentLogs } from './recent-logs';
 
 interface DashboardClientProps {
     admin: Admin | null;
     allRooms: Room[];
     adminEmail: string;
     roomRequests: RoomRequest[];
-    facultyLogs: FacultyLog[];
 }
 
-export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, facultyLogs }: DashboardClientProps) {
+export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: DashboardClientProps) {
     const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
 
     return (
@@ -90,9 +88,19 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, fac
                       </CardContent>
                   </Card>
               </Link>
+               <Link href={`/admin/dashboard/logs?email=${adminEmail}`}>
+                  <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-lg font-semibold">Recent Logs</CardTitle>
+                          <ClipboardList className="h-5 w-5 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent className="flex-grow">
+                          <p className="text-sm text-muted-foreground">View recent faculty login activity.</p>
+                      </CardContent>
+                  </Card>
+              </Link>
           </div>
             <div className="grid gap-6 pt-8">
-                <RecentLogs logs={facultyLogs} />
                 <RoomRequests initialRequests={roomRequests} adminEmail={adminEmail} />
                 <AiScheduleGenerator
                     allRooms={allRooms}
