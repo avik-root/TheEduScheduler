@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -8,6 +9,9 @@ import { DeleteFacultyDialog } from '@/components/admin/faculty/delete-faculty-d
 import { UserCog, Search, Network } from 'lucide-react';
 import type { Faculty } from '@/lib/faculty';
 import type { Department } from '@/lib/departments';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DeleteSelectedFacultyDialog } from './delete-selected-faculty-dialog';
+import { cn } from '@/lib/utils';
 
 interface FacultyListProps {
     initialFaculty: Faculty[];
@@ -17,6 +21,7 @@ interface FacultyListProps {
 
 export function FacultyList({ initialFaculty, departments, adminEmail }: FacultyListProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
+    const [selectedFacultyEmails, setSelectedFacultyEmails] = React.useState<string[]>([]);
 
     const filteredFaculty = initialFaculty.filter(faculty =>
         faculty.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,6 +40,25 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
 
     const facultyWithoutDepartment = filteredFaculty.filter(f => !departments.some(d => d.name === f.department));
 
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedFacultyEmails(filteredFaculty.map(f => f.email));
+        } else {
+            setSelectedFacultyEmails([]);
+        }
+    };
+
+    const handleSelectFaculty = (email: string, checked: boolean) => {
+        if (checked) {
+            setSelectedFacultyEmails(prev => [...prev, email]);
+        } else {
+            setSelectedFacultyEmails(prev => prev.filter(id => id !== email));
+        }
+    };
+
+    const isAllSelected = filteredFaculty.length > 0 && selectedFacultyEmails.length === filteredFaculty.length;
+    const isSomeSelected = selectedFacultyEmails.length > 0 && selectedFacultyEmails.length < filteredFaculty.length;
+
 
     return (
         <div>
@@ -47,6 +71,29 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                     className="pl-10"
                 />
             </div>
+            
+            <div className="mb-4 flex min-h-[36px] items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        id="select-all"
+                        checked={isAllSelected || (isSomeSelected ? 'indeterminate' : false)}
+                        onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+                        aria-label="Select all faculty"
+                        disabled={filteredFaculty.length === 0}
+                    />
+                    <label htmlFor="select-all" className="text-sm font-medium">
+                        {selectedFacultyEmails.length > 0 ? `${selectedFacultyEmails.length} selected` : `Select All`}
+                    </label>
+                </div>
+                {selectedFacultyEmails.length > 0 && (
+                    <DeleteSelectedFacultyDialog
+                        emails={selectedFacultyEmails}
+                        onSuccess={() => setSelectedFacultyEmails([])}
+                        adminEmail={adminEmail}
+                    />
+                )}
+            </div>
+
 
             {facultyByDepartment.length === 0 && facultyWithoutDepartment.length === 0 ? (
                 <div className="flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
@@ -75,8 +122,17 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                             </div>
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {department.faculty.map((faculty: Faculty) => (
-                                    <Card key={faculty.email}>
-                                        <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
+                                    <Card key={faculty.email} className={cn("relative transition-all", selectedFacultyEmails.includes(faculty.email) ? 'border-primary ring-2 ring-primary' : '')}>
+                                         <div className="absolute top-4 left-4 z-10">
+                                            <Checkbox
+                                                id={`select-${faculty.email}`}
+                                                checked={selectedFacultyEmails.includes(faculty.email)}
+                                                onCheckedChange={(checked) => handleSelectFaculty(faculty.email, !!checked)}
+                                                className="h-5 w-5"
+                                                aria-label={`Select ${faculty.name}`}
+                                            />
+                                        </div>
+                                        <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4 pl-14">
                                             <div className="flex flex-1 items-start gap-4 min-w-0">
                                                 <div className="rounded-full bg-primary/10 p-3">
                                                     <UserCog className="h-6 w-6 text-primary" />
@@ -91,7 +147,7 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                                                 <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
                                             </div>
                                         </CardHeader>
-                                        <CardContent>
+                                        <CardContent className="pl-14">
                                             <p className="text-sm text-muted-foreground">
                                                 Department: <span className="font-medium text-foreground">{faculty.department}</span>
                                             </p>
@@ -117,8 +173,17 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                             </div>
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {facultyWithoutDepartment.map((faculty: Faculty) => (
-                                   <Card key={faculty.email}>
-                                        <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
+                                   <Card key={faculty.email} className={cn("relative transition-all", selectedFacultyEmails.includes(faculty.email) ? 'border-primary ring-2 ring-primary' : '')}>
+                                        <div className="absolute top-4 left-4 z-10">
+                                            <Checkbox
+                                                id={`select-${faculty.email}`}
+                                                checked={selectedFacultyEmails.includes(faculty.email)}
+                                                onCheckedChange={(checked) => handleSelectFaculty(faculty.email, !!checked)}
+                                                className="h-5 w-5"
+                                                aria-label={`Select ${faculty.name}`}
+                                            />
+                                        </div>
+                                        <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4 pl-14">
                                             <div className="flex flex-1 items-start gap-4 min-w-0">
                                                 <div className="rounded-full bg-primary/10 p-3">
                                                     <UserCog className="h-6 w-6 text-primary" />
@@ -133,7 +198,7 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                                                 <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
                                             </div>
                                         </CardHeader>
-                                        <CardContent>
+                                        <CardContent className="pl-14">
                                             <p className="text-sm text-muted-foreground">
                                                 Department: <span className="font-medium text-foreground">{faculty.department || 'N/A'}</span>
                                             </p>

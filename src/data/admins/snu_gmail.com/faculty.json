@@ -475,5 +475,89 @@
       "Sunday",
       "Saturday"
     ]
+  },
+  {
+    "name": "Rishika Roy",
+    "abbreviation": "RR",
+    "email": "rishika.c3a@themintfire.com",
+    "password": "$2b$10$PSTJDRk.2QV2alP2thFhWeLHBIPrE7z04bUTeZHWj2IG5sfj3qvQm",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Trishita Gautam",
+    "abbreviation": "TG",
+    "email": "trishita.c3a@themintfire.com",
+    "password": "$2b$10$mfZvWZMsEwFzd7z6.zXEZe9f8/XoO.YXHpFjBnf2VPnXa4I5/uNPu",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Atreyee Mukherjee",
+    "abbreviation": "AM",
+    "email": "atreyee.c3a@themintfire.com",
+    "password": "$2b$10$ftQUa/yyG/SDwC5guB8As.eutJ8jeXfAoRcOIEUQXQ4YajPK5Lme.",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Rituparna Sarka",
+    "abbreviation": "RS",
+    "email": "rituoarna.c3a@themintfire.com",
+    "password": "$2b$10$OzOM9WIlqatQCIO6RTy7gu851LHK2KXm0ZVxUZPSc4pGZpgw/gVhq",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Shiva Seth Alam",
+    "abbreviation": "SSA",
+    "email": "shiva.c3a@themintfire.com",
+    "password": "$2b$10$M8jmePZe.Pq3TXQfzsoeF.ik/1OMQUxMtKeEhwjv23OTwIFzmd002",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Mehakdeep Kaur",
+    "abbreviation": "MK",
+    "email": "mehakdeep.c3a@themintfire.com",
+    "password": "$2b$10$Ae6EeW3Bp6QjM/FHAhZDnOXD4uCTS0eB8lvrYNSNQBpl7e1r164UC",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
+  },
+  {
+    "name": "Meghna Ray",
+    "abbreviation": "MR",
+    "email": "meghna.c3a@themintfire.com",
+    "password": "$2b$10$UoZAE9F6FAZ.tkFaytqZ7OiV8ebgBL.VEwtYpGsNbNyGCc3RSkB1G",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]

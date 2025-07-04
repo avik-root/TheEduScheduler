@@ -138,6 +138,27 @@ export async function deleteFaculty(adminEmail: string, email: string): Promise<
     }
 }
 
+export async function deleteMultipleFaculty(adminEmail: string, emails: string[]): Promise<{ success: boolean; message: string }> {
+    let facultyList = await readFacultyFile(adminEmail);
+    
+    const originalCount = facultyList.length;
+    const updatedFacultyList = facultyList.filter(f => !emails.includes(f.email));
+    const deletedCount = originalCount - updatedFacultyList.length;
+
+    if (deletedCount === 0) {
+        return { success: false, message: 'No matching faculty members found to delete.' };
+    }
+
+    try {
+        await writeFacultyFile(adminEmail, updatedFacultyList);
+        const plural = deletedCount > 1 ? 's' : '';
+        return { success: true, message: `${deletedCount} faculty account${plural} deleted successfully.` };
+    } catch (error) {
+        console.error('Failed to delete multiple faculty:', error);
+        return { success: false, message: 'An internal error occurred. Please try again.' };
+    }
+}
+
 export async function loginFaculty(credentials: LoginData): Promise<{ success: boolean; message: string; adminEmail?: string; }> {
     const adminEmails = await getAdminEmails();
 
