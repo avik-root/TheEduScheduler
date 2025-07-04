@@ -88,6 +88,8 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const [currentRequestData, setCurrentRequestData] = React.useState<Omit<RoomRequestData, 'reason'> | null>(null);
   const { toast } = useToast();
   
+  const [isClient, setIsClient] = React.useState(false);
+
   const isFaculty = userRole === 'faculty';
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
@@ -98,6 +100,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
 
   const { setValue } = form;
   React.useEffect(() => {
+    setIsClient(true);
     if (isFaculty) {
       const now = new Date();
       const minutes = now.getMinutes();
@@ -137,7 +140,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   }, [startTime, isFaculty, setValue]);
 
   const isSelectedDateToday = !!selectedDate && isToday(selectedDate);
-  const minTime = isSelectedDateToday ? format(new Date(), "HH:mm") : "";
+  const minTime = isClient && isSelectedDateToday ? format(new Date(), "HH:mm") : "";
 
 
   async function onSubmit(data: FormData) {
@@ -262,7 +265,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                   const room = allRooms.find(r => r.name === roomName);
                                   return (
                                     <Badge
-                                      key={`${room.name}-${index}`}
+                                      key={`${room?.id || roomName}-${index}`}
                                       variant="secondary"
                                     >
                                       {roomName}
