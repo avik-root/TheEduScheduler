@@ -1,7 +1,7 @@
 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CalendarDays, LogOut, ChevronLeft, BookCopy, Calendar as CalendarIcon } from 'lucide-react';
+import { CalendarDays, LogOut, ChevronLeft, BookCopy, Calendar as CalendarIcon, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
@@ -125,7 +125,8 @@ export default async function ProgramYearsPage({ params, searchParams }: { param
       </main>
        <footer className="mt-auto border-t bg-background px-4 py-4 md:px-6">
         <div className="container mx-auto flex items-center justify-center">
-            <p className="text-sm font-semibold text-muted-foreground">
+            <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <Shield className="h-4 w-4" />
                 Secured by MintFire
             </p>
         </div>

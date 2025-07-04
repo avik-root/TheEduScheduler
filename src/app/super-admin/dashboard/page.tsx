@@ -90,7 +90,8 @@ export default async function SuperAdminDashboardPage() {
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} EduScheduler. All rights reserved.
           </p>
-          <p className="text-sm font-semibold text-muted-foreground">
+          <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Shield className="h-4 w-4" />
             Secured by MintFire
           </p>
           <nav className="flex gap-4 sm:gap-6">

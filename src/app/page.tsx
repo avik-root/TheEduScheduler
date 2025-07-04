@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from "@/components/auth/login-form";
 import { SignupForm } from "@/components/auth/signup-form";
-import { CalendarCog, Terminal } from 'lucide-react';
+import { CalendarCog, Terminal, Shield } from 'lucide-react';
 import { checkSuperAdminExists } from "@/lib/super-admin";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -58,7 +58,8 @@ export default async function Home() {
 
       </div>
       <footer className="absolute bottom-6 w-full text-center">
-        <p className="text-sm font-semibold text-muted-foreground">
+        <p className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Shield className="h-4 w-4" />
             Secured by MintFire
         </p>
       </footer>

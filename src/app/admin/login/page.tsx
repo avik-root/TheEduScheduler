@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AdminLoginForm } from "@/components/auth/admin-login-form";
-import { CalendarCog } from 'lucide-react';
+import { CalendarCog, Shield } from 'lucide-react';
 
 export default function AdminLoginPage() {
   return (
@@ -25,7 +25,8 @@ export default function AdminLoginPage() {
         </Card>
       </div>
       <footer className="absolute bottom-6 w-full text-center">
-        <p className="text-sm font-semibold text-muted-foreground">
+        <p className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Shield className="h-4 w-4" />
             Secured by MintFire
         </p>
       </footer>

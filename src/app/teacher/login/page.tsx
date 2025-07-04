@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TeacherLoginForm } from "@/components/auth/teacher-login-form";
-import { School } from 'lucide-react';
+import { School, Shield } from 'lucide-react';
 
 export default function TeacherLoginPage() {
   return (
@@ -25,7 +25,8 @@ export default function TeacherLoginPage() {
         </Card>
       </div>
       <footer className="absolute bottom-6 w-full text-center">
-        <p className="text-sm font-semibold text-muted-foreground">
+        <p className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Shield className="h-4 w-4" />
             Secured by MintFire
         </p>
       </footer>
