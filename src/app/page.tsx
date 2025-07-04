@@ -25,7 +25,7 @@ export default async function Home() {
             The Future of Intelligent Scheduling.
           </p>
           <p className="max-w-xl text-lg text-muted-foreground mx-auto md:mx-0">
-            Harness the power of AI to create flawless schedules in seconds. EduScheduler intelligently handles complex constraints, optimizes resource allocation, and eliminates conflicts, so you can focus on what truly matters.
+            Revolutionize the way you plan with EduScheduler by MintFire — the AI-powered solution that creates perfect schedules in seconds. Effortlessly manage complex constraints, optimize resource allocation, and eliminate conflicts with intelligent automation. Spend less time troubleshooting and more time on what truly matters.
           </p>
         </div>
 
