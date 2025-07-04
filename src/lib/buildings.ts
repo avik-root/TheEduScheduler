@@ -1,3 +1,4 @@
+
 'use server';
 
 import fs from 'fs/promises';
@@ -201,7 +202,11 @@ export async function addRooms(adminEmail: string, buildingId: string, floorId: 
     if (buildingIndex === -1) {
         return { success: false, message: 'Building not found.' };
     }
-    const floorIndex = buildings[buildingIndex].floors.findIndex(f => f.id === floorId);
+    const building = buildings[buildingIndex];
+    const words = building.name.split(' ');
+    const prefix = words[words.length - 1];
+
+    const floorIndex = building.floors.findIndex(f => f.id === floorId);
     if (floorIndex === -1) {
         return { success: false, message: 'Floor not found.' };
     }
@@ -209,7 +214,8 @@ export async function addRooms(adminEmail: string, buildingId: string, floorId: 
     rooms.forEach(roomData => {
          const newRoom: Room = {
             id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            ...roomData,
+            name: `${prefix}_${roomData.name}`,
+            capacity: roomData.capacity,
         };
         buildings[buildingIndex].floors[floorIndex].rooms.push(newRoom);
     });
