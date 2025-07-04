@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Search, ChevronsUpDown, Check, Calendar as CalendarIcon, Clock, Sparkles, Send } from 'lucide-react';
-import { format } from "date-fns"
+import { format, isToday } from "date-fns"
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -92,17 +92,28 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '08:00', endTime: '08:50' }
+      ? { roomsToCheck: [], startTime: '', date: new Date(), endTime: '' }
       : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', days: ['Monday'] },
   });
 
-  const startTime = form.watch('startTime');
-
+  const { setValue } = form;
   React.useEffect(() => {
-    if (isFaculty && form.getValues('date') === undefined) {
-      form.setValue('date', new Date());
+    if (isFaculty) {
+      const now = new Date();
+      const minutes = now.getMinutes();
+      const roundedMinutes = Math.ceil(minutes / 10) * 10;
+      
+      const roundedTime = new Date();
+      roundedTime.setHours(now.getHours());
+      roundedTime.setMinutes(roundedMinutes, 0, 0);
+
+      const formattedTime = format(roundedTime, 'HH:mm');
+      setValue('startTime', formattedTime, { shouldValidate: true });
     }
-  }, [isFaculty, form]);
+  }, [isFaculty, setValue]);
+
+  const startTime = form.watch('startTime');
+  const selectedDate = form.watch('date') as Date;
 
   React.useEffect(() => {
     if (isFaculty && startTime) {
@@ -117,13 +128,17 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
           const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
           
           const newEndTime = `${endHours}:${endMinutes}`;
-          form.setValue('endTime', newEndTime, { shouldValidate: true });
+          setValue('endTime', newEndTime, { shouldValidate: true });
         }
       } catch (e) {
         console.error("Could not auto-calculate end time:", e);
       }
     }
-  }, [startTime, isFaculty, form]);
+  }, [startTime, isFaculty, setValue]);
+
+  const isSelectedDateToday = !!selectedDate && isToday(selectedDate);
+  const minTime = isSelectedDateToday ? format(new Date(), "HH:mm") : "";
+
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
@@ -247,7 +262,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                   const room = allRooms.find(r => r.name === roomName);
                                   return (
                                     <Badge
-                                      key={`${roomName}-${index}`}
+                                      key={`${room.name}-${index}`}
                                       variant="secondary"
                                     >
                                       {roomName}
@@ -346,7 +361,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                               <FormItem>
                                   <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> Start Time</FormLabel>
                                   <FormControl>
-                                      <Input type="time" {...field} />
+                                      <Input type="time" {...field} min={isFaculty ? minTime : undefined} />
                                   </FormControl>
                               </FormItem>
                           )}
