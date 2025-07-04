@@ -2,11 +2,12 @@
 import Link from 'next/link';
 import { CalendarDays, LogOut, ChevronLeft, Network, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
-import { getDepartments, type Department } from '@/lib/departments';
+import { getDepartments } from '@/lib/departments';
 import { CreateDepartmentDialog } from '@/components/admin/departments/create-department-dialog';
 import { notFound } from 'next/navigation';
+import { DepartmentsList } from '@/components/admin/departments/departments-list';
 
 export default async function DepartmentsPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -59,40 +60,7 @@ export default async function DepartmentsPage({ searchParams }: { searchParams: 
                   </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {departments.map((department: Department) => (
-                           <Link key={department.id} href={`/admin/dashboard/departments/${department.id}?email=${adminEmail}`}>
-                                <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
-                                    <CardHeader className="flex-row items-center gap-4">
-                                        <div className="rounded-full bg-primary/10 p-3">
-                                            <Network className="h-6 w-6 text-primary" />
-                                        </div>
-                                        <CardTitle className="text-xl">{department.name}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="flex-grow">
-                                        <p className="text-sm text-muted-foreground">
-                                            {department.programs.length} program(s)
-                                        </p>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <p className="text-xs text-muted-foreground">Click to manage programs</p>
-                                    </CardFooter>
-                                </Card>
-                            </Link>
-                        ))}
-                        {departments.length === 0 && (
-                            <div className="col-span-1 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 sm:col-span-2 lg:col-span-3">
-                                <div className="text-center">
-                                <p className="text-muted-foreground">
-                                    No departments found.
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    Click &apos;Create New Department&apos; to get started.
-                                </p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <DepartmentsList initialDepartments={departments} adminEmail={adminEmail} />
                 </CardContent>
             </Card>
         </div>
