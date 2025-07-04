@@ -1,17 +1,18 @@
-
 'use client';
 
 import * as React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Search, LogIn, LogOut, CheckCircle, XCircle, Download } from 'lucide-react';
+import { User, Mail, Search, LogIn, LogOut, CheckCircle, XCircle, Download, ChevronsUpDown, Check } from 'lucide-react';
 import { format, formatDistanceToNow, subDays, startOfWeek, endOfWeek, subWeeks, isWithinInterval } from 'date-fns';
 import type { FacultyLog } from '@/lib/logs';
 import { getFacultyLogs } from '@/lib/logs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import type { Faculty } from '@/lib/faculty';
 import { Button } from '@/components/ui/button';
 
@@ -95,6 +96,7 @@ export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLog
     const [sessions, setSessions] = React.useState<Session[]>(() => processLogsToSessions(initialLogs));
     const [selectedFaculty, setSelectedFaculty] = React.useState<string>('all');
     const [dateRange, setDateRange] = React.useState<string>('all');
+    const [facultyFilterOpen, setFacultyFilterOpen] = React.useState(false);
 
     React.useEffect(() => {
         setIsClient(true);
@@ -195,15 +197,66 @@ export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLog
             <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-end">
                 <div className="grid gap-2 flex-1 min-w-[200px]">
                     <label htmlFor="faculty-filter" className="text-sm font-medium">Filter by Faculty</label>
-                    <Select value={selectedFaculty} onValueChange={setSelectedFaculty}>
-                        <SelectTrigger id="faculty-filter">
-                            <SelectValue placeholder="Select Faculty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Faculty</SelectItem>
-                            {faculty.map(f => <SelectItem key={f.email} value={f.email}>{f.name} ({f.abbreviation})</SelectItem>)}
-                        </SelectContent>
-                    </Select>
+                     <Popover open={facultyFilterOpen} onOpenChange={setFacultyFilterOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={facultyFilterOpen}
+                                className="w-full justify-between"
+                                id="faculty-filter"
+                            >
+                                {selectedFaculty === 'all'
+                                    ? "All Faculty"
+                                    : faculty.find((f) => f.email === selectedFaculty)?.name ?? "Select Faculty..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search faculty..." />
+                                <CommandList>
+                                    <CommandEmpty>No faculty found.</CommandEmpty>
+                                    <CommandGroup>
+                                        <CommandItem
+                                            key="all"
+                                            value="all"
+                                            onSelect={() => {
+                                                setSelectedFaculty("all")
+                                                setFacultyFilterOpen(false)
+                                            }}
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    selectedFaculty === "all" ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            All Faculty
+                                        </CommandItem>
+                                        {faculty.map((f) => (
+                                            <CommandItem
+                                                key={f.email}
+                                                value={f.name}
+                                                onSelect={() => {
+                                                    setSelectedFaculty(f.email === selectedFaculty ? 'all' : f.email)
+                                                    setFacultyFilterOpen(false)
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        selectedFaculty === f.email ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                />
+                                                {f.name} ({f.abbreviation})
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
                 </div>
                 <div className="grid gap-2 flex-1 min-w-[200px]">
                     <label htmlFor="daterange-filter" className="text-sm font-medium">Filter by Date</label>
