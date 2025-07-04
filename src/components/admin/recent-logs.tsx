@@ -8,18 +8,30 @@ import { Input } from '@/components/ui/input';
 import { User, Mail, Clock, Search, LogIn, LogOut } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import type { FacultyLog } from '@/lib/logs';
+import { getFacultyLogs } from '@/lib/logs';
 
 interface RecentLogsProps {
     logs: FacultyLog[];
+    adminEmail: string;
 }
 
-export function RecentLogs({ logs }: RecentLogsProps) {
+export function RecentLogs({ logs: initialLogs, adminEmail }: RecentLogsProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [isClient, setIsClient] = React.useState(false);
+    const [logs, setLogs] = React.useState<FacultyLog[]>(initialLogs);
 
     React.useEffect(() => {
         setIsClient(true);
     }, []);
+
+    React.useEffect(() => {
+        const interval = setInterval(async () => {
+            const latestLogs = await getFacultyLogs(adminEmail);
+            setLogs(latestLogs);
+        }, 5000); // Poll every 5 seconds
+
+        return () => clearInterval(interval); // Cleanup on component unmount
+    }, [adminEmail]);
 
 
     const filteredLogs = logs.filter(log => 

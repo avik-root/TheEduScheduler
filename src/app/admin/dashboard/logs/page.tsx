@@ -52,13 +52,13 @@ export default async function LogsPage({ searchParams }: { searchParams: { email
                       </Button>
                       <div className="grid gap-1">
                         <CardTitle className="flex items-center gap-2"><ClipboardList className="h-6 w-6" /> Recent Faculty Logins</CardTitle>
-                        <CardDescription>A list of the most recent faculty login events.</CardDescription>
+                        <CardDescription>A list of the most recent faculty login events. This page updates automatically.</CardDescription>
                       </div>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <RecentLogs logs={facultyLogs} />
+                  <RecentLogs logs={facultyLogs} adminEmail={adminEmail} />
                 </CardContent>
             </Card>
         </div>
