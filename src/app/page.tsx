@@ -1,4 +1,4 @@
-
+import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from "@/components/auth/login-form";
@@ -26,7 +26,11 @@ export default async function Home() {
             The Future of Intelligent Scheduling.
           </p>
           <p className="max-w-xl text-lg text-muted-foreground mx-auto md:mx-0">
-            Revolutionize the way you plan with EduScheduler by MintFire — the AI-powered solution that creates perfect schedules in seconds. Effortlessly manage complex constraints, optimize resource allocation, and eliminate conflicts with intelligent automation. Spend less time troubleshooting and more time on what truly matters.
+            Revolutionize the way you plan with EduScheduler by{' '}
+            <Link href="/developer" className="font-semibold hover:underline">
+              <span className="text-red-500">Mint</span><span className="text-green-500">Fire</span>
+            </Link>
+            {' '}&mdash; the AI-powered solution that creates perfect schedules in seconds. Effortlessly manage complex constraints, optimize resource allocation, and eliminate conflicts with intelligent automation. Spend less time troubleshooting and more time on what truly matters.
           </p>
         </div>
 

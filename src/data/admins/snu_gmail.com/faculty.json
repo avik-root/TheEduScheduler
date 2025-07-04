@@ -463,5 +463,17 @@
       "Sunday",
       "Saturday"
     ]
+  },
+  {
+    "name": "Rohit Roy Choudhury ",
+    "abbreviation": "RRC",
+    "email": "rohit.c3a@themintfire.com",
+    "password": "$2b$10$OU.Z12wu0PYuJDyJwEVFaOL0235e7cT2HyrHNTa6Lb9z.f/j6KhuC",
+    "department": "C3A",
+    "weeklyMaxHours": 40,
+    "weeklyOffDays": [
+      "Sunday",
+      "Saturday"
+    ]
   }
 ]
