@@ -1,31 +1,34 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, Shield } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { ChevronLeft, Shield, Mail, Github, Linkedin } from 'lucide-react';
 
 export default function DeveloperPage() {
   const developers = [
     {
-      name: 'Anusha',
+      name: 'Anusha Gupta',
       role: 'Full Stack Developer',
       bio: 'Anusha is a passionate developer who loves building beautiful and functional web applications. She specializes in Next.js, React, and Tailwind CSS.',
       avatar: 'https://placehold.co/150x150.png',
       hint: 'woman portrait',
+      links: {
+        email: 'mailto:anusha.gupta@example.com',
+        github: 'https://github.com',
+        linkedin: 'https://linkedin.com/in/',
+      },
     },
     {
-      name: 'Rohit',
+      name: 'Avik Samanta',
       role: 'AI & Backend Engineer',
-      bio: 'Rohit is an expert in artificial intelligence and backend systems. He designed the core scheduling engine for EduScheduler using Genkit.',
+      bio: 'Avik is an expert in artificial intelligence and backend systems. He designed the core scheduling engine for EduScheduler using Genkit.',
       avatar: 'https://placehold.co/150x150.png',
       hint: 'man portrait',
-    },
-     {
-      name: 'Biswabid',
-      role: 'UI/UX Designer',
-      bio: 'Biswabid has a keen eye for design and user experience. He created the clean and intuitive interface for EduScheduler using ShadCN UI.',
-      avatar: 'https://placehold.co/150x150.png',
-      hint: 'person smiling',
+       links: {
+        email: 'mailto:avik.samanta@example.com',
+        github: 'https://github.com',
+        linkedin: 'https://linkedin.com/in/',
+      },
     },
   ];
 
@@ -53,11 +56,11 @@ export default function DeveloperPage() {
         </p>
       </div>
 
-      <div className="mt-16 grid w-full max-w-4xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-16 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-2">
         {developers.map((dev) => (
-          <Card key={dev.name} className="text-center">
+          <Card key={dev.name} className="flex flex-col text-center">
             <CardHeader>
-              <div className="mx-auto h-24 w-24 overflow-hidden rounded-full">
+              <div className="mx-auto h-32 w-32 overflow-hidden rounded-full border-4 border-primary/20">
                 <Image
                   src={dev.avatar}
                   alt={`Avatar of ${dev.name}`}
@@ -68,11 +71,28 @@ export default function DeveloperPage() {
                 />
               </div>
             </CardHeader>
-            <CardContent>
-              <CardTitle>{dev.name}</CardTitle>
-              <p className="mt-1 text-sm font-medium text-primary">{dev.role}</p>
+            <CardContent className="flex-grow">
+              <CardTitle className="text-2xl">{dev.name}</CardTitle>
+              <p className="mt-1 text-base font-medium text-primary">{dev.role}</p>
               <p className="mt-4 text-muted-foreground">{dev.bio}</p>
             </CardContent>
+            <CardFooter className="mt-auto flex justify-center gap-4 border-t pt-4">
+              <Button asChild variant="ghost" size="icon">
+                <a href={dev.links.email} aria-label={`${dev.name}'s Email`}>
+                  <Mail className="h-6 w-6" />
+                </a>
+              </Button>
+              <Button asChild variant="ghost" size="icon">
+                <a href={dev.links.github} target="_blank" rel="noopener noreferrer" aria-label={`${dev.name}'s GitHub`}>
+                  <Github className="h-6 w-6" />
+                </a>
+              </Button>
+              <Button asChild variant="ghost" size="icon">
+                <a href={dev.links.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${dev.name}'s LinkedIn`}>
+                  <Linkedin className="h-6 w-6" />
+                </a>
+              </Button>
+            </CardFooter>
           </Card>
         ))}
       </div>
