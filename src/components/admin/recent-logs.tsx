@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Search, LogIn, LogOut, CheckCircle, XCircle, Download, ChevronsUpDown, Check } from 'lucide-react';
+import { User, Mail, Search, LogIn, LogOut, CheckCircle, XCircle, Download, ChevronsUpDown, Check, Globe } from 'lucide-react';
 import { format, formatDistanceToNow, subDays, startOfWeek, endOfWeek, subWeeks, isWithinInterval } from 'date-fns';
 import type { FacultyLog } from '@/lib/logs';
 import { getFacultyLogs } from '@/lib/logs';
@@ -29,6 +30,7 @@ interface Session {
     status: 'Active' | 'Logged Out';
     loginTime: string;
     logoutTime: string | null;
+    ipAddress?: string;
 }
 
 function processLogsToSessions(logs: FacultyLog[]): Session[] {
@@ -49,6 +51,7 @@ function processLogsToSessions(logs: FacultyLog[]): Session[] {
                     status: 'Logged Out',
                     loginTime: oldLogin.timestamp,
                     logoutTime: log.timestamp, // End time is the start of the new session
+                    ipAddress: oldLogin.ipAddress,
                 });
             }
             activeLogins.set(log.facultyEmail, log);
@@ -62,6 +65,7 @@ function processLogsToSessions(logs: FacultyLog[]): Session[] {
                     status: 'Logged Out',
                     loginTime: loginLog.timestamp,
                     logoutTime: log.timestamp,
+                    ipAddress: loginLog.ipAddress,
                 });
                 activeLogins.delete(log.facultyEmail);
             }
@@ -78,6 +82,7 @@ function processLogsToSessions(logs: FacultyLog[]): Session[] {
             status: 'Active',
             loginTime: loginLog.timestamp,
             logoutTime: null,
+            ipAddress: loginLog.ipAddress,
         });
     });
 
@@ -148,10 +153,11 @@ export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLog
     }, [sessions, selectedFaculty, dateRange, searchQuery]);
     
     const handleDownload = () => {
-        const headers = ['Faculty Name', 'Faculty Email', 'Status', 'Login Time', 'Logout Time'];
+        const headers = ['Faculty Name', 'Faculty Email', 'IP Address', 'Status', 'Login Time', 'Logout Time'];
         const rows = filteredSessions.map(session => [
             `"${session.facultyName.replace(/"/g, '""')}"`,
             `"${session.facultyEmail}"`,
+            `"${session.ipAddress || 'N/A'}"`,
             `"${session.status}"`,
             `"${format(new Date(session.loginTime), 'yyyy-MM-dd HH:mm:ss')}"`,
             session.logoutTime ? `"${format(new Date(session.logoutTime), 'yyyy-MM-dd HH:mm:ss')}"` : '""'
@@ -299,7 +305,7 @@ export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLog
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Faculty</TableHead>
+                                <TableHead>Faculty / IP</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Login Time</TableHead>
                                 <TableHead>Logout Time</TableHead>
@@ -313,6 +319,7 @@ export function RecentLogs({ logs: initialLogs, adminEmail, faculty }: RecentLog
                                     <TableCell>
                                         <div className="font-medium flex items-center gap-2"><User className="h-4 w-4" />{session.facultyName}</div>
                                         <div className="text-xs text-muted-foreground flex items-center gap-2 ml-6"><Mail className="h-3 w-3" />{session.facultyEmail}</div>
+                                        <div className="text-xs text-muted-foreground flex items-center gap-2 ml-6"><Globe className="h-3 w-3" />{session.ipAddress || 'N/A'}</div>
                                     </TableCell>
                                     <TableCell>
                                         <Badge className={cn("text-xs capitalize", statusInfo.badgeClass)}>

@@ -9,6 +9,7 @@ import { FacultySchema, UpdateFacultySchema, LoginSchema, FacultyChangePasswordS
 import { getAdminDataPath } from './common';
 import { getAdminEmails } from './admin';
 import { addFacultyLog } from './logs';
+import { headers } from 'next/headers';
 
 const facultyFileName = 'faculty.json';
 
@@ -135,7 +136,9 @@ export async function loginFaculty(credentials: LoginData): Promise<{ success: b
         if (faculty) {
             const passwordMatch = await bcrypt.compare(credentials.password, faculty.password);
             if (passwordMatch) {
-                await addFacultyLog(adminEmail, faculty.name, faculty.email, 'login');
+                const forwarded = headers().get('x-forwarded-for');
+                const ip = forwarded ? forwarded.split(/, /)[0] : headers().get('x-real-ip');
+                await addFacultyLog(adminEmail, faculty.name, faculty.email, 'login', ip ?? undefined);
                 return { success: true, message: 'Login successful!', adminEmail };
             }
         }

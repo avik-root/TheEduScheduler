@@ -13,6 +13,7 @@ export interface FacultyLog {
     facultyEmail: string;
     timestamp: string;
     type: 'login' | 'logout';
+    ipAddress?: string;
 }
 
 async function getLogsFilePath(adminEmail: string): Promise<string> {
@@ -47,7 +48,7 @@ export async function getFacultyLogs(adminEmail: string): Promise<FacultyLog[]> 
     return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 
-export async function addFacultyLog(adminEmail: string, facultyName: string, facultyEmail: string, type: 'login' | 'logout'): Promise<void> {
+export async function addFacultyLog(adminEmail: string, facultyName: string, facultyEmail: string, type: 'login' | 'logout', ipAddress?: string): Promise<void> {
     const logs = await readLogsFile(adminEmail);
     const newLog: FacultyLog = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -55,6 +56,7 @@ export async function addFacultyLog(adminEmail: string, facultyName: string, fac
         facultyEmail,
         timestamp: new Date().toISOString(),
         type,
+        ipAddress,
     };
     
     // Keep the log file from growing indefinitely, cap at 100 entries
