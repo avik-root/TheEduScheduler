@@ -98,14 +98,19 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   const isFaculty = userRole === 'faculty';
   const form = useForm<FormData>({
     resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
+    // Remove date from defaultValues to prevent hydration mismatch
     defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '', date: new Date(), endTime: '' }
-      : { roomsToCheck: [], startTime: '10:00', endTime: '11:00', date: new Date() },
+      ? { roomsToCheck: [], startTime: '', endTime: '' }
+      : { roomsToCheck: [], startTime: '10:00', endTime: '11:00' },
   });
 
   const { setValue } = form;
   React.useEffect(() => {
     setIsClient(true);
+    
+    // Set date client-side after mount to avoid hydration mismatch
+    setValue('date', new Date(), { shouldValidate: true });
+
     if (isFaculty) {
       const now = new Date();
       const minutes = now.getMinutes();
@@ -459,10 +464,10 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {availabilityResult.availability.map((room, index) => {
+                            {availabilityResult.availability.map((room) => {
                                 const fullRoom = allRooms.find(r => r.name === room.name);
                                 return (
-                                <TableRow key={`${room.name}-${index}`}>
+                                <TableRow key={`${room.name}-${room.reason}`}>
                                     <TableCell className="font-medium">
                                         <div>{room.name}</div>
                                         {fullRoom && (
