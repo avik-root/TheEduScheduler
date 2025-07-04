@@ -3,34 +3,10 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ChevronLeft, Shield, Mail, Github, Linkedin } from 'lucide-react';
+import { getDevelopers } from '@/lib/developer';
 
-export default function DeveloperPage() {
-  const developers = [
-    {
-      name: 'Anusha Gupta',
-      role: 'Full Stack Developer',
-      bio: 'Anusha is a passionate developer who loves building beautiful and functional web applications. She specializes in Next.js, React, and Tailwind CSS.',
-      avatar: 'https://placehold.co/150x150.png',
-      hint: 'woman portrait',
-      links: {
-        email: 'mailto:anusha.gupta@example.com',
-        github: 'https://github.com',
-        linkedin: 'https://linkedin.com/in/',
-      },
-    },
-    {
-      name: 'Avik Samanta',
-      role: 'AI & Backend Engineer',
-      bio: 'Avik is an expert in artificial intelligence and backend systems. He designed the core scheduling engine for EduScheduler using Genkit.',
-      avatar: 'https://placehold.co/150x150.png',
-      hint: 'man portrait',
-       links: {
-        email: 'mailto:avik.samanta@example.com',
-        github: 'https://github.com',
-        linkedin: 'https://linkedin.com/in/',
-      },
-    },
-  ];
+export default async function DeveloperPage() {
+  const developers = await getDevelopers();
 
   return (
     <main className="relative flex min-h-screen w-full flex-col items-center bg-background px-4 py-12 sm:px-6 lg:px-8">
@@ -58,7 +34,7 @@ export default function DeveloperPage() {
 
       <div className="mt-16 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-2">
         {developers.map((dev) => (
-          <Card key={dev.name} className="flex flex-col text-center">
+          <Card key={dev.id} className="flex flex-col text-center">
             <CardHeader>
               <div className="mx-auto h-32 w-32 overflow-hidden rounded-full border-4 border-primary/20">
                 <Image

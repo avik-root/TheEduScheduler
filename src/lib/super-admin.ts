@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { LoginSchema, SignupSchema } from '@/lib/validators/auth';
+import { LoginSchema, SignupSchema, UpdateSuperAdminSchema } from '@/lib/validators/auth';
 
 // Define the path to the super admin data file
 const superAdminFilePath = path.join(process.cwd(), 'src', 'data', 'super-admin.json');
@@ -12,6 +12,8 @@ const superAdminFilePath = path.join(process.cwd(), 'src', 'data', 'super-admin.
 // Define the type for the super admin data using the existing Zod schema
 type SuperAdmin = z.infer<typeof SignupSchema>;
 type LoginData = z.infer<typeof LoginSchema>;
+type UpdateSuperAdminData = z.infer<typeof UpdateSuperAdminSchema>;
+
 
 // Helper function to read the super admin file
 async function readSuperAdminFile(): Promise<SuperAdmin | null> {
@@ -35,6 +37,10 @@ async function readSuperAdminFile(): Promise<SuperAdmin | null> {
         // If file doesn't exist or other errors, assume no admin exists
         return null;
     }
+}
+
+export async function getSuperAdmin(): Promise<SuperAdmin | null> {
+    return await readSuperAdminFile();
 }
 
 /**
@@ -91,4 +97,33 @@ export async function loginSuperAdmin(credentials: LoginData): Promise<{ success
     }
 
     return { success: false, message: 'Invalid email or password.' };
+}
+
+export async function updateSuperAdmin(data: UpdateSuperAdminData): Promise<{ success: boolean; message: string }> {
+    const admin = await readSuperAdminFile();
+    if (!admin) {
+        return { success: false, message: 'Super admin account not found.' };
+    }
+
+    const passwordMatch = await bcrypt.compare(data.currentPassword, admin.password);
+    if (!passwordMatch) {
+        return { success: false, message: 'Incorrect current password. Changes not saved.' };
+    }
+
+    const updatedAdmin = { ...admin };
+    updatedAdmin.name = data.name;
+    updatedAdmin.email = data.email;
+
+    if (data.password) {
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        updatedAdmin.password = hashedPassword;
+    }
+
+    try {
+        await fs.writeFile(superAdminFilePath, JSON.stringify(updatedAdmin, null, 2));
+        return { success: true, message: 'Super admin account updated successfully.' };
+    } catch (error) {
+        console.error('Failed to update super admin:', error);
+        return { success: false, message: 'An internal error occurred. Please try again.' };
+    }
 }

@@ -44,6 +44,22 @@ export const UpdateAdminSchema = z.object({
     path: ["currentPassword"],
 });
 
+export const UpdateSuperAdminSchema = z.object({
+    name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+    email: z.string().email({ message: 'Please enter a valid email address.' }),
+    currentPassword: z.string().min(1, { message: 'Your current password is required to save changes.' }),
+    password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
+    confirmPassword: z.string().optional().or(z.literal('')),
+}).refine(data => {
+    if (data.password && data.password !== data.confirmPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "New passwords do not match.",
+    path: ["confirmPassword"],
+});
+
 
 export const FacultySchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -217,4 +233,16 @@ export const SubjectSchema = z.object({
 
 export const UpdateSubjectSchema = SubjectSchema.extend({
     id: z.string(),
+});
+
+export const DeveloperSchema = z.object({
+    id: z.string(),
+    name: z.string().min(1, "Name is required."),
+    role: z.string().min(1, "Role is required."),
+    bio: z.string().min(1, "Bio is required."),
+    avatar: z.string().url("Avatar must be a valid URL."),
+    hint: z.string(),
+    email: z.string().min(1, "Email link is required."),
+    github: z.string().url("GitHub link must be a valid URL."),
+    linkedin: z.string().url("LinkedIn link must be a valid URL."),
 });

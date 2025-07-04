@@ -1,11 +1,13 @@
 
 import Link from 'next/link';
-import { CalendarCog, LogOut, School, Shield, UserCog } from 'lucide-react';
+import { CalendarCog, LogOut, School, Shield, UserCog, BookUser } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
   Card,
+  CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -13,9 +15,13 @@ import { getAdmins, type Admin } from '@/lib/admin';
 import { CreateAdminDialog } from '@/components/super-admin/create-admin-dialog';
 import { EditAdminDialog } from '@/components/super-admin/edit-admin-dialog';
 import { DeleteAdminDialog } from '@/components/super-admin/delete-admin-dialog';
+import { getSuperAdmin } from '@/lib/super-admin';
+import { EditSuperAdminDialog } from '@/components/super-admin/edit-super-admin-dialog';
+
 
 export default async function SuperAdminDashboardPage() {
   const admins = await getAdmins();
+  const superAdmin = await getSuperAdmin();
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-950">
@@ -44,10 +50,13 @@ export default async function SuperAdminDashboardPage() {
             <div>
               <h1 className="text-3xl font-semibold">Admin Management</h1>
               <p className="text-muted-foreground">
-                Create and manage administrator accounts.
+                Create and manage administrator accounts for different institutions.
               </p>
             </div>
-            <CreateAdminDialog />
+             <div className="flex items-center gap-2">
+               {superAdmin && <EditSuperAdminDialog superAdmin={superAdmin} />}
+               <CreateAdminDialog />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -83,6 +92,29 @@ export default async function SuperAdminDashboardPage() {
               </div>
             )}
           </div>
+
+           <div className="mt-12">
+             <h2 className="text-2xl font-semibold mb-4">Site Configuration</h2>
+             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <Link href="/super-admin/dashboard/developer">
+                    <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
+                      <CardHeader className="flex-row items-center gap-4">
+                        <div className="rounded-full bg-primary/10 p-3">
+                            <BookUser className="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle className="text-xl">Developer Page</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex-grow">
+                        <p className="text-sm text-muted-foreground">Manage the content of the developer showcase page.</p>
+                      </CardContent>
+                       <CardFooter>
+                          <p className="text-xs text-muted-foreground">Click to manage page content</p>
+                      </CardFooter>
+                    </Card>
+                </Link>
+             </div>
+          </div>
+
         </div>
       </main>
       <footer className="mt-auto border-t bg-white px-4 py-6 dark:border-gray-800 dark:bg-gray-900 md:px-6">

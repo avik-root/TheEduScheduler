@@ -1,0 +1,29 @@
+
+[
+  {
+    "id": "anusha-gupta",
+    "name": "Anusha Gupta",
+    "role": "Full Stack Developer",
+    "bio": "Anusha is a passionate developer who loves building beautiful and functional web applications. She specializes in Next.js, React, and Tailwind CSS.",
+    "avatar": "https://placehold.co/150x150.png",
+    "hint": "woman portrait",
+    "links": {
+      "email": "mailto:anusha.gupta@example.com",
+      "github": "https://github.com",
+      "linkedin": "https://linkedin.com/in/"
+    }
+  },
+  {
+    "id": "avik-samanta",
+    "name": "Avik Samanta",
+    "role": "AI & Backend Engineer",
+    "bio": "Avik is an expert in artificial intelligence and backend systems. He designed the core scheduling engine for EduScheduler using Genkit.",
+    "avatar": "https://placehold.co/150x150.png",
+    "hint": "man portrait",
+    "links": {
+      "email": "mailto:avik.samanta@example.com",
+      "github": "https://github.com",
+      "linkedin": "https://linkedin.com/in/"
+    }
+  }
+]
