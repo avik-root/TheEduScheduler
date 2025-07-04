@@ -254,6 +254,49 @@
   {
     "id": "1751057708578-wndjwip",
     "name": "ECE",
-    "programs": []
+    "programs": [
+      {
+        "id": "1751634554950-wicmk8l",
+        "name": "B.Tech ECE",
+        "years": [
+          {
+            "id": "1751634748879-5k6dgh2",
+            "name": "Year 1",
+            "sections": []
+          },
+          {
+            "id": "1751634748879-umrwdob",
+            "name": "Year 2",
+            "sections": []
+          },
+          {
+            "id": "1751634748879-v6cbdy3",
+            "name": "Year 3",
+            "sections": []
+          },
+          {
+            "id": "1751634748879-brjoz98",
+            "name": "Year 4",
+            "sections": []
+          }
+        ]
+      },
+      {
+        "id": "1751634565075-zt9wwe3",
+        "name": "M.Tech ECE",
+        "years": [
+          {
+            "id": "1751634764402-sxmw4am",
+            "name": "Year 1",
+            "sections": []
+          },
+          {
+            "id": "1751634773021-yj1nenv",
+            "name": "Year 2",
+            "sections": []
+          }
+        ]
+      }
+    ]
   }
 ]

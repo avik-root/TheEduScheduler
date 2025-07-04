@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -22,15 +23,18 @@ import { AiScheduleGenerator } from '@/components/admin/ai-schedule-generator';
 import { RoomAvailabilityChecker } from '@/components/admin/room-availability-checker';
 import { RoomRequests } from './room-requests';
 import type { RoomRequest } from '@/lib/requests';
+import type { FacultyLog } from '@/lib/logs';
+import { RecentLogs } from './recent-logs';
 
 interface DashboardClientProps {
     admin: Admin | null;
     allRooms: Room[];
     adminEmail: string;
     roomRequests: RoomRequest[];
+    facultyLogs: FacultyLog[];
 }
 
-export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: DashboardClientProps) {
+export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, facultyLogs }: DashboardClientProps) {
     const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
 
     return (
@@ -88,6 +92,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: D
               </Link>
           </div>
             <div className="grid gap-6 pt-8">
+                <RecentLogs logs={facultyLogs} />
                 <RoomRequests initialRequests={roomRequests} adminEmail={adminEmail} />
                 <AiScheduleGenerator
                     allRooms={allRooms}
