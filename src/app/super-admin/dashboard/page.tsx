@@ -13,7 +13,6 @@ import { getAdmins, type Admin } from '@/lib/admin';
 import { CreateAdminDialog } from '@/components/super-admin/create-admin-dialog';
 import { EditAdminDialog } from '@/components/super-admin/edit-admin-dialog';
 import { DeleteAdminDialog } from '@/components/super-admin/delete-admin-dialog';
-import { TypingAnimation } from '@/components/common/typing-animation';
 
 export default async function SuperAdminDashboardPage() {
   const admins = await getAdmins();
@@ -24,7 +23,7 @@ export default async function SuperAdminDashboardPage() {
         <Link href="/super-admin/dashboard" className="flex items-center gap-3">
           <CalendarCog className="h-8 w-8 text-primary" />
           <span className="text-2xl font-bold text-primary">
-            EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
+            EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
           </span>
         </Link>
         <div className="flex items-center gap-4">

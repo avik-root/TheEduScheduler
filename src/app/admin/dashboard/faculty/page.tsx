@@ -9,7 +9,6 @@ import { CreateFacultyDialog } from '@/components/admin/faculty/create-faculty-d
 import { getDepartments } from '@/lib/departments';
 import { notFound } from 'next/navigation';
 import { FacultyList } from '@/components/admin/faculty/faculty-list';
-import { TypingAnimation } from '@/components/common/typing-animation';
 
 export default async function FacultyPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -27,7 +26,7 @@ export default async function FacultyPage({ searchParams }: { searchParams: { em
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
+              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
             </span>
           </div>
           <div className="flex items-center gap-4">

@@ -10,7 +10,6 @@ import { AddRoomDialog } from '@/components/admin/buildings/add-room-dialog';
 import { EditFloorDialog } from '@/components/admin/buildings/edit-floor-dialog';
 import { DeleteFloorDialog } from '@/components/admin/buildings/delete-floor-dialog';
 import { RoomsList } from '@/components/admin/buildings/rooms-list';
-import { TypingAnimation } from '@/components/common/typing-animation';
 
 
 export default async function FloorRoomsPage({ params, searchParams }: { params: { buildingId: string, floorId: string }, searchParams: { email?: string } }) {
@@ -33,7 +32,7 @@ export default async function FloorRoomsPage({ params, searchParams }: { params:
          <div className="flex items-center gap-3">
             <CalendarDays className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">
-              EduScheduler <TypingAnimation text="by MintFire" className="text-sm font-normal text-muted-foreground" />
+              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
             </span>
           </div>
           <div className="flex items-center gap-4">
