@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { EditFacultyDialog } from '@/components/admin/faculty/edit-faculty-dialog';
 import { DeleteFacultyDialog } from '@/components/admin/faculty/delete-faculty-dialog';
-import { UserCog, Search } from 'lucide-react';
+import { UserCog, Search, Network } from 'lucide-react';
 import type { Faculty } from '@/lib/faculty';
 import type { Department } from '@/lib/departments';
 
@@ -22,9 +21,20 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
     const filteredFaculty = initialFaculty.filter(faculty =>
         faculty.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         faculty.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        faculty.abbreviation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (faculty.abbreviation || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         faculty.department.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const facultyByDepartment = departments
+        .map(department => ({
+            ...department,
+            faculty: filteredFaculty.filter(f => f.department === department.name)
+        }))
+        .filter(department => department.faculty.length > 0)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const facultyWithoutDepartment = filteredFaculty.filter(f => !departments.some(d => d.name === f.department));
+
 
     return (
         <div>
@@ -37,58 +47,112 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                     className="pl-10"
                 />
             </div>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredFaculty.map((faculty: Faculty) => (
-                  <Card key={faculty.email}>
-                    <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
-                      <div className="flex flex-1 items-start gap-4 min-w-0">
-                        <div className="rounded-full bg-primary/10 p-3">
-                          <UserCog className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-xl">{faculty.name} ({faculty.abbreviation})</CardTitle>
-                          <CardDescription>{faculty.email}</CardDescription>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
-                        <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                            Department: <span className="font-medium text-foreground">{faculty.department}</span>
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-2">
-                            Weekly Max Hours: <span className="font-medium text-foreground">{faculty.weeklyMaxHours}</span>
-                        </p>
-                        {faculty.weeklyOffDays && faculty.weeklyOffDays.length > 0 && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                              Weekly Off: <span className="font-medium text-foreground">{faculty.weeklyOffDays.join(', ')}</span>
-                          </p>
-                        )}
-                    </CardContent>
-                  </Card>
-                ))}
-                {filteredFaculty.length === 0 && (
-                  <div className="col-span-1 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 sm:col-span-2 lg:col-span-3">
+
+            {facultyByDepartment.length === 0 && facultyWithoutDepartment.length === 0 ? (
+                <div className="flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                     <div className="text-center">
-                      <p className="text-muted-foreground">
-                        No faculty members found.
-                      </p>
-                       {searchQuery ? (
-                         <p className="text-sm text-muted-foreground">
-                            Try adjusting your search query.
-                         </p>
-                       ) : (
-                           <p className="text-sm text-muted-foreground">
-                            Click &apos;Create New Faculty&apos; to get started.
-                          </p>
-                       )}
+                        <p className="text-muted-foreground">
+                            No faculty members found.
+                        </p>
+                        {searchQuery ? (
+                            <p className="text-sm text-muted-foreground">
+                                Try adjusting your search query.
+                            </p>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                Click &apos;Create New Faculty&apos; to get started.
+                            </p>
+                        )}
                     </div>
-                  </div>
-                )}
-            </div>
+                </div>
+            ) : (
+                <div className="space-y-8">
+                    {facultyByDepartment.map(department => (
+                        <div key={department.id}>
+                            <div className="mb-4 flex items-center gap-3 border-b pb-2">
+                                <Network className="h-6 w-6 text-primary" />
+                                <h2 className="text-2xl font-semibold text-primary">{department.name}</h2>
+                            </div>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                {department.faculty.map((faculty: Faculty) => (
+                                    <Card key={faculty.email}>
+                                        <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
+                                            <div className="flex flex-1 items-start gap-4 min-w-0">
+                                                <div className="rounded-full bg-primary/10 p-3">
+                                                    <UserCog className="h-6 w-6 text-primary" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <CardTitle className="text-xl">{faculty.name} {faculty.abbreviation ? `(${faculty.abbreviation})` : ''}</CardTitle>
+                                                    <CardDescription>{faculty.email}</CardDescription>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
+                                                <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-muted-foreground">
+                                                Department: <span className="font-medium text-foreground">{faculty.department}</span>
+                                            </p>
+                                            <p className="text-sm text-muted-foreground mt-2">
+                                                Weekly Max Hours: <span className="font-medium text-foreground">{faculty.weeklyMaxHours}</span>
+                                            </p>
+                                            {faculty.weeklyOffDays && faculty.weeklyOffDays.length > 0 && (
+                                                <p className="text-sm text-muted-foreground mt-2">
+                                                    Weekly Off: <span className="font-medium text-foreground">{faculty.weeklyOffDays.join(', ')}</span>
+                                                </p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                    {facultyWithoutDepartment.length > 0 && (
+                         <div key="unassigned-department">
+                            <div className="mb-4 flex items-center gap-3 border-b pb-2">
+                                <Network className="h-6 w-6 text-muted-foreground" />
+                                <h2 className="text-2xl font-semibold text-muted-foreground">Unassigned Department</h2>
+                            </div>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                {facultyWithoutDepartment.map((faculty: Faculty) => (
+                                   <Card key={faculty.email}>
+                                        <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
+                                            <div className="flex flex-1 items-start gap-4 min-w-0">
+                                                <div className="rounded-full bg-primary/10 p-3">
+                                                    <UserCog className="h-6 w-6 text-primary" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <CardTitle className="text-xl">{faculty.name} {faculty.abbreviation ? `(${faculty.abbreviation})` : ''}</CardTitle>
+                                                    <CardDescription>{faculty.email}</CardDescription>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
+                                                <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-muted-foreground">
+                                                Department: <span className="font-medium text-foreground">{faculty.department || 'N/A'}</span>
+                                            </p>
+                                            <p className="text-sm text-muted-foreground mt-2">
+                                                Weekly Max Hours: <span className="font-medium text-foreground">{faculty.weeklyMaxHours}</span>
+                                            </p>
+                                            {faculty.weeklyOffDays && faculty.weeklyOffDays.length > 0 && (
+                                                <p className="text-sm text-muted-foreground mt-2">
+                                                    Weekly Off: <span className="font-medium text-foreground">{faculty.weeklyOffDays.join(', ')}</span>
+                                                </p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
