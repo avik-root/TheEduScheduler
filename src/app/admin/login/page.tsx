@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AdminLoginForm } from "@/components/auth/admin-login-form";
-import { CalendarCog, Shield } from 'lucide-react';
+import { UserCog, Shield } from 'lucide-react';
 import { TypingAnimation } from "@/components/common/typing-animation";
 
 export default function AdminLoginPage() {
@@ -11,7 +10,7 @@ export default function AdminLoginPage() {
         
         <div className="space-y-6 text-center md:text-left">
           <div className="flex items-center gap-3 justify-center md:justify-start">
-            <CalendarCog className="h-10 w-10 text-primary" />
+            <UserCog className="h-10 w-10 text-primary" />
             <h1 className="text-4xl font-bold tracking-tighter text-primary">
               EduScheduler <TypingAnimation text="by MintFire" className="text-2xl font-normal text-muted-foreground" />
             </h1>
