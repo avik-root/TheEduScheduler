@@ -68,7 +68,7 @@ export function RecentLogs({ logs }: RecentLogsProps) {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2"><Clock className="h-4 w-4" />{isClient ? formatDistanceToNow(new Date(log.timestamp), { addSuffix: true }) : '...'}</div>
-                                        <div className="text-xs text-muted-foreground ml-6">{format(new Date(log.timestamp), 'PPP p')}</div>
+                                        <div className="text-xs text-muted-foreground ml-6">{isClient ? format(new Date(log.timestamp), 'PPP p') : '...'}</div>
                                     </TableCell>
                                 </TableRow>
                             ))}
