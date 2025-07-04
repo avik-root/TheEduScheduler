@@ -4,8 +4,9 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, User, Briefcase, Info, Mail, Github, Linkedin, Image as ImageIcon } from 'lucide-react';
+import { Loader2, User, Briefcase, Mail, Github, Linkedin, Image as ImageIcon, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +32,8 @@ interface EditDeveloperFormProps {
 
 export function EditDeveloperForm({ developer, onSuccess }: EditDeveloperFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [imagePreview, setImagePreview] = React.useState<string | null>(developer.avatar);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -43,6 +46,29 @@ export function EditDeveloperForm({ developer, onSuccess }: EditDeveloperFormPro
       linkedin: developer.links.linkedin,
     },
   });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      toast({ variant: 'destructive', title: 'Invalid file type', description: 'Please upload a JPG or PNG file.' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast({ variant: 'destructive', title: 'File too large', description: 'Please upload a file smaller than 5MB.' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      form.setValue('avatar', base64String, { shouldValidate: true, shouldDirty: true });
+      setImagePreview(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
+
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
@@ -129,22 +155,41 @@ export function EditDeveloperForm({ developer, onSuccess }: EditDeveloperFormPro
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="avatar"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Avatar URL</FormLabel>
-              <div className="relative">
-                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input {...field} className="pl-10" placeholder="https://placehold.co/150x150.png" />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        
+        <FormItem>
+          <FormLabel>Avatar</FormLabel>
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-[240px] overflow-hidden rounded-lg border bg-muted">
+                {imagePreview ? (
+                    <Image src={imagePreview} alt="Avatar preview" fill className="object-cover" />
+                ) : (
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                        <ImageIcon className="h-10 w-10" />
+                    </div>
+                )}
+            </div>
+          <FormControl>
+            <Button type="button" variant="outline" className="w-full mt-2" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-2 h-4 w-4" /> Upload Image
+            </Button>
+          </FormControl>
+          <Input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            accept="image/png, image/jpeg"
+            onChange={handleFileChange} 
+          />
+          <p className="text-xs text-muted-foreground">PNG or JPG file, up to 5MB.</p>
+          <FormField
+            control={form.control}
+            name="avatar"
+            render={({ field }) => (
+                <Input {...field} type="hidden" />
+            )}
+          />
+          <FormMessage>{form.formState.errors.avatar?.message}</FormMessage>
+        </FormItem>
+
         <div className="space-y-2">
             <h3 className="text-sm font-medium">Social Links</h3>
             <div className="space-y-4">

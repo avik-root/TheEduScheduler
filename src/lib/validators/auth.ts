@@ -240,7 +240,7 @@ export const DeveloperSchema = z.object({
     name: z.string().min(1, "Name is required."),
     role: z.string().min(1, "Role is required."),
     bio: z.string().min(1, "Bio is required."),
-    avatar: z.string().url("Avatar must be a valid URL."),
+    avatar: z.string().min(1, "Avatar image is required."),
     hint: z.string(),
     email: z.string().min(1, "Email link is required."),
     github: z.string().url("GitHub link must be a valid URL."),

@@ -42,20 +42,19 @@ export default async function DeveloperPage() {
           </div>
           <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2">
             {developers.map((dev) => (
-              <Card key={dev.id} className="flex flex-col text-center bg-card shadow-lg">
-                <CardHeader>
-                  <div className="mx-auto h-32 w-32 overflow-hidden rounded-full border-4 border-primary/20">
+              <Card key={dev.id} className="flex flex-col text-center bg-card shadow-lg overflow-hidden">
+                <CardHeader className="p-0">
+                   <div className="relative aspect-[4/5] w-full">
                     <Image
                       src={dev.avatar}
                       alt={`Avatar of ${dev.name}`}
-                      width={150}
-                      height={150}
+                      fill
                       data-ai-hint={dev.hint}
-                      className="h-full w-full object-cover"
+                      className="object-cover"
                     />
                   </div>
                 </CardHeader>
-                <CardContent className="flex-grow">
+                <CardContent className="flex-grow pt-6">
                   <CardTitle className="text-2xl">{dev.name}</CardTitle>
                   <p className="mt-1 text-base font-medium text-primary">{dev.role}</p>
                   <p className="mt-4 text-muted-foreground">{dev.bio}</p>
