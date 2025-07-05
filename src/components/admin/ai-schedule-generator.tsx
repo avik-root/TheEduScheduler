@@ -1,20 +1,19 @@
-
 'use client';
 
 import * as React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, BrainCircuit, Upload, Network, BookCopy as ProgramIcon, Calendar, BookOpen, Users, Clock, ChevronsUpDown, Check, Badge } from 'lucide-react';
+import { Loader2, BrainCircuit, Upload, Sparkles, Building, BookCopy as ProgramIcon, Calendar, Users, Clock, ChevronsUpDown, Check, Badge, VenetianMask } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput, type GenerateScheduleInput } from '@/ai/flows/generate-schedule';
 import type { Room } from '@/lib/buildings';
-import type { Department, Program, Year } from '@/lib/departments';
+import type { Department, Program, Year, Section } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
 import type { Subject } from '@/lib/subjects';
 import { publishSchedule } from '@/lib/schedule';
@@ -22,17 +21,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+
+const subjectConfigSchema = z.object({
+  id: z.string(),
+  assignedFaculty: z.array(z.string()),
+  isPriority: z.boolean(),
+  sections: z.array(z.string()),
+});
 
 const ScheduleGeneratorSchema = z.object({
-  departmentId: z.string().min(1, 'Please select a department.'),
-  programId: z.string().min(1, 'Please select a program.'),
-  yearId: z.string().min(1, 'Please select a year.'),
-  classStartTime: z.string().min(1, 'Start time is required.'),
-  classEndTime: z.string().min(1, 'End time is required.'),
-  breakStartTime: z.string().optional(),
-  breakEndTime: z.string().optional(),
-  subjectIds: z.array(z.string()).min(1, 'Please select at least one subject.'),
-  facultyEmails: z.array(z.string()).min(1, 'Please select at least one faculty member.'),
+  departmentId: z.string().min(1, 'Department is required.'),
+  programId: z.string().min(1, 'Program is required.'),
+  yearId: z.string().min(1, 'Year is required.'),
+  sectionIds: z.array(z.string()).min(1, 'At least one section must be selected.'),
+  
+  subjectConfigs: z.array(subjectConfigSchema),
+
+  availableRooms: z.array(z.string()).min(1, 'Select at least one room or lab.'),
+  
+  startTime: z.string().min(1, 'Start time is required.'),
+  endTime: z.string().min(1, 'End time is required.'),
+  breakStart: z.string().min(1, 'Break start is required.'),
+  breakEnd: z.string().min(1, 'Break end is required.'),
+
+  activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
 });
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
@@ -47,6 +62,8 @@ interface AiScheduleGeneratorProps {
     subjects: Subject[];
 }
 
+const allWeekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule, adminEmail, departments, faculty, subjects }: AiScheduleGeneratorProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPublishing, setIsPublishing] = React.useState(false);
@@ -54,7 +71,8 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
 
   const [programs, setPrograms] = React.useState<Program[]>([]);
   const [years, setYears] = React.useState<Year[]>([]);
-  const [filteredSubjects, setFilteredSubjects] = React.useState<Subject[]>([]);
+  const [sections, setSections] = React.useState<Section[]>([]);
+  const [availableSubjects, setAvailableSubjects] = React.useState<Subject[]>([]);
   const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>([]);
 
   const form = useForm<FormData>({
@@ -63,91 +81,106 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       departmentId: '',
       programId: '',
       yearId: '',
-      classStartTime: '09:00',
-      classEndTime: '17:00',
-      breakStartTime: '13:00',
-      breakEndTime: '14:00',
-      subjectIds: [],
-      facultyEmails: [],
+      sectionIds: [],
+      subjectConfigs: [],
+      availableRooms: [],
+      startTime: '09:00',
+      endTime: '17:00',
+      breakStart: '13:00',
+      breakEnd: '14:00',
+      activeDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
     },
   });
 
-  const departmentId = form.watch('departmentId');
-  const programId = form.watch('programId');
-  const yearId = form.watch('yearId');
+  const { control, watch, setValue } = form;
+  const departmentId = watch('departmentId');
+  const programId = watch('programId');
+  const yearId = watch('yearId');
+
+  const { fields, replace } = useFieldArray({
+    control,
+    name: "subjectConfigs"
+  });
 
   React.useEffect(() => {
-    form.resetField('programId');
-    form.resetField('yearId');
-    form.resetField('subjectIds');
-    form.resetField('facultyEmails');
-
-    if (departmentId) {
-        const selectedDept = departments.find(d => d.id === departmentId);
-        setPrograms(selectedDept?.programs || []);
-        setFilteredFaculty(faculty.filter(f => f.department === selectedDept?.name));
-    } else {
-        setPrograms([]);
-        setFilteredFaculty([]);
-    }
+    const selectedDept = departments.find(d => d.id === departmentId);
+    setPrograms(selectedDept?.programs || []);
+    setFilteredFaculty(faculty.filter(f => f.department === selectedDept?.name));
+    setValue('programId', '');
+    setValue('yearId', '');
     setYears([]);
-    setFilteredSubjects([]);
-  }, [departmentId, departments, faculty, form]);
+    setSections([]);
+    setAvailableSubjects([]);
+  }, [departmentId, departments, faculty, setValue]);
 
   React.useEffect(() => {
-    form.resetField('yearId');
-    form.resetField('subjectIds');
-    if (programId) {
-        const selectedProg = programs.find(p => p.id === programId);
-        setYears(selectedProg?.years || []);
-    } else {
-        setYears([]);
-    }
-    setFilteredSubjects([]);
-  }, [programId, programs, form]);
-  
-  React.useEffect(() => {
-    form.resetField('subjectIds');
-    if (yearId) {
-        setFilteredSubjects(subjects.filter(s => s.yearId === yearId));
-    } else {
-        setFilteredSubjects([]);
-    }
-  }, [yearId, subjects, form]);
+    const selectedProg = programs.find(p => p.id === programId);
+    setYears(selectedProg?.years || []);
+    setValue('yearId', '');
+    setSections([]);
+    setAvailableSubjects([]);
+  }, [programId, programs, setValue]);
 
+  React.useEffect(() => {
+    const selectedYear = years.find(y => y.id === yearId);
+    const yearSubjects = subjects.filter(s => s.yearId === yearId);
+    const yearSections = selectedYear?.sections || [];
+    setSections(yearSections);
+    setAvailableSubjects(yearSubjects);
+    setValue('sectionIds', yearSections.map(s => s.id));
+    
+    replace(yearSubjects.map(s => ({
+      id: s.id,
+      subjectId: s.id,
+      assignedFaculty: s.facultyEmails || [],
+      isPriority: false,
+      sections: yearSections.map(sec => sec.name)
+    })));
+
+  }, [yearId, years, subjects, setValue, replace]);
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
     setGeneratedSchedule(null);
 
-    const selectedDept = departments.find(d => d.id === data.departmentId);
-    const selectedProg = selectedDept?.programs.find(p => p.id === data.programId);
-    const selectedYear = selectedProg?.years.find(y => y.id === data.yearId);
-
-    const subjectsToSchedule = subjects
-        .filter(s => data.subjectIds.includes(s.id))
-        .map(s => ({
-            name: s.name,
-            code: s.code,
-            type: s.type,
-            credits: (s.theoryCredits || 0) + (s.labCredits || 0),
-        }));
+    const selectedDept = departments.find(d => d.id === data.departmentId)!;
+    const selectedProg = programs.find(p => p.id === data.programId)!;
+    const selectedYear = years.find(y => y.id === data.yearId)!;
+    const selectedSections = sections.filter(s => data.sectionIds.includes(s.id));
     
-    const facultyToSchedule = faculty
-        .filter(f => data.facultyEmails.includes(f.email))
-        .map(f => ({
-            ...f,
-            assignedSubjects: subjects.filter(s => data.subjectIds.includes(s.id) && s.facultyEmails && s.facultyEmails.includes(f.email)).map(s => s.code),
-        }));
-        
-    const input: GenerateScheduleInput = {
-      yearInfo: `${selectedDept?.name} - ${selectedProg?.name} - ${selectedYear?.name}`,
-      timeConstraints: `Classes from ${data.classStartTime} to ${data.classEndTime}. Break from ${data.breakStartTime} to ${data.breakEndTime}.`,
-      availableRooms: allRooms.map(room => room.name),
-      subjects: subjectsToSchedule,
-      faculty: facultyToSchedule,
-    };
+    const configuredSubjects = data.subjectConfigs.map(config => {
+      const subjectDetails = availableSubjects.find(s => s.id === config.subjectId)!;
+      const assignedFacultyMembers = faculty.filter(f => config.assignedFaculty.includes(f.email));
+      return {
+        ...subjectDetails,
+        assignedFaculty: assignedFacultyMembers.map(f => f.abbreviation),
+        isPriority: config.isPriority,
+        sections: selectedSections.map(s => s.name),
+      };
+    });
 
+    const labs = allRooms.filter(r => r.name.toLowerCase().includes('lab')).map(r => r.name);
+    const regularRooms = allRooms.filter(r => !r.name.toLowerCase().includes('lab')).map(r => r.name);
+
+    const input: GenerateScheduleInput = {
+      academicInfo: {
+        department: selectedDept.name,
+        program: selectedProg.name,
+        year: selectedYear.name,
+      },
+      sections: selectedSections.map(s => ({ name: s.name, studentCount: s.studentCount })),
+      subjects: configuredSubjects,
+      faculty: filteredFaculty,
+      availableRooms: regularRooms,
+      availableLabs: labs,
+      timeSettings: {
+        startTime: data.startTime,
+        endTime: data.endTime,
+        breakTime: `${data.breakStart} - ${data.breakEnd}`,
+      },
+      activeDays: data.activeDays,
+    };
+    
     try {
       const result = await generateSchedule(input);
       setGeneratedSchedule(result);
@@ -160,13 +193,13 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
-        description: 'An error occurred while generating the schedule.',
+        description: 'An error occurred while generating the schedule. Check console for details.',
       });
     } finally {
       setIsLoading(false);
     }
   }
-  
+
   async function handlePublish() {
       if (!generatedSchedule?.schedule) return;
       setIsPublishing(true);
@@ -188,95 +221,122 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
 
   return (
     <div className="grid gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>AI Schedule Generator</CardTitle>
-          <CardDescription>
-            Select the academic year, define constraints, and let the AI create an optimal schedule.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-                {/* Academic Year Selection */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <FormField control={form.control} name="departmentId" render={({ field }) => (
-                        <FormItem><FormLabel>Department</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger></FormControl><SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                    )}/>
-                    <FormField control={form.control} name="programId" render={({ field }) => (
-                        <FormItem><FormLabel>Program</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!departmentId}><FormControl><SelectTrigger><SelectValue placeholder="Select Program" /></SelectTrigger></FormControl><SelectContent>{programs.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                    )}/>
-                    <FormField control={form.control} name="yearId" render={({ field }) => (
-                        <FormItem><FormLabel>Year</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!programId}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent>{years.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                    )}/>
-                </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+            <Card>
+                <CardHeader>
+                  <CardTitle>AI Schedule Generator</CardTitle>
+                  <CardDescription>
+                    Define constraints step-by-step and let the AI create an optimal schedule.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  {/* Step 1: Academic Target */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Step 1: Academic Target</h3>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <FormField control={form.control} name="departmentId" render={({ field }) => (
+                            <FormItem><FormLabel>Department</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger></FormControl><SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="programId" render={({ field }) => (
+                            <FormItem><FormLabel>Program</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Program" /></SelectTrigger></FormControl><SelectContent>{programs.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="yearId" render={({ field }) => (
+                            <FormItem><FormLabel>Year</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent>{years.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        )}/>
+                    </div>
+                     <FormField control={form.control} name="sectionIds" render={({ field }) => (
+                        <FormItem><FormLabel>Sections to Schedule</FormLabel><div className="flex flex-wrap gap-2">{sections.map(item => (<FormField key={item.id} control={form.control} name="sectionIds" render={({ field }) => { return (<FormItem key={item.id} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item.id)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item.id]) : field.onChange(field.value?.filter((value) => value !== item.id))}} /></FormControl><FormLabel className="font-normal">{item.name}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
+                     )} />
+                  </div>
+                  
+                  <Separator />
 
-                {/* Timings */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <FormLabel>Class Timings</FormLabel>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                            <FormField control={form.control} name="classStartTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                            <FormField control={form.control} name="classEndTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                  {/* Step 2: Subject Configuration */}
+                  <div className="space-y-4">
+                     <h3 className="text-lg font-medium">Step 2: Subject Configuration</h3>
+                     {fields.length > 0 ? (
+                        <Accordion type="multiple" className="w-full">
+                          {fields.map((item, index) => {
+                             const subject = availableSubjects.find(s => s.id === item.subjectId)!;
+                             return (
+                                <AccordionItem value={item.id} key={item.id}>
+                                  <AccordionTrigger>{subject.name} ({subject.code})</AccordionTrigger>
+                                  <AccordionContent>
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                       <Controller control={control} name={`subjectConfigs.${index}.assignedFaculty`} render={({ field }) => (
+                                          <FormItem className="flex flex-col"><FormLabel>Assign Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || email}</Badge>)) : "Select Faculty"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found for this department.</CommandEmpty><CommandGroup>{filteredFaculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                       )} />
+                                       <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
+                                         <FormItem className="flex flex-row items-center space-x-2 pt-8"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Mark as Priority Subject</label></FormItem>
+                                       )} />
+                                    </div>
+                                  </AccordionContent>
+                                </AccordionItem>
+                             )
+                          })}
+                        </Accordion>
+                     ) : (
+                        <p className="text-sm text-muted-foreground">Select a year to configure subjects.</p>
+                     )}
+                  </div>
+                  
+                  <Separator />
+
+                  {/* Step 3: Resources & Time */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Step 3: Resources & Time Constraints</h3>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                         <FormField control={form.control} name="availableRooms" render={({ field }) => (
+                            <FormItem className="flex flex-col"><FormLabel>Available Rooms & Labs</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms & Labs"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{allRooms.map(r => <CommandItem key={r.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(r.name) ? selected.filter(name => name !== r.name) : [...selected, r.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(r.name) ? "opacity-100" : "opacity-0")}/>{r.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                         )} />
+                        <div>
+                            <FormLabel>Daily Timings</FormLabel>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                                <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                            </div>
+                            <FormLabel className="mt-2 block">Break Slot</FormLabel>
+                             <div className="grid grid-cols-2 gap-2 mt-2">
+                                <FormField control={form.control} name="breakStart" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                            </div>
                         </div>
                     </div>
-                     <div>
-                        <FormLabel>Break Time</FormLabel>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                            <FormField control={form.control} name="breakStartTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                            <FormField control={form.control} name="breakEndTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Subjects & Faculty */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <FormField control={form.control} name="subjectIds" render={({ field }) => (
-                        <FormItem className="flex flex-col"><FormLabel>Subjects</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")} disabled={!yearId}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(id => (<Badge key={id} variant="secondary">{filteredSubjects.find(s => s.id === id)?.name || id}</Badge>)) : "Select Subjects"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search subjects..." /><CommandList><CommandEmpty>No subjects found for this year.</CommandEmpty><CommandGroup>{filteredSubjects.map(s => <CommandItem key={s.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(s.id) ? selected.filter(id => id !== s.id) : [...selected, s.id]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(s.id) ? "opacity-100" : "opacity-0")}/>{s.name} ({s.code})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                    <FormField control={form.control} name="activeDays" render={({ field }) => (
+                        <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
                     )} />
-                    <FormField control={form.control} name="facultyEmails" render={({ field }) => (
-                        <FormItem className="flex flex-col"><FormLabel>Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")} disabled={!departmentId}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || email}</Badge>)) : "Select Faculty"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found for this department.</CommandEmpty><CommandGroup>{filteredFaculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
-                    )} />
-                </div>
-              
+                  </div>
 
-              <div className="flex gap-2">
-                <Button type="submit" className="w-fit" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <BrainCircuit className="mr-2 h-4 w-4" />
-                  )}
-                  Generate Schedule
-                </Button>
-                <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
-                    {isPublishing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Upload className="mr-2 h-4 w-4" />
-                    )}
-                    Publish Schedule
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                </CardContent>
+                <CardFooter className="gap-2">
+                    <Button type="submit" className="w-fit" disabled={isLoading}>
+                      {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Sparkles className="mr-2 h-4 w-4" /> )}
+                      Generate Schedule
+                    </Button>
+                    <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
+                        {isPublishing ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Upload className="mr-2 h-4 w-4" /> )}
+                        Publish Schedule
+                    </Button>
+                </CardFooter>
+            </Card>
+        </form>
+      </Form>
 
       <Card>
         <CardHeader>
           <CardTitle>Generated Schedule</CardTitle>
           <CardDescription>
-            This is the optimal schedule generated by the AI based on your inputs.
+            This is the optimal schedule generated by the AI based on your inputs. You can publish it or refine your inputs and generate again.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="min-h-[100px] rounded-lg border bg-muted p-4 text-sm whitespace-pre-wrap">
+          <div className="min-h-[200px] rounded-lg border bg-muted p-4 text-sm whitespace-pre-wrap font-mono">
             {isLoading ? (
               <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-            ) : generatedSchedule ? (
+            ) : generatedSchedule?.schedule ? (
               <p>{generatedSchedule.schedule}</p>
             ) : (
               <p className="text-muted-foreground">Your generated schedule will appear here...</p>
