@@ -1,5 +1,21 @@
 [
   {
+    "id": "1751673919160-1hjz75e",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-05T00:05:19.160Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1751673656065-7cyheqp",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-05T00:00:56.065Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1751673017973-p9ccgxg",
     "facultyName": "Dr. Anirban Mitra",
     "facultyEmail": "anirban.cse@themintfire.com",
