@@ -4,12 +4,12 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, BrainCircuit, Upload, Sparkles, Building, BookCopy as ProgramIcon, Calendar, Users, Clock, ChevronsUpDown, Check, Badge, VenetianMask } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput, type GenerateScheduleInput } from '@/ai/flows/generate-schedule';
 import type { Room } from '@/lib/buildings';
@@ -24,9 +24,15 @@ import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 const subjectConfigSchema = z.object({
   id: z.string(),
+  name: z.string(),
+  code: z.string(),
+  type: z.string(),
+  theoryCredits: z.number().optional(),
+  labCredits: z.number().optional(),
   assignedFaculty: z.array(z.string()),
   isPriority: z.boolean(),
   sections: z.array(z.string()),
@@ -38,9 +44,16 @@ const ScheduleGeneratorSchema = z.object({
   yearId: z.string().min(1, 'Year is required.'),
   sectionIds: z.array(z.string()).min(1, 'At least one section must be selected.'),
   
-  subjectConfigs: z.array(subjectConfigSchema),
-
-  availableRooms: z.array(z.string()).min(1, 'Select at least one room or lab.'),
+  subjectConfigs: z.array(subjectConfigSchema).refine(
+    (subjects) => {
+        const configuredSubjects = subjects.filter(s => s.sections.length > 0);
+        return configuredSubjects.length > 0;
+    },
+    { message: "Please configure at least one subject for the selected sections."}
+  ),
+  
+  availableRooms: z.array(z.string()).min(1, 'Select at least one room.'),
+  availableLabs: z.array(z.string()),
   
   startTime: z.string().min(1, 'Start time is required.'),
   endTime: z.string().min(1, 'End time is required.'),
@@ -68,12 +81,12 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPublishing, setIsPublishing] = React.useState(false);
   const { toast } = useToast();
-
-  const [programs, setPrograms] = React.useState<Program[]>([]);
-  const [years, setYears] = React.useState<Year[]>([]);
-  const [sections, setSections] = React.useState<Section[]>([]);
+  
+  const [availablePrograms, setAvailablePrograms] = React.useState<Program[]>([]);
+  const [availableYears, setAvailableYears] = React.useState<Year[]>([]);
+  const [availableSections, setAvailableSections] = React.useState<Section[]>([]);
   const [availableSubjects, setAvailableSubjects] = React.useState<Subject[]>([]);
-  const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>([]);
+  const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>(faculty);
 
   const form = useForm<FormData>({
     resolver: zodResolver(ScheduleGeneratorSchema),
@@ -84,6 +97,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       sectionIds: [],
       subjectConfigs: [],
       availableRooms: [],
+      availableLabs: [],
       startTime: '09:00',
       endTime: '17:00',
       breakStart: '13:00',
@@ -92,75 +106,93 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     },
   });
 
-  const { control, watch, setValue } = form;
-  const departmentId = watch('departmentId');
-  const programId = watch('programId');
-  const yearId = watch('yearId');
+  const { control, watch, setValue, getValues, trigger } = form;
 
-  const { fields, replace } = useFieldArray({
+  const { fields: subjectConfigFields, replace: replaceSubjectConfigs } = useFieldArray({
     control,
     name: "subjectConfigs"
   });
-
-  React.useEffect(() => {
-    const selectedDept = departments.find(d => d.id === departmentId);
-    setPrograms(selectedDept?.programs || []);
+  
+  const handleDepartmentChange = (deptId: string) => {
+    const selectedDept = departments.find(d => d.id === deptId);
+    const programs = selectedDept?.programs || [];
+    setAvailablePrograms(programs);
     setFilteredFaculty(faculty.filter(f => f.department === selectedDept?.name));
+
+    setValue('departmentId', deptId);
     setValue('programId', '');
     setValue('yearId', '');
-    setYears([]);
-    setSections([]);
+    setValue('sectionIds', []);
+    setAvailableYears([]);
+    setAvailableSections([]);
     setAvailableSubjects([]);
-  }, [departmentId, departments, faculty, setValue]);
+    replaceSubjectConfigs([]);
+  };
 
-  React.useEffect(() => {
-    const selectedProg = programs.find(p => p.id === programId);
-    setYears(selectedProg?.years || []);
+  const handleProgramChange = (progId: string) => {
+    const selectedProg = availablePrograms.find(p => p.id === progId);
+    const years = selectedProg?.years || [];
+    setAvailableYears(years);
+
+    setValue('programId', progId);
     setValue('yearId', '');
-    setSections([]);
+    setValue('sectionIds', []);
+    setAvailableSections([]);
     setAvailableSubjects([]);
-  }, [programId, programs, setValue]);
-
-  React.useEffect(() => {
-    const selectedYear = years.find(y => y.id === yearId);
+    replaceSubjectConfigs([]);
+  };
+  
+  const handleYearChange = (yearId: string) => {
+    const selectedYear = availableYears.find(y => y.id === yearId);
     const yearSubjects = subjects.filter(s => s.yearId === yearId);
     const yearSections = selectedYear?.sections || [];
-    setSections(yearSections);
+
+    setAvailableSections(yearSections);
     setAvailableSubjects(yearSubjects);
+    
+    setValue('yearId', yearId);
     setValue('sectionIds', yearSections.map(s => s.id));
     
-    replace(yearSubjects.map(s => ({
-      id: s.id,
-      subjectId: s.id,
+    replaceSubjectConfigs(yearSubjects.map(s => ({
+      ...s,
       assignedFaculty: s.facultyEmails || [],
       isPriority: false,
-      sections: yearSections.map(sec => sec.name)
+      sections: [] // Default to no sections selected
     })));
+  };
 
-  }, [yearId, years, subjects, setValue, replace]);
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
     setGeneratedSchedule(null);
+    
+    const configuredSubjects = data.subjectConfigs
+        .filter(s => s.sections.length > 0)
+        .map(config => {
+            const subjectDetails = availableSubjects.find(s => s.id === config.id)!;
+            const assignedFacultyMembers = faculty.filter(f => config.assignedFaculty.includes(f.email));
+            return {
+                ...subjectDetails,
+                assignedFaculty: assignedFacultyMembers.length > 0 ? assignedFacultyMembers.map(f => f.abbreviation) : [],
+                isPriority: config.isPriority,
+                sections: config.sections,
+            };
+        });
+
+    if (configuredSubjects.length === 0) {
+        toast({
+            variant: 'destructive',
+            title: 'Configuration Error',
+            description: 'Please configure at least one subject for a section before generating.',
+        });
+        setIsLoading(false);
+        return;
+    }
 
     const selectedDept = departments.find(d => d.id === data.departmentId)!;
-    const selectedProg = programs.find(p => p.id === data.programId)!;
-    const selectedYear = years.find(y => y.id === data.yearId)!;
-    const selectedSections = sections.filter(s => data.sectionIds.includes(s.id));
-    
-    const configuredSubjects = data.subjectConfigs.map(config => {
-      const subjectDetails = availableSubjects.find(s => s.id === config.subjectId)!;
-      const assignedFacultyMembers = faculty.filter(f => config.assignedFaculty.includes(f.email));
-      return {
-        ...subjectDetails,
-        assignedFaculty: assignedFacultyMembers.map(f => f.abbreviation),
-        isPriority: config.isPriority,
-        sections: selectedSections.map(s => s.name),
-      };
-    });
-
-    const labs = allRooms.filter(r => r.name.toLowerCase().includes('lab')).map(r => r.name);
-    const regularRooms = allRooms.filter(r => !r.name.toLowerCase().includes('lab')).map(r => r.name);
+    const selectedProg = availablePrograms.find(p => p.id === data.programId)!;
+    const selectedYear = availableYears.find(y => y.id === data.yearId)!;
+    const selectedSections = availableSections.filter(s => data.sectionIds.includes(s.id));
 
     const input: GenerateScheduleInput = {
       academicInfo: {
@@ -171,8 +203,8 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       sections: selectedSections.map(s => ({ name: s.name, studentCount: s.studentCount })),
       subjects: configuredSubjects,
       faculty: filteredFaculty,
-      availableRooms: regularRooms,
-      availableLabs: labs,
+      availableRooms: data.availableRooms,
+      availableLabs: data.availableLabs,
       timeSettings: {
         startTime: data.startTime,
         endTime: data.endTime,
@@ -218,98 +250,130 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       }
       setIsPublishing(false);
   }
+  
+  const theoryRooms = React.useMemo(() => allRooms.filter(r => !r.name.toLowerCase().includes('lab')), [allRooms]);
+  const labRooms = React.useMemo(() => allRooms.filter(r => r.name.toLowerCase().includes('lab')), [allRooms]);
 
   return (
     <div className="grid gap-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <Card>
                 <CardHeader>
                   <CardTitle>AI Schedule Generator</CardTitle>
-                  <CardDescription>
-                    Define constraints step-by-step and let the AI create an optimal schedule.
-                  </CardDescription>
+                   <p className="text-sm text-muted-foreground">
+                    A step-by-step guide to generating an optimal, conflict-free schedule.
+                  </p>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <Accordion type="multiple" defaultValue={['step-1']} className="w-full">
                   {/* Step 1: Academic Target */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Step 1: Academic Target</h3>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <FormField control={form.control} name="departmentId" render={({ field }) => (
-                            <FormItem><FormLabel>Department</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger></FormControl><SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                        )}/>
-                        <FormField control={form.control} name="programId" render={({ field }) => (
-                            <FormItem><FormLabel>Program</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Program" /></SelectTrigger></FormControl><SelectContent>{programs.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                        )}/>
-                        <FormField control={form.control} name="yearId" render={({ field }) => (
-                            <FormItem><FormLabel>Year</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent>{years.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                        )}/>
-                    </div>
-                     <FormField control={form.control} name="sectionIds" render={({ field }) => (
-                        <FormItem><FormLabel>Sections to Schedule</FormLabel><div className="flex flex-wrap gap-2">{sections.map(item => (<FormField key={item.id} control={form.control} name="sectionIds" render={({ field }) => { return (<FormItem key={item.id} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item.id)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item.id]) : field.onChange(field.value?.filter((value) => value !== item.id))}} /></FormControl><FormLabel className="font-normal">{item.name}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
-                     )} />
-                  </div>
+                  <AccordionItem value="step-1">
+                    <AccordionTrigger className="text-lg font-semibold px-6">Step 1: Academic Target</AccordionTrigger>
+                    <AccordionContent className="px-6 pt-4 space-y-4">
+                        <p className="text-sm text-muted-foreground">Select the department, program, and year to generate a schedule for.</p>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <FormField control={form.control} name="departmentId" render={({ field }) => (
+                                <FormItem><FormLabel>Department</FormLabel><Select onValueChange={handleDepartmentChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger></FormControl><SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                            )}/>
+                            <FormField control={form.control} name="programId" render={({ field }) => (
+                                <FormItem><FormLabel>Program</FormLabel><Select onValueChange={handleProgramChange} value={field.value} disabled={!getValues('departmentId')}><FormControl><SelectTrigger><SelectValue placeholder="Select Program" /></SelectTrigger></FormControl><SelectContent>{availablePrograms.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                            )}/>
+                            <FormField control={form.control} name="yearId" render={({ field }) => (
+                                <FormItem><FormLabel>Year</FormLabel><Select onValueChange={handleYearChange} value={field.value} disabled={!getValues('programId')}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent>{availableYears.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                            )}/>
+                        </div>
+                    </AccordionContent>
+                  </AccordionItem>
                   
-                  <Separator />
-
                   {/* Step 2: Subject Configuration */}
-                  <div className="space-y-4">
-                     <h3 className="text-lg font-medium">Step 2: Subject Configuration</h3>
-                     {fields.length > 0 ? (
-                        <Accordion type="multiple" className="w-full">
-                          {fields.map((item, index) => {
-                             const subject = availableSubjects.find(s => s.id === item.subjectId)!;
-                             return (
-                                <AccordionItem value={item.id} key={item.id}>
-                                  <AccordionTrigger>{subject.name} ({subject.code})</AccordionTrigger>
-                                  <AccordionContent>
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                       <Controller control={control} name={`subjectConfigs.${index}.assignedFaculty`} render={({ field }) => (
-                                          <FormItem className="flex flex-col"><FormLabel>Assign Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || email}</Badge>)) : "Select Faculty"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found for this department.</CommandEmpty><CommandGroup>{filteredFaculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
-                                       )} />
-                                       <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
-                                         <FormItem className="flex flex-row items-center space-x-2 pt-8"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Mark as Priority Subject</label></FormItem>
-                                       )} />
-                                    </div>
-                                  </AccordionContent>
-                                </AccordionItem>
-                             )
-                          })}
-                        </Accordion>
-                     ) : (
-                        <p className="text-sm text-muted-foreground">Select a year to configure subjects.</p>
-                     )}
-                  </div>
-                  
-                  <Separator />
-
-                  {/* Step 3: Resources & Time */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Step 3: Resources & Time Constraints</h3>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                         <FormField control={form.control} name="availableRooms" render={({ field }) => (
-                            <FormItem className="flex flex-col"><FormLabel>Available Rooms & Labs</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms & Labs"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{allRooms.map(r => <CommandItem key={r.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(r.name) ? selected.filter(name => name !== r.name) : [...selected, r.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(r.name) ? "opacity-100" : "opacity-0")}/>{r.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
-                         )} />
-                        <div>
-                            <FormLabel>Daily Timings</FormLabel>
-                            <div className="grid grid-cols-2 gap-2 mt-2">
-                                <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                   <AccordionItem value="step-2">
+                    <AccordionTrigger className="text-lg font-semibold px-6">Step 2: Subject Configuration</AccordionTrigger>
+                    <AccordionContent className="px-6 pt-4 space-y-2">
+                        <p className="text-sm text-muted-foreground">Configure faculty, sections and priority for each subject in the selected year. Unconfigured subjects will not be scheduled.</p>
+                         {subjectConfigFields.length > 0 ? (
+                            <div className="space-y-4 pt-2">
+                                {subjectConfigFields.map((item, index) => {
+                                    return (
+                                        <Card key={item.id} className="p-4">
+                                            <h4 className="font-semibold">{item.name} ({item.code})</h4>
+                                            <div className="grid gap-4 md:grid-cols-2 mt-2">
+                                                <Controller control={control} name={`subjectConfigs.${index}.assignedFaculty`} render={({ field }) => (
+                                                    <FormItem className="flex flex-col"><FormLabel>Assign Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty (NF)"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{filteredFaculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField control={control} name={`subjectConfigs.${index}.sections`} render={({ field }) => (
+                                                    <FormItem><FormLabel>Assign Sections</FormLabel><div className="flex flex-wrap gap-x-4 gap-y-2 p-2 border rounded-md min-h-10 items-center">{availableSections.length > 0 ? availableSections.map(sec => (<FormField key={sec.id} control={control} name={`subjectConfigs.${index}.sections`} render={({ field: sectionField }) => { return (<FormItem key={sec.id} className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={sectionField.value?.includes(sec.name)} onCheckedChange={(checked) => {return checked ? sectionField.onChange([...sectionField.value, sec.name]) : sectionField.onChange(sectionField.value?.filter((value) => value !== sec.name))}} /></FormControl><FormLabel className="font-normal">{sec.name}</FormLabel></FormItem>)}} />)) : <p className="text-xs text-muted-foreground">No sections in this year.</p> }</div><FormMessage /></FormItem>
+                                                )} />
+                                                 <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
+                                                    <FormItem className="flex flex-row items-center space-x-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Mark as Priority Subject</label></FormItem>
+                                                 )} />
+                                            </div>
+                                        </Card>
+                                    )
+                                })}
                             </div>
-                            <FormLabel className="mt-2 block">Break Slot</FormLabel>
-                             <div className="grid grid-cols-2 gap-2 mt-2">
-                                <FormField control={form.control} name="breakStart" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                        ) : (
+                            <p className="text-sm text-muted-foreground pt-2">Select a year to configure subjects.</p>
+                        )}
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  {/* Step 3: Resources & Time */}
+                  <AccordionItem value="step-3">
+                    <AccordionTrigger className="text-lg font-semibold px-6">Step 3: Resources & Time Constraints</AccordionTrigger>
+                    <AccordionContent className="px-6 pt-4 space-y-6">
+                       <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <FormLabel>Available Rooms & Labs</FormLabel>
+                                <div className="flex items-center gap-2">
+                                    <Button type="button" variant="link" size="sm" className="p-0 h-auto" onClick={() => {
+                                        setValue('availableRooms', theoryRooms.map(r => r.name), { shouldValidate: true });
+                                        setValue('availableLabs', labRooms.map(r => r.name), { shouldValidate: true });
+                                    }}>
+                                        Select All Available
+                                    </Button>
+                                    <Separator orientation="vertical" className="h-4" />
+                                     <Button type="button" variant="link" size="sm" className="p-0 h-auto text-destructive" onClick={() => {
+                                         setValue('availableRooms', [], { shouldValidate: true });
+                                         setValue('availableLabs', [], { shouldValidate: true });
+                                     }}>
+                                        Clear All
+                                    </Button>
+                                </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground pb-2">Select all rooms and labs available for this schedule, or use the auto-select option.</p>
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pt-2">
+                               <FormField control={form.control} name="availableRooms" render={({ field }) => (
+                                  <FormItem className="flex flex-col"><FormLabel className="text-sm">Classrooms</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{theoryRooms.map(room => <CommandItem key={room.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(room.name) ? selected.filter(r => r !== room.name) : [...selected, room.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(room.name) ? "opacity-100" : "opacity-0")}/>{room.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                               )} />
+                               <FormField control={form.control} name="availableLabs" render={({ field }) => (
+                                  <FormItem className="flex flex-col"><FormLabel className="text-sm">Labs</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(labName => (<Badge key={labName} variant="secondary">{labName}</Badge>)) : "Select Labs"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search labs..." /><CommandList><CommandEmpty>No labs found.</CommandEmpty><CommandGroup>{labRooms.map(lab => <CommandItem key={lab.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(lab.name) ? selected.filter(r => r !== lab.name) : [...selected, lab.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(lab.name) ? "opacity-100" : "opacity-0")}/>{lab.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                               )} />
                             </div>
                         </div>
-                    </div>
-                    <FormField control={form.control} name="activeDays" render={({ field }) => (
-                        <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
-                    )} />
-                  </div>
-
-                </CardContent>
-                <CardFooter className="gap-2">
+                        <Separator />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                           <div>
+                               <FormLabel>Daily Timings</FormLabel>
+                               <div className="grid grid-cols-2 gap-2 mt-2">
+                                   <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                   <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                               </div>
+                           </div>
+                           <div>
+                               <FormLabel>Break Slot</FormLabel>
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                   <FormField control={form.control} name="breakStart" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                   <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                               </div>
+                           </div>
+                        </div>
+                         <FormField control={form.control} name="activeDays" render={({ field }) => (
+                            <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
+                        )} />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+                <div className="px-6 pb-6 flex items-center gap-2">
                     <Button type="submit" className="w-fit" disabled={isLoading}>
                       {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Sparkles className="mr-2 h-4 w-4" /> )}
                       Generate Schedule
@@ -318,32 +382,10 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                         {isPublishing ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Upload className="mr-2 h-4 w-4" /> )}
                         Publish Schedule
                     </Button>
-                </CardFooter>
+                </div>
             </Card>
         </form>
       </Form>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Generated Schedule</CardTitle>
-          <CardDescription>
-            This is the optimal schedule generated by the AI based on your inputs. You can publish it or refine your inputs and generate again.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="min-h-[200px] rounded-lg border bg-muted p-4 text-sm whitespace-pre-wrap font-mono">
-            {isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : generatedSchedule?.schedule ? (
-              <p>{generatedSchedule.schedule}</p>
-            ) : (
-              <p className="text-muted-foreground">Your generated schedule will appear here...</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
