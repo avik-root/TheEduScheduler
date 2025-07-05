@@ -195,8 +195,7 @@
     "labCredits": 1
   },
   {
-    "id": "1751745616111-wiuw2e6",
-    "name": "Digital Image Processing/Machine Learning with Power BI/ Advanced Algorithms",
+    "name": "Digital Image Processing/Machine Learning with Power BI/Advanced Algorithms",
     "code": "CSENU#3.3",
     "type": "Theory+Lab",
     "departmentId": "1751057206136-pam9vej",
@@ -209,37 +208,43 @@
       "basudev.cse@themintfire.com"
     ],
     "theoryCredits": 3,
-    "labCredits": 1
+    "labCredits": 1,
+    "id": "1751745616111-wiuw2e6"
   },
   {
-    "id": "1751745843185-uzyxzuy",
     "name": "Soft Skill Development-V",
     "code": "CSENU#3.4",
     "type": "Theory",
     "departmentId": "1751639523860-izg6a3h",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-ipaxk5j",
-    "facultyEmails": [
-      "rohit.c3a@themintfire.com",
-      "rituoarna.c3a@themintfire.com",
-      "shiva.c3a@themintfire.com",
-      "mehakdeep.c3a@themintfire.com"
-    ],
+    "facultyEmails": [],
     "theoryCredits": 1,
-    "labCredits": 0
+    "labCredits": 0,
+    "id": "1751745843185-uzyxzuy"
   },
   {
-    "id": "1751746206059-pv8rhfk",
     "name": "SAP ",
+    "code": "CSENU#3.5",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-ipaxk5j",
+    "facultyEmails": [],
+    "theoryCredits": 3,
+    "labCredits": 0,
+    "id": "1751746206059-pv8rhfk"
+  },
+  {
+    "id": "1751749077975-ho72c3s",
+    "name": "Digital Signal Processing/VLSI Design",
     "code": "CSENU#3.6",
     "type": "Theory",
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-ipaxk5j",
-    "facultyEmails": [
-      "bpisbizzy@gmail.com"
-    ],
-    "theoryCredits": 3,
+    "facultyEmails": [],
+    "theoryCredits": 4,
     "labCredits": 0
   }
 ]

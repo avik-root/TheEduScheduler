@@ -8,7 +8,7 @@ import {
   Building2,
   Network,
   BookOpen,
-  ClipboardList,
+  CalendarCheck,
 } from 'lucide-react';
 import {
   Card,
@@ -36,9 +36,10 @@ interface DashboardClientProps {
     departments: Department[];
     faculty: Faculty[];
     subjects: Subject[];
+    publishedSchedule: string;
 }
 
-export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, departments, faculty, subjects }: DashboardClientProps) {
+export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, departments, faculty, subjects, publishedSchedule }: DashboardClientProps) {
     const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
 
     return (
@@ -94,14 +95,14 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                       </CardContent>
                   </Card>
               </Link>
-               <Link href={`/admin/dashboard/logs?email=${adminEmail}`}>
+               <Link href={`/admin/dashboard/schedule?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-lg font-semibold">Recent Logs</CardTitle>
-                          <ClipboardList className="h-5 w-5 text-muted-foreground" />
+                          <CardTitle className="text-lg font-semibold">Published Schedule</CardTitle>
+                          <CalendarCheck className="h-5 w-5 text-muted-foreground" />
                       </CardHeader>
                       <CardContent className="flex-grow">
-                          <p className="text-sm text-muted-foreground">View recent faculty login activity.</p>
+                          <p className="text-sm text-muted-foreground">View the active schedule and download as PDF.</p>
                       </CardContent>
                   </Card>
               </Link>
@@ -120,7 +121,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                 <RoomAvailabilityChecker
                     userRole="admin"
                     allRooms={allRooms}
-                    schedule={generatedSchedule?.schedule || ''}
+                    schedule={generatedSchedule?.schedule || publishedSchedule || ''}
                     adminEmail={adminEmail}
                 />
             </div>
