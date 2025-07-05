@@ -1,4 +1,3 @@
-
 [
   {
     "name": "Discrete Mathematics",
@@ -85,7 +84,6 @@
     "labCredits": 0
   },
   {
-    "id": "1751727808052-r4rlpc5",
     "name": "Environmental Science-I",
     "code": "CSENU#1.7",
     "type": "Theory",
@@ -93,9 +91,12 @@
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
     "facultyEmails": [
-      "bpisbizzy@gmail.com"
+      "bpisbizzy@gmail.com",
+      "anirban.cse@themintfire.com",
+      "saikat.cse@themintfire.com"
     ],
     "theoryCredits": 2,
-    "labCredits": 0
+    "labCredits": 0,
+    "id": "1751727808052-r4rlpc5"
   }
 ]
