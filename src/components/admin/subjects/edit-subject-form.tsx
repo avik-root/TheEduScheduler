@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -61,27 +60,28 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
   const programId = watch('programId');
   const type = watch('type');
 
-  const [programs, setPrograms] = React.useState<Program[]>(() => {
-    const initialDept = departments.find(d => d.id === getValues('departmentId'));
-    return initialDept?.programs || [];
-  });
-  const [years, setYears] = React.useState<Year[]>(() => {
-    const initialDept = departments.find(d => d.id === getValues('departmentId'));
-    const initialPrograms = initialDept?.programs || [];
-    const initialProg = initialPrograms.find(p => p.id === getValues('programId'));
-    return initialProg?.years || [];
-  });
-  const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>(() => {
-    const initialDept = departments.find(d => d.id === getValues('departmentId'));
-    return initialDept ? faculty.filter(f => f.department === initialDept.name) : [];
-  });
+  const [allPrograms, setAllPrograms] = React.useState<Program[]>([]);
+  const [years, setYears] = React.useState<Year[]>([]);
+  const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>([]);
   
   const initialDepartmentIdRef = React.useRef(form.getValues('departmentId'));
   const initialProgramIdRef = React.useRef(form.getValues('programId'));
 
   React.useEffect(() => {
+    const allProgs = departments.flatMap(d => d.programs || []);
+    setAllPrograms(allProgs);
+    
+    // Set initial years and faculty based on default values
+    const initialProg = allProgs.find(p => p.id === getValues('programId'));
+    setYears(initialProg?.years || []);
+    
+    const initialDept = departments.find(d => d.id === getValues('departmentId'));
+    setFilteredFaculty(initialDept ? faculty.filter(f => f.department === initialDept.name) : []);
+
+  }, [departments, faculty, getValues]);
+  
+  React.useEffect(() => {
     const selectedDept = departments.find((d) => d.id === departmentId);
-    setPrograms(selectedDept?.programs || []);
     setFilteredFaculty(selectedDept ? faculty.filter(f => f.department === selectedDept.name) : []);
 
     if (departmentId !== initialDepartmentIdRef.current) {
@@ -92,13 +92,12 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
   }, [departmentId, departments, faculty, setValue]);
 
   React.useEffect(() => {
-    const selectedProg = programs.find((p) => p.id === programId);
+    const selectedProg = allPrograms.find((p) => p.id === programId);
     setYears(selectedProg?.years || []);
-
     if (programId !== initialProgramIdRef.current) {
       setValue('yearId', '');
     }
-  }, [programId, programs, setValue]);
+  }, [programId, allPrograms, setValue]);
 
 
   async function onSubmit(data: FormData) {
@@ -266,7 +265,7 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
                   </div>
                 </FormControl>
                 <SelectContent>
-                  {programs.map((prog) => (
+                  {allPrograms.map((prog) => (
                     <SelectItem key={prog.id} value={prog.id}>
                       {prog.name}
                     </SelectItem>

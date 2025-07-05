@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -43,7 +42,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
   const { toast } = useToast();
   const router = useRouter();
 
-  const [programs, setPrograms] = React.useState<Program[]>([]);
+  const [allPrograms, setAllPrograms] = React.useState<Program[]>([]);
   const [years, setYears] = React.useState<Year[]>([]);
   const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>([]);
 
@@ -68,21 +67,25 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
   const type = watch('type');
 
   React.useEffect(() => {
+    const allProgs = departments.flatMap(d => d.programs || []);
+    setAllPrograms(allProgs);
+  }, [departments]);
+
+  React.useEffect(() => {
     setValue('programId', '');
     setValue('yearId', '');
     setValue('facultyEmails', []);
 
     const selectedDept = departments.find((d) => d.id === departmentId);
-    setPrograms(selectedDept?.programs || []);
     setFilteredFaculty(selectedDept ? faculty.filter(f => f.department === selectedDept.name) : []);
     setYears([]);
   }, [departmentId, departments, faculty, setValue]);
 
   React.useEffect(() => {
     setValue('yearId', '');
-    const selectedProg = programs.find((p) => p.id === programId);
+    const selectedProg = allPrograms.find((p) => p.id === programId);
     setYears(selectedProg?.years || []);
-  }, [programId, programs, setValue]);
+  }, [programId, allPrograms, setValue]);
 
 
   async function onSubmit(data: FormData) {
@@ -253,7 +256,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
                   </div>
                 </FormControl>
                 <SelectContent>
-                  {programs.map((prog) => (
+                  {allPrograms.map((prog) => (
                     <SelectItem key={prog.id} value={prog.id}>
                       {prog.name}
                     </SelectItem>
