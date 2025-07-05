@@ -115,7 +115,7 @@ const prompt = ai.definePrompt({
 4.  **Lab Scheduling**:
     - All 'Lab' or 'Theory+Lab' subjects **MUST** be scheduled as a combined 50+50 minute block (100 minutes total).
     - **Student Splitting**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs.
-    - **Lab Allocation**: For a split section, you must schedule **two separate 100-minute lab blocks** for that subject during the week, one for each group (e.g., CS101 Lab (Sec A, Gp A), CS101 Lab (Sec A, Gp B)). Schedule these on different days if possible.
+    - **Lab Allocation**: For a split section, you must schedule **two separate 100-minute lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)", "Computer Networks Lab (Sec A, Gp B)"). Schedule these on different days if possible.
     - Allocate labs only to rooms listed in 'Available Labs'.
 5.  **Room & Faculty Allocation**:
     - Assign each class to an available room or lab. A room cannot host two different sections at the same time.
@@ -124,7 +124,7 @@ const prompt = ai.definePrompt({
     - Ensure total teaching hours do not exceed a faculty's 'weeklyMaxHours'.
     - Any of the 'assignedFaculty' can teach a subject. If none are assigned (NF), leave the faculty slot blank, formatted as "(NF)".
 6.  **Conflict Resolution**: There should be no scheduling conflicts for any section, faculty member, or room. A section cannot attend two classes simultaneously.
-7.  **Output Format**: For each table cell, specify the **Subject Code**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "CS101 (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "PY201 (NF) in B_Room_101".
+7.  **Output Format**: For each table cell, specify the **Subject Name**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "Computer Networks (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "Physics I (NF) in B_Room_101".
 
 Generate the complete, optimized weekly schedule now.
 `,
