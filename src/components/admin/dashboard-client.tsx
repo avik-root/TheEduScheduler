@@ -9,6 +9,7 @@ import {
   Network,
   BookOpen,
   CalendarCheck,
+  ClipboardList,
 } from 'lucide-react';
 import {
   Card,
@@ -50,7 +51,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                     Welcome, {admin?.name}. Manage your institution's resources from here.
                 </p>
             </div>
-             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <Link href={`/admin/dashboard/faculty?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -103,6 +104,17 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                       </CardHeader>
                       <CardContent className="flex-grow">
                           <p className="text-sm text-muted-foreground">View the active schedule and download as PDF.</p>
+                      </CardContent>
+                  </Card>
+              </Link>
+              <Link href={`/admin/dashboard/logs?email=${adminEmail}`}>
+                  <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-lg font-semibold">Recent Logs</CardTitle>
+                          <ClipboardList className="h-5 w-5 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent className="flex-grow">
+                          <p className="text-sm text-muted-foreground">View recent faculty login activity.</p>
                       </CardContent>
                   </Card>
               </Link>
