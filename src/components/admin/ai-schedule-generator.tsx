@@ -4,12 +4,12 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput, type GenerateScheduleInput } from '@/ai/flows/generate-schedule';
 import type { Room } from '@/lib/buildings';
@@ -31,8 +31,8 @@ const subjectConfigSchema = z.object({
   name: z.string(),
   code: z.string(),
   type: z.string(),
-  theoryCredits: z.number().optional(),
-  labCredits: z.number().optional(),
+  theoryCredits: z.coerce.number().optional(),
+  labCredits: z.coerce.number().optional(),
   assignedFaculty: z.array(z.string()),
   isPriority: z.boolean(),
   sections: z.array(z.string()),
@@ -44,13 +44,7 @@ const ScheduleGeneratorSchema = z.object({
   yearId: z.string().min(1, 'Year is required.'),
   sectionIds: z.array(z.string()).min(1, 'At least one section must be selected.'),
   
-  subjectConfigs: z.array(subjectConfigSchema).refine(
-    (subjects) => {
-        const configuredSubjects = subjects.filter(s => s.sections.length > 0);
-        return configuredSubjects.length > 0;
-    },
-    { message: "Please configure at least one subject for the selected sections."}
-  ),
+  subjectConfigs: z.array(subjectConfigSchema),
   
   availableRooms: z.array(z.string()).min(1, 'Select at least one room.'),
   availableLabs: z.array(z.string()),
@@ -61,7 +55,13 @@ const ScheduleGeneratorSchema = z.object({
   breakEnd: z.string().min(1, 'Break end is required.'),
 
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
-});
+}).refine(
+    (data) => {
+        const configuredSubjects = data.subjectConfigs.filter(s => s.sections.length > 0);
+        return configuredSubjects.length > 0;
+    },
+    { message: "Please configure at least one subject for the selected sections.", path: ["subjectConfigs"]}
+);
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
 
@@ -202,7 +202,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       },
       sections: selectedSections.map(s => ({ name: s.name, studentCount: s.studentCount })),
       subjects: configuredSubjects,
-      faculty: filteredFaculty,
+      faculty: faculty,
       availableRooms: data.availableRooms,
       availableLabs: data.availableLabs,
       timeSettings: {
@@ -261,9 +261,9 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             <Card>
                 <CardHeader>
                   <CardTitle>AI Schedule Generator</CardTitle>
-                   <p className="text-sm text-muted-foreground">
+                   <CardDescription>
                     A step-by-step guide to generating an optimal, conflict-free schedule.
-                  </p>
+                  </CardDescription>
                 </CardHeader>
                 <Accordion type="multiple" defaultValue={['step-1']} className="w-full">
                   {/* Step 1: Academic Target */}
@@ -340,7 +340,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                     </Button>
                                 </div>
                             </div>
-                            <p className="text-sm text-muted-foreground pb-2">Select all rooms and labs available for this schedule, or use the auto-select option.</p>
+                            <FormDescription className="text-sm text-muted-foreground pb-2">Select all rooms and labs available for this schedule, or use the auto-select option.</FormDescription>
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pt-2">
                                <FormField control={form.control} name="availableRooms" render={({ field }) => (
                                   <FormItem className="flex flex-col"><FormLabel className="text-sm">Classrooms</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{theoryRooms.map(room => <CommandItem key={room.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(room.name) ? selected.filter(r => r !== room.name) : [...selected, room.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(room.name) ? "opacity-100" : "opacity-0")}/>{room.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
