@@ -1,3 +1,4 @@
+
 [
   {
     "name": "Discrete Mathematics",
@@ -6,7 +7,9 @@
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
-    "facultyEmail": "bpisbizzy@gmail.com",
+    "facultyEmails": [
+      "bpisbizzy@gmail.com"
+    ],
     "theoryCredits": 3,
     "labCredits": 0,
     "id": "1751727069284-qtashu7"
@@ -18,7 +21,9 @@
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
-    "facultyEmail": "sadip.cse@themintfire.com",
+    "facultyEmails": [
+      "sadip.cse@themintfire.com"
+    ],
     "theoryCredits": 3,
     "labCredits": 1,
     "id": "1751727153934-0tnhd37"
@@ -31,7 +36,9 @@
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
-    "facultyEmail": "bpisbizzy@gmail.com",
+    "facultyEmails": [
+      "bpisbizzy@gmail.com"
+    ],
     "theoryCredits": 3,
     "labCredits": 1
   },
@@ -43,7 +50,9 @@
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
-    "facultyEmail": "bpisbizzy@gmail.com",
+    "facultyEmails": [
+      "bpisbizzy@gmail.com"
+    ],
     "theoryCredits": 4,
     "labCredits": 0
   },
@@ -55,7 +64,9 @@
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
-    "facultyEmail": "bpisbizzy@gmail.com",
+    "facultyEmails": [
+      "bpisbizzy@gmail.com"
+    ],
     "theoryCredits": 1,
     "labCredits": 0
   },
@@ -67,7 +78,9 @@
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
-    "facultyEmail": "bpisbizzy@gmail.com",
+    "facultyEmails": [
+      "bpisbizzy@gmail.com"
+    ],
     "theoryCredits": 2,
     "labCredits": 0
   },
@@ -79,7 +92,9 @@
     "departmentId": "1751057206136-pam9vej",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
-    "facultyEmail": "bpisbizzy@gmail.com",
+    "facultyEmails": [
+      "bpisbizzy@gmail.com"
+    ],
     "theoryCredits": 2,
     "labCredits": 0
   }

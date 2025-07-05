@@ -24,17 +24,17 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
 
     const getSubjectDetails = (subject: Subject) => {
         const department = departments.find(d => d.id === subject.departmentId);
-        if (!department) return { departmentName: 'N/A', programName: 'N/A', yearName: 'N/A', facultyName: 'N/A' };
+        if (!department) return { departmentName: 'N/A', programName: 'N/A', yearName: 'N/A', facultyNames: 'N/A' };
 
         const program = department.programs.find(p => p.id === subject.programId);
         const year = program?.years.find(y => y.id === subject.yearId);
-        const facultyMember = faculty.find(f => f.email === subject.facultyEmail);
+        const facultyMembers = faculty.filter(f => subject.facultyEmails && subject.facultyEmails.includes(f.email));
 
         return {
             departmentName: department.name,
             programName: program?.name || 'N/A',
             yearName: year?.name || 'N/A',
-            facultyName: facultyMember?.name || 'N/A'
+            facultyNames: facultyMembers.map(f => f.name).join(', ') || 'N/A'
         };
     };
 
@@ -48,7 +48,7 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
             details.departmentName.toLowerCase().includes(query) ||
             details.programName.toLowerCase().includes(query) ||
             details.yearName.toLowerCase().includes(query) ||
-            details.facultyName.toLowerCase().includes(query)
+            details.facultyNames.toLowerCase().includes(query)
         );
     });
 
@@ -109,7 +109,7 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
                               </div>
                               <div className="flex items-center gap-2">
                                 <User className="h-4 w-4 shrink-0" />
-                                <span>{details.facultyName}</span>
+                                <span className="truncate">{details.facultyNames}</span>
                               </div>
                             </div>
                         </CardContent>

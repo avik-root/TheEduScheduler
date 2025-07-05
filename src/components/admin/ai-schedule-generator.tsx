@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, BrainCircuit, Upload, Network, BookCopy as ProgramIcon, Calendar, BookOpen, Users, Clock, ChevronsUpDown, Check } from 'lucide-react';
+import { Loader2, BrainCircuit, Upload, Network, BookCopy as ProgramIcon, Calendar, BookOpen, Users, Clock, ChevronsUpDown, Check, Badge } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -21,7 +21,6 @@ import { publishSchedule } from '@/lib/schedule';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 const ScheduleGeneratorSchema = z.object({
@@ -138,7 +137,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         .filter(f => data.facultyEmails.includes(f.email))
         .map(f => ({
             ...f,
-            assignedSubjects: subjects.filter(s => s.facultyEmail === f.email).map(s => s.code),
+            assignedSubjects: subjects.filter(s => data.subjectIds.includes(s.id) && s.facultyEmails && s.facultyEmails.includes(f.email)).map(s => s.code),
         }));
         
     const input: GenerateScheduleInput = {
@@ -233,10 +232,10 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                 {/* Subjects & Faculty */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <FormField control={form.control} name="subjectIds" render={({ field }) => (
-                        <FormItem className="flex flex-col"><FormLabel>Subjects</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between", field.value?.length === 0 && "text-muted-foreground")} disabled={!yearId}><span className="truncate">{field.value?.length > 0 ? `${field.value.length} selected` : "Select Subjects"}</span><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search subjects..." /><CommandList><CommandEmpty>No subjects found for this year.</CommandEmpty><CommandGroup>{filteredSubjects.map(s => <CommandItem key={s.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(s.id) ? selected.filter(id => id !== s.id) : [...selected, s.id]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(s.id) ? "opacity-100" : "opacity-0")}/>{s.name} ({s.code})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                        <FormItem className="flex flex-col"><FormLabel>Subjects</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")} disabled={!yearId}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(id => (<Badge key={id} variant="secondary">{filteredSubjects.find(s => s.id === id)?.name || id}</Badge>)) : "Select Subjects"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search subjects..." /><CommandList><CommandEmpty>No subjects found for this year.</CommandEmpty><CommandGroup>{filteredSubjects.map(s => <CommandItem key={s.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(s.id) ? selected.filter(id => id !== s.id) : [...selected, s.id]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(s.id) ? "opacity-100" : "opacity-0")}/>{s.name} ({s.code})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="facultyEmails" render={({ field }) => (
-                        <FormItem className="flex flex-col"><FormLabel>Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between", field.value?.length === 0 && "text-muted-foreground")} disabled={!departmentId}><span className="truncate">{field.value?.length > 0 ? `${field.value.length} selected` : "Select Faculty"}</span><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found for this department.</CommandEmpty><CommandGroup>{filteredFaculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                        <FormItem className="flex flex-col"><FormLabel>Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")} disabled={!departmentId}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || email}</Badge>)) : "Select Faculty"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found for this department.</CommandEmpty><CommandGroup>{filteredFaculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
                     )} />
                 </div>
               

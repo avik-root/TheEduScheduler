@@ -22,7 +22,7 @@ const SubjectInfoSchema = z.object({
 const FacultyInfoSchema = z.object({
     name: z.string(),
     abbreviation: z.string(),
-    assignedSubjects: z.array(z.string().describe("List of subject codes assigned to this faculty.")),
+    assignedSubjects: z.array(z.string().describe("List of subject codes this faculty is assigned to teach.")),
     weeklyMaxHours: z.number(),
     weeklyOffDays: z.array(z.string()),
 });
@@ -77,7 +77,7 @@ Your goal is to generate an optimal, conflict-free schedule based on the provide
 1.  **Format**: Present the final schedule in a clear Markdown table. The columns should be Time, Monday, Tuesday, Wednesday, Thursday, Friday.
 2.  **Time Slots**: Adhere strictly to the provided class timings and break time.
 3.  **Credit Hours**: Ensure the total scheduled hours per week for each subject matches its credit value. For a subject with 'Theory+Lab' type, credits represent the combined total.
-4.  **Faculty Assignment**: Assign classes only to the faculty member designated for that subject.
+4.  **Faculty Assignment**: A subject can be taught by any of the faculty members assigned to it. Assign classes accordingly.
 5.  **Faculty Constraints**: Do not schedule a faculty member beyond their 'weeklyMaxHours' or on their 'weeklyOffDays'.
 6.  **Room Allocation**: Assign each class to one of the 'Available Rooms'.
     - For 'Lab' or 'Theory+Lab' subjects, prioritize rooms with "Lab" in their name if available.

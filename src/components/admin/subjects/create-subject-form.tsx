@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, BookOpen, Hash, Type, Network, BookCopy as ProgramIcon, Calendar, User, ChevronsUpDown, Check, Star } from 'lucide-react';
+import { Loader2, BookOpen, Hash, Type, Network, BookCopy as ProgramIcon, Calendar, User, ChevronsUpDown, Check, Star, Badge } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -56,7 +56,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
       departmentId: '',
       programId: '',
       yearId: '',
-      facultyEmail: '',
+      facultyEmails: [],
       theoryCredits: 0,
       labCredits: 0,
     },
@@ -69,7 +69,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
   React.useEffect(() => {
     form.setValue('programId', '');
     form.setValue('yearId', '');
-    form.setValue('facultyEmail', '');
+    form.setValue('facultyEmails', []);
 
     if (departmentId) {
       const selectedDept = departments.find((d) => d.id === departmentId);
@@ -300,64 +300,72 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
           )}
         />
          <FormField
-          control={form.control}
-          name="facultyEmail"
-          render={({ field }) => (
+            control={form.control}
+            name="facultyEmails"
+            render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Faculty</FormLabel>
-              <Popover>
+                <FormLabel>Faculty</FormLabel>
+                <Popover>
                 <PopoverTrigger asChild disabled={!departmentId || filteredFaculty.length === 0}>
-                  <FormControl>
+                    <FormControl>
                     <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-full justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                        "w-full justify-between h-auto min-h-10",
+                        !field.value?.length && "text-muted-foreground"
+                        )}
                     >
-                      {field.value
-                        ? filteredFaculty.find(
-                            (f) => f.email === field.value
-                          )?.name
-                        : "Assign a faculty member"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <div className="flex flex-wrap gap-1">
+                        {field.value?.length > 0
+                            ? field.value.map(email => (
+                                <Badge key={email} variant="secondary">
+                                {faculty.find(f => f.email === email)?.name || email}
+                                </Badge>
+                            ))
+                            : "Assign faculty members"}
+                        </div>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
-                  </FormControl>
+                    </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-96 p-0">
-                  <Command>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
                     <CommandInput placeholder="Search faculty..." />
                     <CommandList>
-                        <CommandEmpty>No faculty found.</CommandEmpty>
+                        <CommandEmpty>No faculty found for this department.</CommandEmpty>
                         <CommandGroup>
-                            {filteredFaculty.map((f) => (
+                        {filteredFaculty.map((f) => (
                             <CommandItem
-                                value={f.name}
-                                key={f.email}
-                                onSelect={() => {
-                                  form.setValue("facultyEmail", f.email)
-                                }}
+                            value={f.name}
+                            key={f.email}
+                            onSelect={() => {
+                                const selected = field.value || [];
+                                const newSelected = selected.includes(f.email)
+                                ? selected.filter(email => email !== f.email)
+                                : [...selected, f.email];
+                                field.onChange(newSelected);
+                            }}
                             >
-                                <Check
+                            <Check
                                 className={cn(
-                                    "mr-2 h-4 w-4",
-                                    f.email === field.value
+                                "mr-2 h-4 w-4",
+                                (field.value || []).includes(f.email)
                                     ? "opacity-100"
                                     : "opacity-0"
                                 )}
-                                />
-                                {f.name}
+                            />
+                            {f.name} ({f.abbreviation})
                             </CommandItem>
-                            ))}
+                        ))}
                         </CommandGroup>
                     </CommandList>
-                  </Command>
+                    </Command>
                 </PopoverContent>
-              </Popover>
-              <FormMessage />
+                </Popover>
+                <FormMessage />
             </FormItem>
-          )}
+            )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

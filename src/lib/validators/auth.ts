@@ -1,4 +1,6 @@
 
+'use server';
+
 import { z } from 'zod';
 
 export const LoginSchema = z.object({
@@ -228,7 +230,7 @@ export const SubjectSchema = z.object({
   departmentId: z.string({ required_error: "Please select a department." }).min(1, { message: 'Please select a department.' }),
   programId: z.string({ required_error: "Please select a program." }).min(1, { message: 'Please select a program.' }),
   yearId: z.string({ required_error: "Please select a year." }).min(1, { message: 'Please select a year.' }),
-  facultyEmail: z.string({ required_error: "Please select a faculty member." }).email({ message: 'Please select a valid faculty member.' }),
+  facultyEmails: z.array(z.string().email()).min(1, { message: 'Please assign at least one faculty member.' }),
   theoryCredits: z.coerce.number().optional(),
   labCredits: z.coerce.number().optional(),
 });
