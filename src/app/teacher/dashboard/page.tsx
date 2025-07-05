@@ -1,7 +1,6 @@
 
 import Link from 'next/link';
 import {
-  CalendarDays,
   Shield,
 } from 'lucide-react';
 import { getFacultyByEmail } from '@/lib/faculty';
@@ -12,6 +11,7 @@ import { getAllRooms } from '@/lib/buildings';
 import { getPublishedSchedule } from '@/lib/schedule';
 import { getFacultyRoomRequests } from '@/lib/requests';
 import { LogoutButton } from '@/components/auth/logout-button';
+import { AppLogo } from '@/components/common/app-logo';
 
 export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
   const facultyEmail = searchParams.email;
@@ -34,12 +34,7 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-         <div className="flex items-center gap-3">
-            <CalendarDays className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
-            </span>
-          </div>
+         <AppLogo linkTo={`/teacher/dashboard?email=${facultyEmail}&adminEmail=${adminEmail}`} />
           <div className="flex items-center gap-4">
             <div className="text-right">
                 <p className="font-medium text-foreground">{faculty.name}</p>

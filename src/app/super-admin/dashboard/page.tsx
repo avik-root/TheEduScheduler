@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { CalendarCog, LogOut, School, Shield, UserCog, BookUser } from 'lucide-react';
+import { LogOut, School, Shield, UserCog, BookUser, Palette } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,21 +17,20 @@ import { EditAdminDialog } from '@/components/super-admin/edit-admin-dialog';
 import { DeleteAdminDialog } from '@/components/super-admin/delete-admin-dialog';
 import { getSuperAdmin } from '@/lib/super-admin';
 import { EditSuperAdminDialog } from '@/components/super-admin/edit-super-admin-dialog';
+import { AppLogo } from '@/components/common/app-logo';
+import { getLogo } from '@/lib/logo';
+import { EditLogoDialog } from '@/components/super-admin/logo/edit-logo-dialog';
 
 
 export default async function SuperAdminDashboardPage() {
   const admins = await getAdmins();
   const superAdmin = await getSuperAdmin();
+  const currentLogo = await getLogo();
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-950">
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:px-6">
-        <Link href="/super-admin/dashboard" className="flex items-center gap-3">
-          <CalendarCog className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold text-primary">
-            EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
-          </span>
-        </Link>
+        <AppLogo linkTo="/super-admin/dashboard" />
         <div className="flex items-center gap-4">
           <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
             Super Admin
@@ -112,6 +111,20 @@ export default async function SuperAdminDashboardPage() {
                       </CardFooter>
                     </Card>
                 </Link>
+                <Card className="h-full flex flex-col">
+                    <CardHeader className="flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="rounded-full bg-primary/10 p-3">
+                                <Palette className="h-6 w-6 text-primary" />
+                            </div>
+                            <CardTitle className="text-xl">Application Logo</CardTitle>
+                        </div>
+                        <EditLogoDialog currentLogo={currentLogo} />
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                        <p className="text-sm text-muted-foreground">Change the main logo for the application.</p>
+                    </CardContent>
+                </Card>
              </div>
           </div>
 

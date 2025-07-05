@@ -1,7 +1,6 @@
 
 import Link from 'next/link';
 import {
-  CalendarDays,
   LogOut,
   Shield,
 } from 'lucide-react';
@@ -11,6 +10,7 @@ import { getAllRooms } from '@/lib/buildings';
 import { notFound } from 'next/navigation';
 import { DashboardClient } from '@/components/admin/dashboard-client';
 import { getRoomRequests } from '@/lib/requests';
+import { AppLogo } from '@/components/common/app-logo';
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -25,12 +25,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-         <div className="flex items-center gap-3">
-            <CalendarDays className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
-            </span>
-          </div>
+         <AppLogo linkTo={`/admin/dashboard?email=${adminEmail}`} />
           <div className="flex items-center gap-4">
             <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
               {admin?.name || 'Admin'}

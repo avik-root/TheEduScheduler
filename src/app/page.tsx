@@ -1,15 +1,18 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from "@/components/auth/login-form";
 import { SignupForm } from "@/components/auth/signup-form";
-import { CalendarCog, Terminal, Shield } from 'lucide-react';
+import { Terminal, Shield, CalendarCog } from 'lucide-react';
 import { checkSuperAdminExists } from "@/lib/super-admin";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TypingAnimation } from "@/components/common/typing-animation";
+import { getLogo } from '@/lib/logo';
 
 export default async function Home() {
   const superAdminExists = await checkSuperAdminExists();
+  const logoUrl = await getLogo();
 
   return (
     <main className="relative flex min-h-screen w-full items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
@@ -17,7 +20,13 @@ export default async function Home() {
         
         <div className="space-y-6 text-center md:text-left">
           <div className="flex items-center gap-3 justify-center md:justify-start">
-            <CalendarCog className="h-10 w-10 text-primary" />
+            {logoUrl ? (
+                <div className="relative h-10 w-10">
+                    <Image src={logoUrl} alt="EduScheduler Logo" fill className="object-contain" />
+                </div>
+            ) : (
+                <CalendarCog className="h-10 w-10 text-primary" />
+            )}
             <h1 className="text-4xl font-bold tracking-tighter text-primary">
               EduScheduler <TypingAnimation text="by MintFire" className="text-2xl font-normal text-muted-foreground" />
             </h1>

@@ -253,3 +253,10 @@ export const DeveloperPageContentSchema = z.object({
     teamTitle: z.string().min(1, "Team title is required."),
     teamDescription: z.string().min(1, "Team description is required."),
 });
+
+export const LogoSchema = z.object({
+  logo: z.string().min(1, "Logo image is required.").refine(
+    (val) => val.startsWith('data:image/png;base64,'),
+    { message: 'Only PNG images are allowed.' }
+  ),
+});

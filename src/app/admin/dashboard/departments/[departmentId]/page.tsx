@@ -1,7 +1,7 @@
 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CalendarDays, LogOut, ChevronLeft, BookCopy, Shield } from 'lucide-react';
+import { LogOut, ChevronLeft, BookCopy, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { getAdminByEmail } from '@/lib/admin';
@@ -9,6 +9,7 @@ import { getDepartmentById, type Program } from '@/lib/departments';
 import { EditDepartmentDialog } from '@/components/admin/departments/edit-department-dialog';
 import { DeleteDepartmentDialog } from '@/components/admin/departments/delete-department-dialog';
 import { CreateProgramDialog } from '@/components/admin/departments/programs/create-program-dialog';
+import { AppLogo } from '@/components/common/app-logo';
 
 export default async function DepartmentProgramsPage({ params, searchParams }: { params: { departmentId: string }, searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -26,12 +27,7 @@ export default async function DepartmentProgramsPage({ params, searchParams }: {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-         <div className="flex items-center gap-3">
-            <CalendarDays className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">
-              EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
-            </span>
-          </div>
+         <AppLogo linkTo={`/admin/dashboard?email=${adminEmail}`} />
           <div className="flex items-center gap-4">
             <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
               {admin?.name || 'Admin'}

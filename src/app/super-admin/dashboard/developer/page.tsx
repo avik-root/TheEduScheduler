@@ -1,12 +1,13 @@
 
 import Link from 'next/link';
-import { CalendarCog, LogOut, Shield, ChevronLeft, BookUser } from 'lucide-react';
+import { LogOut, Shield, ChevronLeft, BookUser } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getDevelopers, type Developer, getDeveloperPageContent } from '@/lib/developer';
 import { EditDeveloperDialog } from '@/components/super-admin/developer/edit-developer-dialog';
 import Image from 'next/image';
 import { EditPageContentDialog } from '@/components/super-admin/developer/edit-page-content-dialog';
+import { AppLogo } from '@/components/common/app-logo';
 
 export default async function DeveloperSettingsPage() {
     const developers = await getDevelopers();
@@ -15,12 +16,7 @@ export default async function DeveloperSettingsPage() {
     return (
         <div className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-950">
             <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:px-6">
-                <Link href="/super-admin/dashboard" className="flex items-center gap-3">
-                    <CalendarCog className="h-8 w-8 text-primary" />
-                    <span className="text-2xl font-bold text-primary">
-                        EduScheduler <span className="text-sm font-normal text-muted-foreground">by MintFire</span>
-                    </span>
-                </Link>
+                <AppLogo linkTo="/super-admin/dashboard" />
                 <div className="flex items-center gap-4">
                     <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
                         Super Admin
