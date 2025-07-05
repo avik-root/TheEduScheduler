@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { EditSubjectDialog } from '@/components/admin/subjects/edit-subject-dialog';
 import { DeleteSubjectDialog } from '@/components/admin/subjects/delete-subject-dialog';
-import { BookOpen, User, Network, BookCopy, Calendar as CalendarIcon, Search } from 'lucide-react';
+import { BookOpen, User, Network, BookCopy, Calendar as CalendarIcon, Search, Star } from 'lucide-react';
 import type { Subject } from '@/lib/subjects';
 import type { Department } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
@@ -79,9 +79,21 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3">
-                            <Badge variant={subject.type === 'Theory' || subject.type === 'Theory+Lab' ? 'default' : subject.type === 'Lab' ? 'secondary' : 'outline'}>
-                                {subject.type}
-                            </Badge>
+                             <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant={subject.type === 'Theory' || subject.type === 'Theory+Lab' ? 'default' : subject.type === 'Lab' ? 'secondary' : 'outline'}>
+                                    {subject.type}
+                                </Badge>
+                                {(subject.theoryCredits) && (
+                                    <Badge variant="outline" className="flex items-center gap-1">
+                                        <Star className="h-3 w-3" /> T: {subject.theoryCredits}
+                                    </Badge>
+                                )}
+                                {(subject.labCredits) && (
+                                    <Badge variant="outline" className="flex items-center gap-1">
+                                        <Star className="h-3 w-3" /> L: {subject.labCredits}
+                                    </Badge>
+                                )}
+                            </div>
                             <div className="space-y-2 pt-2 text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <Network className="h-4 w-4 shrink-0" />
@@ -116,7 +128,7 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
                                 </p>
                             ) : (
                                 <p className="text-sm text-muted-foreground">
-                                    Click &apos;Create New Subject&apos; to get started.
+                                    Click 'Create New Subject' to get started.
                                 </p>
                             )}
                         </div>

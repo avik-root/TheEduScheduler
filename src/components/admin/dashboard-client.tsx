@@ -24,15 +24,21 @@ import { AiScheduleGenerator } from '@/components/admin/ai-schedule-generator';
 import { RoomAvailabilityChecker } from '@/components/admin/room-availability-checker';
 import { RoomRequests } from './room-requests';
 import type { RoomRequest } from '@/lib/requests';
+import type { Department } from '@/lib/departments';
+import type { Faculty } from '@/lib/faculty';
+import type { Subject } from '@/lib/subjects';
 
 interface DashboardClientProps {
     admin: Admin | null;
     allRooms: Room[];
     adminEmail: string;
     roomRequests: RoomRequest[];
+    departments: Department[];
+    faculty: Faculty[];
+    subjects: Subject[];
 }
 
-export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: DashboardClientProps) {
+export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, departments, faculty, subjects }: DashboardClientProps) {
     const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
 
     return (
@@ -107,6 +113,9 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests }: D
                     generatedSchedule={generatedSchedule}
                     setGeneratedSchedule={setGeneratedSchedule}
                     adminEmail={adminEmail}
+                    departments={departments}
+                    faculty={faculty}
+                    subjects={subjects}
                 />
                 <RoomAvailabilityChecker
                     userRole="admin"

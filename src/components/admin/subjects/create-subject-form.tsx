@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, BookOpen, Hash, Type, Network, BookCopy as ProgramIcon, Calendar, User, ChevronsUpDown, Check } from 'lucide-react';
+import { Loader2, BookOpen, Hash, Type, Network, BookCopy as ProgramIcon, Calendar, User, ChevronsUpDown, Check, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -56,11 +57,14 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
       programId: '',
       yearId: '',
       facultyEmail: '',
+      theoryCredits: 0,
+      labCredits: 0,
     },
   });
 
   const departmentId = form.watch('departmentId');
   const programId = form.watch('programId');
+  const type = form.watch('type');
 
   React.useEffect(() => {
     form.setValue('programId', '');
@@ -174,6 +178,46 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-2 gap-4">
+          {(type === 'Theory' || type === 'Theory+Lab' || type === 'Project') && (
+            <FormField
+              control={form.control}
+              name="theoryCredits"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Theory Credits</FormLabel>
+                  <div className="relative">
+                    <Star className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input type="number" placeholder="e.g., 3" {...field} className="pl-10" />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          {(type === 'Lab' || type === 'Theory+Lab' || type === 'Project') && (
+            <FormField
+              control={form.control}
+              name="labCredits"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Lab Credits</FormLabel>
+                   <div className="relative">
+                    <Star className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input type="number" placeholder="e.g., 1.5" {...field} className="pl-10" />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+        </div>
+
         <FormField
           control={form.control}
           name="departmentId"
