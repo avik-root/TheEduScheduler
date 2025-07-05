@@ -33,7 +33,7 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
 
     const getSubjectDetails = React.useCallback((subject: Subject) => {
         const department = departments.find(d => d.id === subject.departmentId);
-        if (!department) return { departmentName: 'N/A', programName: 'N/A', yearName: 'N/A', facultyNames: 'N/A' };
+        if (!department) return { departmentName: 'N/A', programName: 'N/A', yearName: 'N/A', facultyNames: 'NF' };
 
         const program = (department.programs || []).find(p => p.id === subject.programId);
         const year = (program?.years || []).find(y => y.id === subject.yearId);
@@ -43,7 +43,7 @@ export function SubjectsList({ initialSubjects, departments, faculty, adminEmail
             departmentName: department.name,
             programName: program?.name || 'N/A',
             yearName: year?.name || 'N/A',
-            facultyNames: facultyMembers.map(f => f.name).join(', ') || 'N/A'
+            facultyNames: facultyMembers.map(f => f.name).join(', ') || 'NF'
         };
     }, [departments, faculty]);
 

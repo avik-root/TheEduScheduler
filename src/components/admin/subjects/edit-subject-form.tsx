@@ -26,6 +26,7 @@ import type { Faculty } from '@/lib/faculty';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 type FormData = z.infer<typeof UpdateSubjectSchema>;
 
@@ -339,6 +340,19 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
                     <CommandList>
                         <CommandEmpty>No faculty found for this department.</CommandEmpty>
                         <CommandGroup>
+                        <CommandItem
+                          key="none-faculty"
+                          onSelect={() => field.onChange([])}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              (field.value || []).length === 0 ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          None (NF)
+                        </CommandItem>
+                        <Separator />
                         {filteredFaculty.map((f) => (
                             <CommandItem
                             value={f.name}
