@@ -24,26 +24,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { RequestRoomDialog } from '../teacher/request-room-dialog';
 import type { RoomRequestData } from '@/lib/requests';
 
-const AdminCheckerSchema = z.object({
-  roomsToCheck: z.array(z.string()).refine((value) => value.length > 0, {
-    message: 'You have to select at least one room or "Any Room".',
-  }),
-  startTime: z.string().min(1, 'Start time is required.'),
-  endTime: z.string().min(1, 'End time is required.'),
-  date: z.date({
-    required_error: "A date is required.",
-  }),
-}).refine((data) => {
-    if (!data.startTime || !data.endTime) return true; // Let other validators handle empty fields
-    const start = new Date(`1970-01-01T${data.startTime}:00`);
-    const end = new Date(`1970-01-01T${data.endTime}:00`);
-    return end > start;
-  }, {
-    message: "End time must be after start time.",
-    path: ["endTime"],
-  });
-
-const FacultyCheckerSchema = z.object({
+const CheckerSchema = z.object({
   roomsToCheck: z.array(z.string()).refine((value) => value.length > 0, {
     message: 'You have to select at least one room or "Any Room".',
   }),
@@ -73,7 +54,7 @@ const FacultyCheckerSchema = z.object({
     path: ["endTime"],
   });
 
-type FormData = z.infer<typeof AdminCheckerSchema> | z.infer<typeof FacultyCheckerSchema>;
+type FormData = z.infer<typeof CheckerSchema>;
 
 interface RoomAvailabilityCheckerProps {
     userRole: 'admin' | 'faculty';
@@ -96,10 +77,13 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   
   const isFaculty = userRole === 'faculty';
   const form = useForm<FormData>({
-    resolver: zodResolver(isFaculty ? FacultyCheckerSchema : AdminCheckerSchema),
-    defaultValues: isFaculty
-      ? { roomsToCheck: [], startTime: '', endTime: '' }
-      : { roomsToCheck: [], startTime: '10:00', endTime: '11:00' },
+    resolver: zodResolver(CheckerSchema),
+    defaultValues: { 
+       roomsToCheck: [], 
+       startTime: userRole === 'faculty' ? '' : '10:00',
+       endTime: userRole === 'faculty' ? '' : '10:50',
+       date: undefined,
+    },
   });
 
   const { setValue, watch } = form;
@@ -107,9 +91,11 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
   React.useEffect(() => {
     // This effect runs only on the client, after hydration.
     // It sets the initial date and time for the form to avoid server/client mismatch.
-    setValue('date', new Date(), { shouldValidate: true });
+    if (!form.getValues('date')) {
+        setValue('date', new Date(), { shouldValidate: true });
+    }
     
-    if (isFaculty) {
+    if (userRole === 'faculty' && !form.getValues('startTime')) {
       const now = new Date();
       const minutes = now.getMinutes();
       const roundedMinutes = Math.ceil(minutes / 10) * 10;
@@ -121,13 +107,13 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
       const formattedTime = format(roundedTime, 'HH:mm');
       setValue('startTime', formattedTime, { shouldValidate: true });
     }
-  }, [isFaculty, setValue]);
+  }, [userRole, setValue, form]);
 
   const startTime = watch('startTime');
   const selectedDate = watch('date') as Date;
 
   React.useEffect(() => {
-    if (isFaculty && startTime) {
+    if (startTime) {
       try {
         const [hours, minutes] = startTime.split(':').map(Number);
         if (!isNaN(hours) && !isNaN(minutes)) {
@@ -145,7 +131,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
         console.error("Could not auto-calculate end time:", e);
       }
     }
-  }, [startTime, isFaculty, setValue]);
+  }, [startTime, setValue]);
   
   React.useEffect(() => {
     // This effect sets the minTime for the input only on the client side.
@@ -232,7 +218,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
         <CardDescription>
           {isFaculty 
             ? 'Check room availability for a specific date and time for a temporary booking.'
-            : 'Check room availability against the currently generated schedule. First, generate a schedule, then use this tool to query it.'}
+            : 'Check room availability for a 50-minute slot against the currently generated schedule.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -376,7 +362,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                               <FormItem>
                                   <FormLabel className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="h-3 w-3" /> End Time</FormLabel>
                                   <FormControl>
-                                      <Input type="time" {...field} readOnly={isFaculty} className={isFaculty ? 'bg-muted/50 cursor-not-allowed' : ''}/>
+                                      <Input type="time" {...field} readOnly className={'bg-muted/50 cursor-not-allowed'}/>
                                   </FormControl>
                                   <FormMessage />
                               </FormItem>

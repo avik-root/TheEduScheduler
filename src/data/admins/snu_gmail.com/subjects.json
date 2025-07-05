@@ -1,1 +1,86 @@
-[]
+[
+  {
+    "name": "Discrete Mathematics",
+    "code": "CSENU#1.1",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-c2131y5",
+    "facultyEmail": "bpisbizzy@gmail.com",
+    "theoryCredits": 3,
+    "labCredits": 0,
+    "id": "1751727069284-qtashu7"
+  },
+  {
+    "name": "Fundamentals Of Computer Science & Problem Solving",
+    "code": "CSENU#1.2",
+    "type": "Theory+Lab",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-c2131y5",
+    "facultyEmail": "sadip.cse@themintfire.com",
+    "theoryCredits": 3,
+    "labCredits": 1,
+    "id": "1751727153934-0tnhd37"
+  },
+  {
+    "id": "1751727234247-vrc0omo",
+    "name": "Digital Electronics",
+    "code": "CSENU#1.3",
+    "type": "Theory+Lab",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-c2131y5",
+    "facultyEmail": "bpisbizzy@gmail.com",
+    "theoryCredits": 3,
+    "labCredits": 1
+  },
+  {
+    "id": "1751727382425-n4d87hm",
+    "name": "Probability & Statistics",
+    "code": "CSENU#1.4",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-c2131y5",
+    "facultyEmail": "bpisbizzy@gmail.com",
+    "theoryCredits": 4,
+    "labCredits": 0
+  },
+  {
+    "id": "1751727663040-5drzl78",
+    "name": "Soft Skill Development-I",
+    "code": "CSENU#1.5",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-c2131y5",
+    "facultyEmail": "bpisbizzy@gmail.com",
+    "theoryCredits": 1,
+    "labCredits": 0
+  },
+  {
+    "id": "1751727736136-yopvkpi",
+    "name": "Communicative English-I",
+    "code": "CSENU#1.6",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-c2131y5",
+    "facultyEmail": "bpisbizzy@gmail.com",
+    "theoryCredits": 2,
+    "labCredits": 0
+  },
+  {
+    "id": "1751727808052-r4rlpc5",
+    "name": "Environmental Science-I",
+    "code": "CSENU#1.7",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-c2131y5",
+    "facultyEmail": "bpisbizzy@gmail.com",
+    "theoryCredits": 2,
+    "labCredits": 0
+  }
+]
