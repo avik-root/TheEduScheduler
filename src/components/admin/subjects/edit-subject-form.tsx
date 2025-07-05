@@ -56,44 +56,49 @@ export function EditSubjectForm({ subject, onSuccess, adminEmail, departments, f
     },
   });
 
-  const departmentId = form.watch('departmentId');
-  const programId = form.watch('programId');
-  const type = form.watch('type');
+  const { watch, setValue, getValues } = form;
+  const departmentId = watch('departmentId');
+  const programId = watch('programId');
+  const type = watch('type');
 
   const [programs, setPrograms] = React.useState<Program[]>(() => {
-    const dept = departments.find(d => d.id === form.getValues('departmentId'));
-    return dept?.programs || [];
+    const initialDept = departments.find(d => d.id === getValues('departmentId'));
+    return initialDept?.programs || [];
   });
   const [years, setYears] = React.useState<Year[]>(() => {
-      const prog = programs.find(p => p.id === form.getValues('programId'));
-      return prog?.years || [];
+    const initialDept = departments.find(d => d.id === getValues('departmentId'));
+    const initialPrograms = initialDept?.programs || [];
+    const initialProg = initialPrograms.find(p => p.id === getValues('programId'));
+    return initialProg?.years || [];
   });
-   const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>(() => {
-      const dept = departments.find(d => d.id === form.getValues('departmentId'));
-      return dept ? faculty.filter(f => f.department === dept.name) : [];
+  const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>(() => {
+    const initialDept = departments.find(d => d.id === getValues('departmentId'));
+    return initialDept ? faculty.filter(f => f.department === initialDept.name) : [];
   });
-
+  
+  const initialDepartmentIdRef = React.useRef(form.getValues('departmentId'));
+  const initialProgramIdRef = React.useRef(form.getValues('programId'));
 
   React.useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'departmentId') {
-        form.setValue('programId', '');
-        form.setValue('yearId', '');
-        form.setValue('facultyEmails', []);
-        const selectedDept = departments.find((d) => d.id === value.departmentId);
-        const newPrograms = selectedDept?.programs || [];
-        setPrograms(newPrograms);
-        setFilteredFaculty(selectedDept ? faculty.filter(f => f.department === selectedDept.name) : []);
-        setYears([]);
-      }
-      if (name === 'programId') {
-        form.setValue('yearId', '');
-        const selectedProg = programs.find((p) => p.id === value.programId);
-        setYears(selectedProg?.years || []);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form, departments, faculty, programs]);
+    const selectedDept = departments.find((d) => d.id === departmentId);
+    setPrograms(selectedDept?.programs || []);
+    setFilteredFaculty(selectedDept ? faculty.filter(f => f.department === selectedDept.name) : []);
+
+    if (departmentId !== initialDepartmentIdRef.current) {
+        setValue('programId', '');
+        setValue('yearId', '');
+        setValue('facultyEmails', []);
+    }
+  }, [departmentId, departments, faculty, setValue]);
+
+  React.useEffect(() => {
+    const selectedProg = programs.find((p) => p.id === programId);
+    setYears(selectedProg?.years || []);
+
+    if (programId !== initialProgramIdRef.current) {
+      setValue('yearId', '');
+    }
+  }, [programId, programs, setValue]);
 
 
   async function onSubmit(data: FormData) {
