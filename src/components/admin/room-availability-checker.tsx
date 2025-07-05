@@ -80,22 +80,22 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
     resolver: zodResolver(CheckerSchema),
     defaultValues: { 
        roomsToCheck: [], 
-       startTime: userRole === 'faculty' ? '' : '10:00',
-       endTime: userRole === 'faculty' ? '' : '10:50',
+       startTime: '',
+       endTime: '',
        date: undefined,
     },
   });
 
-  const { setValue, watch } = form;
+  const { getValues, setValue, watch } = form;
   
   React.useEffect(() => {
     // This effect runs only on the client, after hydration.
     // It sets the initial date and time for the form to avoid server/client mismatch.
-    if (!form.getValues('date')) {
+    if (!getValues('date')) {
         setValue('date', new Date(), { shouldValidate: true });
     }
     
-    if (userRole === 'faculty' && !form.getValues('startTime')) {
+    if (userRole === 'faculty' && !getValues('startTime')) {
       const now = new Date();
       const minutes = now.getMinutes();
       const roundedMinutes = Math.ceil(minutes / 10) * 10;
@@ -106,11 +106,13 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
 
       const formattedTime = format(roundedTime, 'HH:mm');
       setValue('startTime', formattedTime, { shouldValidate: true });
+    } else if (userRole === 'admin' && !getValues('startTime')) {
+        setValue('startTime', '10:00', {shouldValidate: true});
     }
-  }, [userRole, setValue, form]);
+  }, [userRole, setValue, getValues]);
 
   const startTime = watch('startTime');
-  const selectedDate = watch('date') as Date;
+  const selectedDate = watch('date');
 
   React.useEffect(() => {
     if (startTime) {
@@ -352,6 +354,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                   <FormControl>
                                       <Input type="time" {...field} min={minTime} />
                                   </FormControl>
+                                  <FormMessage />
                               </FormItem>
                           )}
                       />
@@ -387,7 +390,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                         )}
                                         >
                                         {field.value ? (
-                                            format(field.value as Date, "PPP")
+                                            format(field.value, "PPP")
                                         ) : (
                                             <span>Pick a date</span>
                                         )}
@@ -398,7 +401,7 @@ export function RoomAvailabilityChecker({ userRole, allRooms, schedule, adminEma
                                     <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
-                                        selected={field.value as Date | undefined}
+                                        selected={field.value}
                                         onSelect={field.onChange}
                                         disabled={(date) =>
                                             date < new Date(new Date().setHours(0,0,0,0))
