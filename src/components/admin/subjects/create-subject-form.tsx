@@ -251,7 +251,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Program</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} disabled={!departmentId || programs.length === 0}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <div className="relative">
                     <ProgramIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -278,7 +278,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Year</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} disabled={!programId || years.length === 0}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -306,7 +306,7 @@ export function CreateSubjectForm({ onSuccess, adminEmail, departments, faculty 
             <FormItem className="flex flex-col">
                 <FormLabel>Faculty</FormLabel>
                 <Popover>
-                <PopoverTrigger asChild disabled={!departmentId || filteredFaculty.length === 0}>
+                <PopoverTrigger asChild>
                     <FormControl>
                     <Button
                         variant="outline"
