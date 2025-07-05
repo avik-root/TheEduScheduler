@@ -228,7 +228,7 @@ export const SubjectSchema = z.object({
   departmentId: z.string({ required_error: "Please select a department." }).min(1, { message: 'Please select a department.' }),
   programId: z.string({ required_error: "Please select a program." }).min(1, { message: 'Please select a program.' }),
   yearId: z.string({ required_error: "Please select a year." }).min(1, { message: 'Please select a year.' }),
-  facultyEmails: z.array(z.string().email()).min(1, { message: 'Please assign at least one faculty member.' }),
+  facultyEmails: z.array(z.string().email()).optional(),
   theoryCredits: z.coerce.number().optional(),
   labCredits: z.coerce.number().optional(),
 });

@@ -21,7 +21,9 @@
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
     "facultyEmails": [
-      "sadip.cse@themintfire.com"
+      "arijitp.cse@themintfire.com",
+      "arkapravad.cse@themintfire.com",
+      "abhishek.cse@themintfire.com"
     ],
     "theoryCredits": 3,
     "labCredits": 1,
@@ -56,18 +58,18 @@
     "labCredits": 0
   },
   {
-    "id": "1751727663040-5drzl78",
     "name": "Soft Skill Development-I",
     "code": "CSENU#1.5",
     "type": "Theory",
-    "departmentId": "1751057206136-pam9vej",
+    "departmentId": "1751639523860-izg6a3h",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-c2131y5",
     "facultyEmails": [
-      "bpisbizzy@gmail.com"
+      "rohit.c3a@themintfire.com"
     ],
     "theoryCredits": 1,
-    "labCredits": 0
+    "labCredits": 0,
+    "id": "1751727663040-5drzl78"
   },
   {
     "id": "1751727736136-yopvkpi",
@@ -98,5 +100,146 @@
     "theoryCredits": 2,
     "labCredits": 0,
     "id": "1751727808052-r4rlpc5"
+  },
+  {
+    "id": "1751741251602-fw5k7dh",
+    "name": "Data Structures ",
+    "code": "CSENU#2.1",
+    "type": "Theory+Lab",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-1qlihcx",
+    "facultyEmails": [
+      "mousumi.cse@themintfire.com",
+      "sadip.cse@themintfire.com",
+      "asmita.cse@themintfire.com",
+      "basudev.cse@themintfire.com",
+      "aritra.cse@themintfire.com",
+      "soumi.cse@themintfire.com",
+      "arkapravad.cse@themintfire.com",
+      "sourajit.cse@themintfire.com",
+      "debasmita.cse@themintfire.com",
+      "kritanta.cse@themintfire.com",
+      "raina.cse@themintfire.com",
+      "santlal.cse@themintfire.com"
+    ],
+    "theoryCredits": 4,
+    "labCredits": 1
+  },
+  {
+    "id": "1751741661463-wrznhry",
+    "name": "Computer Architecture",
+    "code": "CSENU#2.2",
+    "type": "Theory+Lab",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-1qlihcx",
+    "facultyEmails": [
+      "raina.cse@themintfire.com",
+      "arkapravad.cse@themintfire.com"
+    ],
+    "theoryCredits": 3,
+    "labCredits": 1
+  },
+  {
+    "id": "1751742060843-on0gu96",
+    "name": "Formal Language & Automata Theory ",
+    "code": "CSENU#2.3",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-1qlihcx",
+    "facultyEmails": [
+      "parthasarathi.cse@themintfire.com",
+      "pritam.cse@themintfire.com",
+      "arkapravad.cse@themintfire.com",
+      "debasmita.cse@themintfire.com",
+      "kritanta.cse@themintfire.com"
+    ],
+    "theoryCredits": 3,
+    "labCredits": 0
+  },
+  {
+    "id": "1751745263022-23yuvs5",
+    "name": "Computer Network & Network Management",
+    "code": "CSENU#3.1",
+    "type": "Theory+Lab",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-ipaxk5j",
+    "facultyEmails": [
+      "pratik.cse@themintfire.com",
+      "indranil.cse@themintfire.com",
+      "rana.cse@themintfire.com",
+      "sadip.cse@themintfire.com"
+    ],
+    "theoryCredits": 4,
+    "labCredits": 1
+  },
+  {
+    "id": "1751745368481-j4twqqa",
+    "name": "Software Engineering with Agile & Devops",
+    "code": "CSENU#3.2",
+    "type": "Theory+Lab",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-ipaxk5j",
+    "facultyEmails": [
+      "anirban.cse@themintfire.com",
+      "ankita.cse@themintfire.com",
+      "aritra.cse@themintfire.com",
+      "somah.cse@themintfire.com",
+      "parthasarathi.cse@themintfire.com"
+    ],
+    "theoryCredits": 4,
+    "labCredits": 1
+  },
+  {
+    "id": "1751745616111-wiuw2e6",
+    "name": "Digital Image Processing/Machine Learning with Power BI/ Advanced Algorithms",
+    "code": "CSENU#3.3",
+    "type": "Theory+Lab",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-ipaxk5j",
+    "facultyEmails": [
+      "kritanta.cse@themintfire.com",
+      "biswaroop.cse@themintfire.com",
+      "swarup.cse@themintfire.com",
+      "basudev.cse@themintfire.com"
+    ],
+    "theoryCredits": 3,
+    "labCredits": 1
+  },
+  {
+    "id": "1751745843185-uzyxzuy",
+    "name": "Soft Skill Development-V",
+    "code": "CSENU#3.4",
+    "type": "Theory",
+    "departmentId": "1751639523860-izg6a3h",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-ipaxk5j",
+    "facultyEmails": [
+      "rohit.c3a@themintfire.com",
+      "rituoarna.c3a@themintfire.com",
+      "shiva.c3a@themintfire.com",
+      "mehakdeep.c3a@themintfire.com"
+    ],
+    "theoryCredits": 1,
+    "labCredits": 0
+  },
+  {
+    "id": "1751746206059-pv8rhfk",
+    "name": "SAP ",
+    "code": "CSENU#3.6",
+    "type": "Theory",
+    "departmentId": "1751057206136-pam9vej",
+    "programId": "1751057339642-xjm0gbd",
+    "yearId": "1751057427398-ipaxk5j",
+    "facultyEmails": [
+      "bpisbizzy@gmail.com"
+    ],
+    "theoryCredits": 3,
+    "labCredits": 0
   }
 ]
