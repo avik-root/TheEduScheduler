@@ -57,7 +57,7 @@ const GenerateScheduleInputSchema = z.object({
 export type GenerateScheduleInput = z.infer<typeof GenerateScheduleInputSchema>;
 
 const GenerateScheduleOutputSchema = z.object({
-  schedule: z.string().describe('The generated schedule as a well-formatted string, in Markdown table format.'),
+  schedule: z.string().describe('The generated schedule as a well-formatted string, containing multiple Markdown tables, one for each section.'),
 });
 export type GenerateScheduleOutput = z.infer<typeof GenerateScheduleOutputSchema>;
 
@@ -106,27 +106,29 @@ const prompt = ai.definePrompt({
 {{/each}}
 
 **Core Scheduling Rules & Instructions:**
-1.  **Format**: Present the final schedule in a clear Markdown table. The columns should be Time, {{#each activeDays}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
-2.  **Time Slots**: Adhere strictly to the provided daily timings and break slot. Classes should be 50 minutes long unless specified otherwise. Do not schedule anything during the break.
-3.  **Credit Hours**:
+1.  **Format**: Generate a **separate Markdown table for each section**. Each table must be preceded by a heading indicating the section name (e.g., '### Section 1').
+2.  **Table Structure**: For each section's table, the columns should be Time, {{#each activeDays}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
+3.  **Time Slots**: Adhere strictly to the provided daily timings and break slot. Classes should be 50 minutes long unless specified otherwise. Do not schedule anything during the break.
+4.  **Credit Hours**:
     - Each credit point equals one 50-minute class per week. E.g., 3 credits = three 50-minute classes.
     - **Priority Subjects**: For subjects marked as priority with theory credits, schedule one of their weekly classes as a combined 50+50 minute (100-minute) block. The other classes for that subject should be single 50-minute slots.
     - **Different Days**: Schedule classes for the same subject on different days of the week.
-4.  **Lab Scheduling**:
+5.  **Lab Scheduling**:
     - All 'Lab' or 'Theory+Lab' subjects **MUST** be scheduled as a combined 50+50 minute block (100 minutes total).
     - **Student Splitting**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs.
     - **Lab Allocation**: For a split section, you must schedule **two separate 100-minute lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)", "Computer Networks Lab (Sec A, Gp B)"). Schedule these on different days if possible.
     - Allocate labs only to rooms listed in 'Available Labs'.
-5.  **Room & Faculty Allocation**:
+6.  **Room & Faculty Allocation**:
     - Assign each class to an available room or lab. A room cannot host two different sections at the same time.
     - A faculty member cannot teach two different classes at the same time.
     - Do not schedule faculty on their 'weeklyOffDays'.
     - Ensure total teaching hours do not exceed a faculty's 'weeklyMaxHours'.
     - Any of the 'assignedFaculty' can teach a subject. If none are assigned (NF), leave the faculty slot blank, formatted as "(NF)".
-6.  **Conflict Resolution**: There should be no scheduling conflicts for any section, faculty member, or room. A section cannot attend two classes simultaneously.
-7.  **Output Format**: For each table cell, specify the **Subject Name**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "Computer Networks (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "Physics I (NF) in B_Room_101".
+7.  **Conflict Resolution**: There should be no scheduling conflicts for any section, faculty member, or room. A section cannot attend two classes simultaneously.
+8.  **Cell Output Format**: For each table cell, specify the **Subject Name**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "Computer Networks (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "Physics I (NF) in B_Room_101".
+9.  **Final Output**: Combine all section tables into a single string. This is the final schedule you will output.
 
-Generate the complete, optimized weekly schedule now.
+Generate the complete, optimized weekly schedule now for all specified sections.
 `,
 });
 

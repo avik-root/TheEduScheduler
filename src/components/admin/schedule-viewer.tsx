@@ -22,54 +22,79 @@ interface ScheduleViewerProps {
   adminEmail: string;
 }
 
-interface ParsedSchedule {
+interface SectionSchedule {
+  sectionName: string;
   header: string[];
   rows: string[][];
 }
 
-function parseMarkdownTable(markdown: string): ParsedSchedule | null {
-  if (!markdown || !markdown.includes('|')) {
-    return null;
-  }
 
-  const lines = markdown.trim().split('\n').map(line => line.trim()).filter(line => line);
-  
-  if (lines.length < 2) return null; // Header and separator needed
+function parseMultiSectionSchedule(markdown: string): SectionSchedule[] {
+    if (!markdown || markdown.trim() === '') {
+        return [];
+    }
 
-  const headerLine = lines[0];
-  const separatorLine = lines[1];
+    const sections = markdown.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
+    const parsedSchedules: SectionSchedule[] = [];
 
-  // Basic validation for markdown table format
-  if (!headerLine.includes('|') || !separatorLine.includes('|--')) {
-      return null;
-  }
-  
-  const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
-  const rows = lines.slice(2).map(line => 
-      line.split('|').map(cell => cell.trim()).filter(Boolean)
-  );
+    for (let i = 0; i < sections.length; i += 2) {
+        const sectionName = sections[i].trim().replace(/###\s*/, '');
+        const tableMarkdown = sections[i + 1];
 
-  // Filter out rows that don't match header length
-  const validRows = rows.filter(row => row.length === header.length);
+        if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
 
-  return { header, rows: validRows };
+        const lines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
+        if (lines.length < 2) continue;
+
+        const headerLine = lines[0];
+        const separatorLine = lines[1];
+        if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
+
+        const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
+        const rows = lines.slice(2).map(line => 
+            line.split('|').map(cell => cell.trim()).filter(Boolean)
+        ).filter(row => row.length === header.length);
+
+        if (header.length > 0 && rows.length > 0) {
+            parsedSchedules.push({ sectionName, header, rows });
+        }
+    }
+
+    return parsedSchedules;
 }
 
+
 export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
-  const parsedSchedule = React.useMemo(() => parseMarkdownTable(schedule), [schedule]);
+  const parsedSchedules = React.useMemo(() => parseMultiSectionSchedule(schedule), [schedule]);
   const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
 
 
   const handleDownloadPdf = () => {
-    if (!parsedSchedule) return;
+    if (!parsedSchedules || parsedSchedules.length === 0) return;
     
     const doc = new jsPDF({ orientation: 'landscape' });
-    doc.text("Published Schedule", 14, 15);
-    doc.autoTable({
-      head: [parsedSchedule.header],
-      body: parsedSchedule.rows,
-      startY: 20,
+    doc.text("Published Schedules", 14, 15);
+
+    let startY = 20;
+
+    parsedSchedules.forEach((sectionSchedule, index) => {
+        if (index > 0) {
+            startY = (doc as any).lastAutoTable.finalY + 15;
+            if (startY > 180) { // Check if new page is needed
+                doc.addPage();
+                startY = 20;
+            }
+        }
+        
+        doc.text(sectionSchedule.sectionName, 14, startY);
+
+        doc.autoTable({
+            head: [sectionSchedule.header],
+            body: sectionSchedule.rows,
+            startY: startY + 5,
+        });
     });
+
     doc.save('published-schedule.pdf');
   };
 
@@ -91,33 +116,42 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                     </CardDescription>
                 </div>
             </div>
-            <Button onClick={handleDownloadPdf} disabled={!parsedSchedule}>
+            <Button onClick={handleDownloadPdf} disabled={!parsedSchedules || parsedSchedules.length === 0}>
                 <Download className="mr-2 h-4 w-4" />
                 Download PDF
             </Button>
         </div>
       </CardHeader>
       <CardContent>
-        {parsedSchedule ? (
-            <div className="rounded-md border overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            {parsedSchedule.header.map((head, index) => (
-                                <TableHead key={index}>{head}</TableHead>
-                            ))}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {parsedSchedule.rows.map((row, rowIndex) => (
-                            <TableRow key={rowIndex}>
-                                {row.map((cell, cellIndex) => (
-                                    <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+        {parsedSchedules && parsedSchedules.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {parsedSchedules.map((sectionSchedule, sectionIndex) => (
+                    <Card key={sectionIndex}>
+                        <CardHeader>
+                            <CardTitle>{sectionSchedule.sectionName}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="overflow-x-auto p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {sectionSchedule.header.map((head, index) => (
+                                            <TableHead key={index}>{head}</TableHead>
+                                        ))}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {sectionSchedule.rows.map((row, rowIndex) => (
+                                        <TableRow key={rowIndex}>
+                                            {row.map((cell, cellIndex) => (
+                                                <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         ) : (
              <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">

@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -20,18 +21,68 @@ interface TeacherDashboardClientProps {
     initialRequests: RoomRequest[];
 }
 
+interface SectionSchedule {
+  sectionName: string;
+  header: string[];
+  rows: string[][];
+}
+
+function parseMultiSectionSchedule(markdown: string): SectionSchedule[] {
+    if (!markdown || markdown.trim() === '') {
+        return [];
+    }
+    const sections = markdown.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
+    const parsedSchedules: SectionSchedule[] = [];
+    for (let i = 0; i < sections.length; i += 2) {
+        const sectionName = sections[i].trim().replace(/###\s*/, '');
+        const tableMarkdown = sections[i + 1];
+        if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
+        const lines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
+        if (lines.length < 2) continue;
+        const headerLine = lines[0];
+        const separatorLine = lines[1];
+        if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
+        const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
+        const rows = lines.slice(2).map(line => 
+            line.split('|').map(cell => cell.trim()).filter(Boolean)
+        ).filter(row => row.length === header.length);
+        if (header.length > 0 && rows.length > 0) {
+            parsedSchedules.push({ sectionName, header, rows });
+        }
+    }
+    return parsedSchedules;
+}
+
 export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule, initialRequests }: TeacherDashboardClientProps) {
 
   const mySchedule = React.useMemo(() => {
     if (!schedule || !faculty.abbreviation) return '';
-    const lines = schedule.split('\n');
-    const header = lines[0];
-    const separator = lines[1];
-    const myLines = lines.slice(2).filter(line => line.includes(`(${faculty.abbreviation})`));
     
-    if (myLines.length === 0) return '';
+    const allSectionSchedules = parseMultiSectionSchedule(schedule);
+    const facultySchedules: SectionSchedule[] = [];
+    const facultyAbbr = `(${faculty.abbreviation})`;
+
+    allSectionSchedules.forEach(section => {
+        const relevantRows = section.rows.filter(row => 
+            row.some(cell => cell.includes(facultyAbbr))
+        );
+
+        if (relevantRows.length > 0) {
+            facultySchedules.push({
+                ...section,
+                rows: relevantRows
+            });
+        }
+    });
     
-    return [header, separator, ...myLines].join('\n');
+    if (facultySchedules.length === 0) return '';
+    
+    return facultySchedules.map(s => {
+        const header = `| ${s.header.join(' | ')} |`;
+        const separator = `| ${s.header.map(() => '---').join(' | ')} |`;
+        const rows = s.rows.map(row => `| ${row.join(' | ')} |`).join('\n');
+        return `### ${s.sectionName}\n${header}\n${separator}\n${rows}`;
+    }).join('\n\n');
   }, [schedule, faculty.abbreviation]);
 
   return (
@@ -99,11 +150,11 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     <CardDescription>Your class schedule for the upcoming week. This is filtered to show only your classes.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     <div className="min-h-[200px] rounded-lg border bg-muted p-4 whitespace-pre-wrap">
+                     <div className="min-h-[200px] rounded-lg border bg-muted p-4 whitespace-pre-wrap font-mono text-sm">
                         {mySchedule ? (
                             <p>{mySchedule}</p>
                         ) : (
-                            <div className="flex h-full items-center justify-center pt-16">
+                            <div className="flex h-full items-center justify-center pt-16 font-sans">
                                 <p className="text-muted-foreground text-center">
                                     {schedule ? "You have no classes in the published schedule." : "Your schedule will appear here once it is published by the admin."}
                                 </p>
