@@ -86,7 +86,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   const [availableYears, setAvailableYears] = React.useState<Year[]>([]);
   const [availableSections, setAvailableSections] = React.useState<Section[]>([]);
   const [availableSubjects, setAvailableSubjects] = React.useState<Subject[]>([]);
-  const [filteredFaculty, setFilteredFaculty] = React.useState<Faculty[]>(faculty);
 
   const form = useForm<FormData>({
     resolver: zodResolver(ScheduleGeneratorSchema),
@@ -117,7 +116,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     const selectedDept = departments.find(d => d.id === deptId);
     const programs = selectedDept?.programs || [];
     setAvailablePrograms(programs);
-    setFilteredFaculty(faculty.filter(f => f.department === selectedDept?.name));
 
     setValue('departmentId', deptId);
     setValue('programId', '');
@@ -157,7 +155,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       ...s,
       assignedFaculty: s.facultyEmails || [],
       isPriority: false,
-      sections: [] // Default to no sections selected
+      sections: []
     })));
   };
 
@@ -298,10 +296,62 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                             <h4 className="font-semibold">{item.name} ({item.code})</h4>
                                             <div className="grid gap-4 md:grid-cols-2 mt-2">
                                                 <Controller control={control} name={`subjectConfigs.${index}.assignedFaculty`} render={({ field }) => (
-                                                    <FormItem className="flex flex-col"><FormLabel>Assign Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty (NF)"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{filteredFaculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                                    <FormItem className="flex flex-col"><FormLabel>Assign Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty (NF)"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{faculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
                                                 )} />
                                                 <FormField control={control} name={`subjectConfigs.${index}.sections`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Assign Sections</FormLabel><div className="flex flex-wrap gap-x-4 gap-y-2 p-2 border rounded-md min-h-10 items-center">{availableSections.length > 0 ? availableSections.map(sec => (<FormField key={sec.id} control={control} name={`subjectConfigs.${index}.sections`} render={({ field: sectionField }) => { return (<FormItem key={sec.id} className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={sectionField.value?.includes(sec.name)} onCheckedChange={(checked) => {return checked ? sectionField.onChange([...sectionField.value, sec.name]) : sectionField.onChange(sectionField.value?.filter((value) => value !== sec.name))}} /></FormControl><FormLabel className="font-normal">{sec.name}</FormLabel></FormItem>)}} />)) : <p className="text-xs text-muted-foreground">No sections in this year.</p> }</div><FormMessage /></FormItem>
+                                                    <FormItem>
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <FormLabel>Assign Sections</FormLabel>
+                                                            <div className="flex items-center gap-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="link"
+                                                                    size="sm"
+                                                                    className="p-0 h-auto"
+                                                                    onClick={() => {
+                                                                        const allSectionNames = availableSections.map(s => s.name);
+                                                                        setValue(`subjectConfigs.${index}.sections`, allSectionNames, { shouldValidate: true });
+                                                                    }}
+                                                                >
+                                                                    Select All
+                                                                </Button>
+                                                                <Separator orientation="vertical" className="h-4" />
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="link"
+                                                                    size="sm"
+                                                                    className="p-0 h-auto text-destructive"
+                                                                    onClick={() => {
+                                                                        setValue(`subjectConfigs.${index}.sections`, [], { shouldValidate: true });
+                                                                    }}
+                                                                >
+                                                                    Clear All
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-x-4 gap-y-2 p-2 border rounded-md min-h-10 items-center">
+                                                            {availableSections.length > 0 ? availableSections.map(sec => (
+                                                                <FormField key={sec.id} control={control} name={`subjectConfigs.${index}.sections`} render={({ field: sectionField }) => {
+                                                                    return (
+                                                                        <FormItem key={sec.id} className="flex flex-row items-center space-x-2 space-y-0">
+                                                                            <FormControl>
+                                                                                <Checkbox
+                                                                                    checked={sectionField.value?.includes(sec.name)}
+                                                                                    onCheckedChange={(checked) => {
+                                                                                        return checked
+                                                                                            ? sectionField.onChange([...sectionField.value, sec.name])
+                                                                                            : sectionField.onChange(sectionField.value?.filter((value) => value !== sec.name))
+                                                                                    }}
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormLabel className="font-normal">{sec.name}</FormLabel>
+                                                                        </FormItem>
+                                                                    )
+                                                                }} />
+                                                            )) : <p className="text-xs text-muted-foreground">No sections in this year.</p>}
+                                                        </div>
+                                                        <FormMessage />
+                                                    </FormItem>
                                                 )} />
                                                  <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
                                                     <FormItem className="flex flex-row items-center space-x-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Mark as Priority Subject</label></FormItem>
