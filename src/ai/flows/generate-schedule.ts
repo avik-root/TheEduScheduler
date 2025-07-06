@@ -68,15 +68,19 @@ const prompt = ai.definePrompt({
   name: 'generateSchedulePrompt',
   input: {schema: GenerateScheduleInputSchema},
   output: {schema: GenerateScheduleOutputSchema},
-  prompt: `You are an AI assistant that creates a weekly class schedule for a specific academic year. Your primary goal is to generate an optimal, 100% conflict-free schedule based on the provided constraints.
+  prompt: `You are an AI assistant that creates a weekly class schedule. Your primary goal is to generate an optimal, 100% conflict-free schedule that adheres to all the following rules.
 
-**--- CORE DIRECTIVE: AVOID ALL CONFLICTS ---**
-This is the most important rule. There must be **ZERO** scheduling conflicts.
-- **Faculty Conflict**: A faculty member cannot teach two different classes in different rooms at the same time.
-- **Room Conflict**: A room or lab cannot be used by two different sections or for two different classes at the same time.
-- **Section Conflict**: A section (or a group within a section) cannot attend two different classes at the same time.
+**--- CRITICAL DIRECTIVES: READ AND FOLLOW ALL ---**
+1.  **NO CONFLICTS (Most Important)**: There must be **ZERO** scheduling conflicts.
+    - **Faculty Conflict**: A faculty member cannot teach two different classes in different rooms at the same time.
+    - **Room Conflict**: A room or lab cannot be used by two different sections or for two different classes at the same time.
+    - **Section Conflict**: A section cannot attend two different classes at the same time.
 
-**Target Group:**
+2.  **COMPLETE COVERAGE**: You **MUST** generate a full schedule table for **EVERY SINGLE SECTION** listed in the input. Do not omit any sections from the output.
+
+3.  **NO EMPTY DAYS**: Every section **MUST** have at least one class scheduled on every single 'Active Weekday'. It is not permissible to have a day with no classes for any section. This is a critical requirement.
+
+**--- SCHEDULING CONTEXT ---**
 - Department: {{academicInfo.department}}
 - Program: {{academicInfo.program}}
 - Year: {{academicInfo.year}}
@@ -111,12 +115,12 @@ This is the most important rule. There must be **ZERO** scheduling conflicts.
 {{/each}}
 
 **--- DETAILED SCHEDULING RULES ---**
-1.  **Credit Hours & Class Duration**:
+1.  **Credit Hours, Duration, & Spreading**:
     - Each credit point equals one 50-minute class per week.
     - **Combined vs. Single Slots**:
         - 'Lab', 'Theory+Lab', and 'Project' subjects **MUST** be scheduled as a single 100-minute block (two consecutive 50-minute slots). No 50-minute lab classes are allowed.
-        - For 'Theory' subjects marked as priority, schedule one of their weekly classes as a 100-minute block. The other classes for that subject should be single 50-minute slots.
-        - Spread classes for the same subject across different days of the week. For example, a 4-credit subject scheduled as two 100-minute blocks **must** have them on separate days. A 3-credit subject scheduled as one 100-minute block and one 50-minute slot **must** also have them on separate days.
+        - For 'Theory' subjects, if they have 3 or more credits, schedule one of their weekly classes as a 100-minute block. The other classes for that subject should be single 50-minute slots.
+    - **SPREAD CLASSES ACROSS DAYS (Mandatory)**: Classes for the same subject **MUST** be spread across different days. For example, a 4-credit subject scheduled as two 100-minute blocks **must** have them on separate days. A 3-credit subject scheduled as one 100-minute block and one 50-minute slot **must** also have them on separate days.
     - **Daily Combined Class Limit**: A section should have a maximum of **two** 100-minute class blocks on any given day. This limit **does not apply to lab sessions**.
 
 2.  **Lab & Student Grouping**:
@@ -131,16 +135,13 @@ This is the most important rule. There must be **ZERO** scheduling conflicts.
     - Subjects with "Taught by: NF" **MUST be scheduled**.
     - In the schedule table, use \`(NF)\` for the faculty abbreviation for these classes.
 
-5.  **Daily Class Requirement**: Every section **MUST** have at least one class scheduled on every single 'Active Weekday'. It is not permissible to have a day with no classes for any section. This is a critical requirement for student engagement.
+5.  **Slot Filling**: After satisfying all other rules, your goal is to schedule ALL remaining required classes. Only mark a time slot as 'Free' or '-' if it is impossible to place a class without causing a conflict.
 
-6.  **Slot Filling**:
-    - After satisfying all other rules, your goal is to schedule ALL remaining required classes. Only mark a time slot as 'Free' or '-' if it is impossible to place a class without causing a conflict.
-
-7.  **Room Optimization**: As a secondary goal (after ensuring no conflicts), try to use the **minimum number of unique rooms and labs** possible.
+6.  **Room Optimization**: As a secondary goal (after ensuring no conflicts), try to use the **minimum number of unique rooms and labs** possible.
 
 **--- OUTPUT FORMATTING ---**
 1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
-2.  **Section Tables**: Generate a **separate Markdown table for each section**. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
+2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. This is not optional. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
 3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the 50-minute time slots (e.g., "09:00-09:50"). The rows will represent each active day of the week.
 4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101".
 
