@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -25,6 +25,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const subjectConfigSchema = z.object({
   id: z.string(),
@@ -105,12 +106,16 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     },
   });
 
-  const { control, setValue, getValues } = form;
+  const { control, setValue, getValues, watch } = form;
 
   const { fields: subjectConfigFields, replace: replaceSubjectConfigs } = useFieldArray({
     control,
     name: "subjectConfigs"
   });
+
+  const watchedSectionIds = watch("sectionIds", []);
+  const watchedRooms = watch("availableRooms", []);
+  const insufficientRooms = watchedRooms.length > 0 && watchedSectionIds.length > watchedRooms.length;
   
   const handleDepartmentChange = (deptId: string) => {
     const selectedDept = departments.find(d => d.id === deptId);
@@ -379,7 +384,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                         setValue('availableRooms', theoryRooms.map(r => r.name), { shouldValidate: true });
                                         setValue('availableLabs', labRooms.map(r => r.name), { shouldValidate: true });
                                     }}>
-                                        Select All Available
+                                        Auto-select Required
                                     </Button>
                                     <Separator orientation="vertical" className="h-4" />
                                      <Button type="button" variant="link" size="sm" className="p-0 h-auto text-destructive" onClick={() => {
@@ -423,15 +428,26 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
-                <div className="px-6 pb-6 flex items-center gap-2">
-                    <Button type="submit" className="w-fit" disabled={isLoading}>
-                      {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Sparkles className="mr-2 h-4 w-4" /> )}
-                      Generate Schedule
-                    </Button>
-                    <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
-                        {isPublishing ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Upload className="mr-2 h-4 w-4" /> )}
-                        Publish Schedule
-                    </Button>
+                <div className="px-6 pb-6 flex flex-col gap-4">
+                    {insufficientRooms && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Insufficient Rooms Warning</AlertTitle>
+                        <AlertDescription>
+                          You have selected {watchedSectionIds.length} sections but only {watchedRooms.length} classrooms. The AI will attempt to generate a schedule, but more rooms may be required to avoid conflicts.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="flex items-center gap-2">
+                        <Button type="submit" className="w-fit" disabled={isLoading}>
+                          {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Sparkles className="mr-2 h-4 w-4" /> )}
+                          Generate Schedule
+                        </Button>
+                        <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
+                            {isPublishing ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Upload className="mr-2 h-4 w-4" /> )}
+                            Publish Schedule
+                        </Button>
+                    </div>
                 </div>
             </Card>
         </form>

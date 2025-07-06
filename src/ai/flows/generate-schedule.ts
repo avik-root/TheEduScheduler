@@ -128,10 +128,11 @@ const prompt = ai.definePrompt({
         - Subjects marked with "Taught by: NF" **MUST be scheduled** like any other subject.
         - The faculty-specific constraints (double-booking, off-days, max hours) do not apply to them.
         - In the schedule table, use \`(NF)\` for the faculty abbreviation for these classes.
-7.  **Slot Filling Priority**: Prioritize scheduling all required classes based on their credits. Only mark a time slot as 'Free' or '-' if no class can possibly fit due to room or section conflicts. A slot should not be left free simply because a subject has no assigned faculty.
-8.  **Conflict Resolution**: There should be no scheduling conflicts for any section, faculty member, or room. A section cannot attend two classes simultaneously.
-9.  **Cell Output Format**: For each table cell, specify the **Subject Name**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "Computer Networks (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "Physics I (NF) in B_Room_101".
-10. **Final Output**: Combine all section tables into a single string. The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: '## {{academicInfo.program}} - {{academicInfo.year}}'. This is the final schedule you will output.
+7.  **Room Optimization**: Strive to use the **minimum number of unique rooms and labs** possible. Reuse rooms for different sections at different times to maximize the number of completely free rooms.
+8.  **Slot Filling Priority**: Prioritize scheduling all required classes based on their credits. Only mark a time slot as 'Free' or '-' if no class can possibly fit due to room or section conflicts. A slot should not be left free simply because a subject has no assigned faculty.
+9.  **Conflict Resolution**: There should be no scheduling conflicts for any section, faculty member, or room. A section cannot attend two classes simultaneously.
+10. **Cell Output Format**: For each table cell, specify the **Subject Name**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "Computer Networks (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "Physics I (NF) in B_Room_101".
+11. **Final Output**: Combine all section tables into a single string. The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: '## {{academicInfo.program}} - {{academicInfo.year}}'. This is the final schedule you will output.
 
 Generate the complete, optimized weekly schedule now for all specified sections.
 `,
