@@ -87,23 +87,28 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     if (!parsedData) return null;
 
     if (showMyScheduleOnly && faculty.abbreviation) {
-        const facultySchedules: SectionSchedule[] = [];
         const facultyAbbr = `(${faculty.abbreviation})`;
 
-        parsedData.sections.forEach(section => {
-            const relevantRows = section.rows.filter(row => 
-                row.some(cell => cell.includes(facultyAbbr))
-            );
+        const facultySchedules = parsedData.sections.map(section => {
+            // For each row (day), map over its cells and replace non-faculty classes with '-'
+            const newRows = section.rows.map(row => {
+                const dayName = row[0]; // Keep the day name
+                const classCells = row.slice(1);
+                const filteredCells = classCells.map(cell => 
+                    cell.includes(facultyAbbr) ? cell : '-'
+                );
+                return [dayName, ...filteredCells];
+            })
+            // Then, filter out days where the faculty has no classes at all
+            .filter(row => row.slice(1).some(cell => cell !== '-'));
 
-            if (relevantRows.length > 0) {
-                facultySchedules.push({
-                    ...section,
-                    rows: relevantRows
-                });
-            }
-        });
-        
-        if (facultySchedules.length === 0) return { ...parsedData, sections: [] };
+            return {
+                ...section,
+                rows: newRows,
+            };
+        })
+        // Finally, filter out entire sections where the faculty has no classes
+        .filter(section => section.rows.length > 0);
         
         return { ...parsedData, sections: facultySchedules };
     } else {

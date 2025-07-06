@@ -139,7 +139,7 @@ This is the most important rule. There must be **ZERO** scheduling conflicts.
 **--- OUTPUT FORMATTING ---**
 1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
 2.  **Section Tables**: Generate a **separate Markdown table for each section**. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
-3.  **Table Structure**: The columns for each table must be: \`Time\`, \`{{#each activeDays}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}\`.
+3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the 50-minute time slots (e.g., "09:00-09:50"). The rows will represent each active day of the week.
 4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101".
 
 Generate the complete, conflict-free, and optimized weekly schedule now for all specified sections.
