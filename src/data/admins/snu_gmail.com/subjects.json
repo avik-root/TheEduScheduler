@@ -1,3 +1,4 @@
+
 [
   {
     "name": "Discrete Mathematics",
@@ -58,18 +59,21 @@
     "labCredits": 0
   },
   {
-    "name": "Soft Skill Development-I",
-    "code": "CSENU#1.5",
+    "name": "Soft Skill Development-V",
+    "code": "CSENU#3.4",
     "type": "Theory",
     "departmentId": "1751639523860-izg6a3h",
     "programId": "1751057339642-xjm0gbd",
-    "yearId": "1751057427398-c2131y5",
+    "yearId": "1751057427398-ipaxk5j",
     "facultyEmails": [
-      "rohit.c3a@themintfire.com"
+      "rohit.c3a@themintfire.com",
+      "shiva.c3a@themintfire.com",
+      "mehakdeep.c3a@themintfire.com",
+      "rituporna.c3a@themintfire.com"
     ],
     "theoryCredits": 1,
     "labCredits": 0,
-    "id": "1751727663040-5drzl78"
+    "id": "1751745843185-uzyxzuy"
   },
   {
     "id": "1751727736136-yopvkpi",
@@ -210,23 +214,6 @@
     "theoryCredits": 3,
     "labCredits": 1,
     "id": "1751745616111-wiuw2e6"
-  },
-  {
-    "name": "Soft Skill Development-V",
-    "code": "CSENU#3.4",
-    "type": "Theory",
-    "departmentId": "1751639523860-izg6a3h",
-    "programId": "1751057339642-xjm0gbd",
-    "yearId": "1751057427398-ipaxk5j",
-    "facultyEmails": [
-      "rohit.c3a@themintfire.com",
-      "rituoarna.c3a@themintfire.com",
-      "shiva.c3a@themintfire.com",
-      "mehakdeep.c3a@themintfire.com"
-    ],
-    "theoryCredits": 1,
-    "labCredits": 0,
-    "id": "1751745843185-uzyxzuy"
   },
   {
     "name": "SAP ",
