@@ -224,7 +224,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                     {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
                                         <div key={sectionIndex} className="p-6 md:p-0">
                                             <h3 className="text-lg font-semibold mb-2">{sectionSchedule.sectionName}</h3>
-                                            <div className="overflow-x-auto rounded-md border">
+                                            <div className="rounded-md border">
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow>
