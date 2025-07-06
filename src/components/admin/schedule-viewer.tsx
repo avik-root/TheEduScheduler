@@ -210,16 +210,16 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
             </div>
         )}
       </CardHeader>
-      <CardContent className="overflow-x-auto">
+      <CardContent>
         {hasSchedule ? (
             filteredSchedules.length > 0 ? (
                 <div className="space-y-8">
                     {filteredSchedules.map((scheduleItem, scheduleIndex) => (
-                        <Card key={scheduleIndex} className="overflow-hidden border shadow-md">
+                        <Card key={scheduleIndex} className="border shadow-md">
                             <CardHeader className="bg-muted/50">
                                 <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-0 md:p-6">
+                            <CardContent className="p-0 md:p-6 overflow-x-auto">
                                 <div className="space-y-6">
                                     {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
                                         <div key={sectionIndex} className="p-6 md:p-0">
