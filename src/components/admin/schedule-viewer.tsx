@@ -1,8 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -10,13 +8,6 @@ import { Download, CalendarCheck, ChevronLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
-
-// Extend jsPDF with autoTable method
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
 
 interface ScheduleViewerProps {
   schedule: string;
@@ -101,32 +92,41 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   }, [parsedSchedule, searchQuery]);
 
 
-  const handleDownloadPdf = () => {
-    if (!parsedSchedule || parsedSchedule.sections.length === 0) return;
-    
-    const doc = new jsPDF({ orientation: 'landscape' });
-    doc.text(parsedSchedule.programYearTitle, 14, 15);
+  const handleDownloadCsv = () => {
+    if (!parsedSchedule || filteredSections.length === 0) return;
 
-    let startY = 20;
+    const formatCsvRow = (row: string[]) => {
+      return row.map(cell => {
+        const escapedCell = cell.replace(/"/g, '""');
+        return `"${escapedCell}"`;
+      }).join(',');
+    };
 
-    filteredSections.forEach((sectionSchedule) => {
-        if (startY > 20 && (startY + sectionSchedule.rows.length * 10) > 180) { // Check if new page is needed
-            doc.addPage();
-            startY = 15;
-        } else if (startY > 20) {
-             startY = (doc as any).lastAutoTable.finalY + 15;
-        }
-        
-        doc.text(sectionSchedule.sectionName, 14, startY);
+    let csvContent = [];
+    csvContent.push(`"${parsedSchedule.programYearTitle}"`);
+    csvContent.push('');
 
-        doc.autoTable({
-            head: [sectionSchedule.header],
-            body: sectionSchedule.rows,
-            startY: startY + 5,
-        });
+    filteredSections.forEach((sectionSchedule, index) => {
+      csvContent.push(`"${sectionSchedule.sectionName}"`);
+      csvContent.push(formatCsvRow(sectionSchedule.header));
+      sectionSchedule.rows.forEach(row => {
+        csvContent.push(formatCsvRow(row));
+      });
+      if (index < filteredSections.length - 1) {
+        csvContent.push('');
+      }
     });
 
-    doc.save(`${parsedSchedule.programYearTitle.replace(/\s/g, '_')}_filtered.pdf`);
+    const csvString = csvContent.join('\n');
+    const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    const fileName = `${parsedSchedule.programYearTitle.replace(/\s/g, '_')}_filtered.csv`;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const hasSchedule = parsedSchedule && parsedSchedule.sections.length > 0;
@@ -150,9 +150,9 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={handleDownloadPdf} disabled={!hasSchedule}>
+                <Button onClick={handleDownloadCsv} disabled={!hasSchedule}>
                     <Download className="mr-2 h-4 w-4" />
-                    Download PDF
+                    Download CSV
                 </Button>
                  <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
             </div>
