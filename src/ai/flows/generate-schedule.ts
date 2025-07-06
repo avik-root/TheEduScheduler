@@ -112,11 +112,11 @@ This is the most important rule. There must be **ZERO** scheduling conflicts.
 
 **--- DETAILED SCHEDULING RULES ---**
 1.  **Credit Hours & Class Duration**:
-    - Each credit point equals one 50-minute class per week (e.g., 3 credits = three 50-minute classes).
+    - Each credit point equals one 50-minute class per week.
     - **Combined vs. Single Slots**:
         - 'Lab', 'Theory+Lab', and 'Project' subjects **MUST** be scheduled as a single 100-minute block (two consecutive 50-minute slots). No 50-minute lab classes are allowed.
         - For 'Theory' subjects marked as priority, schedule one of their weekly classes as a 100-minute block. The other classes for that subject should be single 50-minute slots.
-        - Spread classes for the same subject across different days of the week where possible.
+        - Spread classes for the same subject across different days of the week. For example, a 4-credit subject scheduled as two 100-minute blocks **must** have them on separate days. A 3-credit subject scheduled as one 100-minute block and one 50-minute slot **must** also have them on separate days.
     - **Daily Combined Class Limit**: A section should have a maximum of **two** 100-minute class blocks on any given day. This limit **does not apply to lab sessions**.
 
 2.  **Lab & Student Grouping**:
