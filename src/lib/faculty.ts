@@ -150,19 +150,48 @@ export async function updateFaculty(adminEmail: string, data: UpdateFacultyData)
 }
 
 export async function deleteFaculty(adminEmail: string, email: string): Promise<{ success: boolean; message: string }> {
-    let facultyList = await readFacultyFile(adminEmail);
+    const facultyList = await readFacultyFile(adminEmail);
     const updatedFacultyList = facultyList.filter(f => f.email !== email);
 
     if (facultyList.length === updatedFacultyList.length) {
-         return { success: false, message: 'Faculty member not found.' };
+        return { success: false, message: 'Faculty member not found.' };
     }
 
     try {
         await writeFacultyFile(adminEmail, updatedFacultyList);
-        return { success: true, message: 'Faculty account deleted successfully.' };
+
+        const adminDataPath = await getAdminDataPath(adminEmail);
+
+        const filesToClean = ['subjects.json', 'faculty-logs.json', 'room-requests.json'];
+
+        for (const fileName of filesToClean) {
+            const filePath = path.join(adminDataPath, fileName);
+            try {
+                const content = await fs.readFile(filePath, 'utf-8');
+                let data = content ? JSON.parse(content) : [];
+                
+                if (fileName === 'subjects.json') {
+                    data = data.map((subject: any) => ({
+                        ...subject,
+                        facultyEmails: subject.facultyEmails?.filter((e: string) => e !== email) || []
+                    }));
+                } else {
+                    data = data.filter((item: any) => item.facultyEmail !== email);
+                }
+
+                await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+            } catch (error) {
+                // Ignore if file doesn't exist
+                if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+                    console.error(`Failed to clean up ${fileName}:`, error);
+                }
+            }
+        }
+
+        return { success: true, message: 'Faculty account and all associated data have been deleted.' };
     } catch (error) {
         console.error('Failed to delete faculty:', error);
-        return { success: false, message: 'An internal error occurred. Please try again.' };
+        return { success: false, message: 'An internal error occurred during deletion.' };
     }
 }
 
@@ -179,13 +208,41 @@ export async function deleteMultipleFaculty(adminEmail: string, emails: string[]
 
     try {
         await writeFacultyFile(adminEmail, updatedFacultyList);
+        
+        const adminDataPath = await getAdminDataPath(adminEmail);
+        const filesToClean = ['subjects.json', 'faculty-logs.json', 'room-requests.json'];
+        
+        for (const fileName of filesToClean) {
+            const filePath = path.join(adminDataPath, fileName);
+            try {
+                const content = await fs.readFile(filePath, 'utf-8');
+                let data = content ? JSON.parse(content) : [];
+
+                if (fileName === 'subjects.json') {
+                    data = data.map((subject: any) => ({
+                        ...subject,
+                        facultyEmails: subject.facultyEmails?.filter((e: string) => !emails.includes(e)) || []
+                    }));
+                } else {
+                     data = data.filter((item: any) => !emails.includes(item.facultyEmail));
+                }
+                
+                await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+            } catch (error) {
+                 if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+                    console.error(`Failed to clean up ${fileName}:`, error);
+                }
+            }
+        }
+        
         const plural = deletedCount > 1 ? 's' : '';
-        return { success: true, message: `${deletedCount} faculty account${plural} deleted successfully.` };
+        return { success: true, message: `${deletedCount} faculty account${plural} and associated data deleted successfully.` };
     } catch (error) {
         console.error('Failed to delete multiple faculty:', error);
         return { success: false, message: 'An internal error occurred. Please try again.' };
     }
 }
+
 
 export async function loginFaculty(credentials: LoginData): Promise<{ success: boolean; message: string; adminEmail?: string; }> {
     const adminEmails = await getAdminEmails();
