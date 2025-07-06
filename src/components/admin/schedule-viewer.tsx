@@ -8,6 +8,7 @@ import { Download, CalendarCheck, ChevronLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
+import { Separator } from '../ui/separator';
 
 interface ScheduleViewerProps {
   schedule: string;
@@ -25,82 +26,95 @@ interface ParsedSchedule {
     sections: SectionSchedule[];
 }
 
-function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
-    if (!markdown || markdown.trim() === '') {
-        return null;
-    }
+function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
+    if (!markdown || markdown.trim() === '') return null;
 
-    const lines = markdown.trim().split('\n');
-    let programYearTitle = "Published Schedule"; // Default title
-    let scheduleContent = markdown;
+    // Split schedules by '## ' which indicates a new program/year title
+    // Add a newline at the beginning to ensure the first schedule is also captured by the split.
+    const scheduleParts = ('\n' + markdown.trim()).split(/\n## /).filter(s => s.trim() !== '');
 
-    if (lines[0].startsWith('## ')) {
-        programYearTitle = lines[0].substring(3).trim();
-        scheduleContent = lines.slice(1).join('\n');
-    }
+    if (scheduleParts.length === 0) return null;
 
-    const sectionsMarkdown = scheduleContent.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
-    const parsedSections: SectionSchedule[] = [];
+    return scheduleParts.map(part => {
+        const lines = part.trim().split('\n');
+        const programYearTitle = lines[0] || 'Schedule'; // Title is the first line
+        const content = lines.slice(1).join('\n');
 
-    for (let i = 0; i < sectionsMarkdown.length; i += 2) {
-        const sectionName = sectionsMarkdown[i].trim().replace(/###\s*/, '');
-        const tableMarkdown = sectionsMarkdown[i + 1];
+        // Split sections by '### '
+        const sectionParts = content.split(/\n### /).filter(s => s.trim() !== '');
 
-        if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
+        const sections = sectionParts.map(sectionPart => {
+            const sectionLines = sectionPart.trim().split('\n');
+            const sectionName = sectionLines[0] || 'Section';
+            const tableMarkdown = sectionLines.slice(1).join('\n');
 
-        const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
-        if (tableLines.length < 2) continue;
+            const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
+            if (tableLines.length < 2) return null;
 
-        const headerLine = tableLines[0];
-        const separatorLine = tableLines[1];
-        if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
+            const headerLine = tableLines[0];
+            const separatorLine = tableLines[1];
+            if (!headerLine.includes('|') || !separatorLine.includes('|--')) return null;
 
-        const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
-        const rows = tableLines.slice(2).map(line =>
-            line.split('|').map(cell => cell.trim()).filter(Boolean)
-        ).filter(row => row.length === header.length);
+            const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
+            const rows = tableLines.slice(2).map(line =>
+                line.split('|').map(cell => cell.trim()).filter(Boolean)
+            ).filter(row => row.length === header.length);
 
-        if (header.length > 0 && rows.length > 0) {
-            parsedSections.push({ sectionName, header, rows });
-        }
-    }
+            if (header.length > 0 && rows.length > 0) {
+                return { sectionName, header, rows };
+            }
+            return null;
+        }).filter((s): s is SectionSchedule => s !== null);
 
-    return { programYearTitle, sections: parsedSections };
+        return { programYearTitle, sections };
+    }).filter(s => s.sections.length > 0);
 }
 
 
 export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
-  const parsedSchedule = React.useMemo(() => parseCompleteSchedule(schedule), [schedule]);
+  const parsedSchedules = React.useMemo(() => parseMultipleSchedules(schedule), [schedule]);
   const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
 
-  const filteredSections = React.useMemo(() => {
-    if (!parsedSchedule) return [];
-    if (!searchQuery.trim()) return parsedSchedule.sections;
+  const filteredSchedules = React.useMemo(() => {
+    if (!parsedSchedules) return [];
+    if (!searchQuery.trim()) return parsedSchedules;
 
     const lowercasedQuery = searchQuery.toLowerCase();
     
-    return parsedSchedule.sections.filter(section => {
-      const sectionMatches = section.sectionName.toLowerCase().includes(lowercasedQuery);
-      if (sectionMatches) return true;
+    return parsedSchedules.map(scheduleItem => {
+        if (scheduleItem.programYearTitle.toLowerCase().includes(lowercasedQuery)) {
+            return scheduleItem;
+        }
 
-      const contentMatches = section.rows.some(row => 
-        row.some(cell => cell.toLowerCase().includes(lowercasedQuery))
-      );
-      return contentMatches;
-    });
-  }, [parsedSchedule, searchQuery]);
+        const filteredSections = scheduleItem.sections.filter(section => {
+          const sectionMatches = section.sectionName.toLowerCase().includes(lowercasedQuery);
+          if (sectionMatches) return true;
+
+          const contentMatches = section.rows.some(row => 
+            row.some(cell => cell.toLowerCase().includes(lowercasedQuery))
+          );
+          return contentMatches;
+        });
+
+        if(filteredSections.length > 0) {
+            return { ...scheduleItem, sections: filteredSections };
+        }
+        return null;
+    }).filter((s): s is ParsedSchedule => s !== null);
+
+  }, [parsedSchedules, searchQuery]);
 
 
   const handleDownloadCsv = () => {
-    if (!parsedSchedule || filteredSections.length === 0) return;
+    if (!filteredSchedules || filteredSchedules.length === 0) return;
 
     const convertTo12Hour = (time24: string): string => {
         if (!/^\d{2}:\d{2}$/.test(time24)) return time24;
         const [hours, minutes] = time24.split(':').map(Number);
         const ampm = hours >= 12 ? 'PM' : 'AM';
         let hours12 = hours % 12;
-        hours12 = hours12 || 12; // Convert 0 to 12 for 12 AM
+        hours12 = hours12 || 12;
         const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
         return `${hours12}:${minutesStr} ${ampm}`;
     };
@@ -123,33 +137,40 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
     };
 
     let csvContent: string[] = [];
-    csvContent.push(`"${parsedSchedule.programYearTitle}"`);
-    csvContent.push('');
 
-    filteredSections.forEach((sectionSchedule, index) => {
-      csvContent.push(`"${sectionSchedule.sectionName}"`);
-      csvContent.push(formatCsvRow(sectionSchedule.header, true));
-      sectionSchedule.rows.forEach(row => {
-        csvContent.push(formatCsvRow(row));
-      });
-      if (index < filteredSections.length - 1) {
+    filteredSchedules.forEach((scheduleItem, scheduleIdx) => {
+        csvContent.push(`"${scheduleItem.programYearTitle}"`);
         csvContent.push('');
-      }
+
+        scheduleItem.sections.forEach((sectionSchedule, sectionIndex) => {
+          csvContent.push(`"${sectionSchedule.sectionName}"`);
+          csvContent.push(formatCsvRow(sectionSchedule.header, true));
+          sectionSchedule.rows.forEach(row => {
+            csvContent.push(formatCsvRow(row));
+          });
+          if (sectionIndex < scheduleItem.sections.length - 1) {
+            csvContent.push('');
+          }
+        });
+
+        if (scheduleIdx < filteredSchedules.length - 1) {
+            csvContent.push('');
+            csvContent.push('');
+        }
     });
 
     const csvString = csvContent.join('\n');
     const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    const fileName = `${parsedSchedule.programYearTitle.replace(/\s/g, '_')}_filtered.csv`;
+    const fileName = `EduScheduler_Schedules.csv`;
     link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const hasSchedule = parsedSchedule && parsedSchedule.sections.length > 0;
+  const hasSchedule = parsedSchedules && parsedSchedules.length > 0;
 
   return (
     <Card>
@@ -163,7 +184,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 </Link>
                 </Button>
                 <div className="grid gap-1">
-                    <CardTitle className="flex items-center gap-2"><CalendarCheck /> {parsedSchedule?.programYearTitle || 'Published Schedule'}</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><CalendarCheck /> Published Schedule</CardTitle>
                     <CardDescription>
                         This is the currently active schedule. You can search, download, or delete it.
                     </CardDescription>
@@ -181,7 +202,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
             <div className="relative mt-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                    placeholder="Search by section, subject, faculty, or room..."
+                    placeholder="Search by program, year, section, subject..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -191,39 +212,48 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
       </CardHeader>
       <CardContent>
         {hasSchedule ? (
-            filteredSections.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {filteredSections.map((sectionSchedule, sectionIndex) => (
-                        <Card key={sectionIndex}>
-                            <CardHeader>
-                                <CardTitle>{sectionSchedule.sectionName}</CardTitle>
+            filteredSchedules.length > 0 ? (
+                <div className="space-y-8">
+                    {filteredSchedules.map((scheduleItem, scheduleIndex) => (
+                        <Card key={scheduleIndex} className="overflow-hidden border shadow-md">
+                            <CardHeader className="bg-muted/50">
+                                <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
                             </CardHeader>
-                            <CardContent className="overflow-x-auto p-0">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            {sectionSchedule.header.map((head, index) => (
-                                                <TableHead key={index}>{head}</TableHead>
-                                            ))}
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {sectionSchedule.rows.map((row, rowIndex) => (
-                                            <TableRow key={rowIndex}>
-                                                {row.map((cell, cellIndex) => (
-                                                    <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
-                                                ))}
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                            <CardContent className="p-6">
+                                <div className="space-y-6">
+                                    {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
+                                        <div key={sectionIndex}>
+                                            <h3 className="text-lg font-semibold mb-2">{sectionSchedule.sectionName}</h3>
+                                            <div className="overflow-x-auto rounded-md border">
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            {sectionSchedule.header.map((head, index) => (
+                                                                <TableHead key={index}>{head}</TableHead>
+                                                            ))}
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {sectionSchedule.rows.map((row, rowIndex) => (
+                                                            <TableRow key={rowIndex}>
+                                                                {row.map((cell, cellIndex) => (
+                                                                    <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
+                                                                ))}
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </CardContent>
                         </Card>
                     ))}
                 </div>
             ) : (
                 <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
-                    <p className="text-muted-foreground">No sections match your search query.</p>
+                    <p className="text-muted-foreground">No schedules match your search query.</p>
                 </div>
             )
         ) : (
@@ -235,3 +265,4 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
     </Card>
   );
 }
+
