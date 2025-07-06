@@ -95,20 +95,40 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   const handleDownloadCsv = () => {
     if (!parsedSchedule || filteredSections.length === 0) return;
 
-    const formatCsvRow = (row: string[]) => {
-      return row.map(cell => {
-        const escapedCell = cell.replace(/"/g, '""');
-        return `"${escapedCell}"`;
-      }).join(',');
+    const convertTo12Hour = (time24: string): string => {
+        if (!/^\d{2}:\d{2}$/.test(time24)) return time24;
+        const [hours, minutes] = time24.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        let hours12 = hours % 12;
+        hours12 = hours12 || 12; // Convert 0 to 12 for 12 AM
+        const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+        return `${hours12}:${minutesStr} ${ampm}`;
     };
 
-    let csvContent = [];
+    const formatTimeRange = (range: string): string => {
+        const times = range.split('-');
+        if (times.length === 2 && times.every(t => /^\d{2}:\d{2}$/.test(t.trim()))) {
+            return `${convertTo12Hour(times[0].trim())} - ${convertTo12Hour(times[1].trim())}`;
+        }
+        return range;
+    };
+
+    const formatCsvRow = (row: string[], isHeader = false) => {
+        const formattedRow = row.map((cell, index) => {
+            const finalCell = (isHeader && index > 0) ? formatTimeRange(cell) : cell;
+            const escapedCell = finalCell.replace(/"/g, '""');
+            return `"${escapedCell}"`;
+        });
+        return formattedRow.join(',');
+    };
+
+    let csvContent: string[] = [];
     csvContent.push(`"${parsedSchedule.programYearTitle}"`);
     csvContent.push('');
 
     filteredSections.forEach((sectionSchedule, index) => {
       csvContent.push(`"${sectionSchedule.sectionName}"`);
-      csvContent.push(formatCsvRow(sectionSchedule.header));
+      csvContent.push(formatCsvRow(sectionSchedule.header, true));
       sectionSchedule.rows.forEach(row => {
         csvContent.push(formatCsvRow(row));
       });
