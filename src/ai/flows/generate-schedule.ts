@@ -71,10 +71,10 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI assistant that creates a weekly class schedule. Your primary goal is to generate an optimal, 100% conflict-free schedule that adheres to all the following rules.
 
 **--- CRITICAL DIRECTIVES: READ AND FOLLOW ALL ---**
-1.  **NO CONFLICTS (Most Important)**: There must be **ZERO** scheduling conflicts.
-    - **Faculty Conflict**: A faculty member cannot teach two different classes in different rooms at the same time.
-    - **Room Conflict**: A room or lab cannot be used by two different sections or for two different classes at the same time.
-    - **Section Conflict**: A section cannot attend two different classes at the same time.
+1.  **NO CONFLICTS (Most Important)**: There must be **ZERO** scheduling conflicts. This is your highest priority.
+    - **Faculty Conflict**: A faculty member **cannot** be assigned to two different sections at the same time. For example, if faculty \`(RK)\` is teaching \`Section 1\` on Monday from 11:00-11:50, they **cannot** also be scheduled to teach \`Section 2\` at the same time. Their classes for different sections must be in different, non-overlapping time slots.
+    - **Room Conflict**: A room or lab **cannot** be used by two different sections or for two different classes at the same time.
+    - **Section Conflict**: A section **cannot** attend two different classes at the same time.
 
 2.  **COMPLETE COVERAGE**: You **MUST** generate a full schedule table for **EVERY SINGLE SECTION** listed in the input. Do not omit any sections from the output.
 
