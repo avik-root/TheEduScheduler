@@ -105,7 +105,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     },
   });
 
-  const { control, watch, setValue, getValues, trigger } = form;
+  const { control, setValue, getValues } = form;
 
   const { fields: subjectConfigFields, replace: replaceSubjectConfigs } = useFieldArray({
     control,
@@ -390,7 +390,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                     </Button>
                                 </div>
                             </div>
-                            <FormDescription className="text-sm text-muted-foreground pb-2">Select all rooms and labs available for this schedule, or use the auto-select option.</FormDescription>
+                            <FormDescription className="pb-2 text-sm text-muted-foreground">Select all rooms and labs available for this schedule, or use the auto-select option.</FormDescription>
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pt-2">
                                <FormField control={form.control} name="availableRooms" render={({ field }) => (
                                   <FormItem className="flex flex-col"><FormLabel className="text-sm">Classrooms</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{theoryRooms.map(room => <CommandItem key={room.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(room.name) ? selected.filter(r => r !== room.name) : [...selected, room.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(room.name) ? "opacity-100" : "opacity-0")}/>{room.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
