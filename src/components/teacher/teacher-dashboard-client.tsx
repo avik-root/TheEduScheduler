@@ -12,6 +12,7 @@ import { ChangePasswordDialog } from '@/components/teacher/change-password-dialo
 import { RoomAvailabilityChecker } from '../admin/room-availability-checker';
 import type { RoomRequest } from '@/lib/requests';
 import { MyRequestsList } from './my-requests-list';
+import { Button } from '../ui/button';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -77,33 +78,38 @@ function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
 }
 
 export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule, initialRequests }: TeacherDashboardClientProps) {
+  const [showMyScheduleOnly, setShowMyScheduleOnly] = React.useState(true);
 
-  const mySchedule = React.useMemo(() => {
-    if (!schedule || !faculty.abbreviation) return null;
+  const displayedSchedule = React.useMemo(() => {
+    if (!schedule) return null;
     
     const parsedData = parseCompleteSchedule(schedule);
     if (!parsedData) return null;
 
-    const facultySchedules: SectionSchedule[] = [];
-    const facultyAbbr = `(${faculty.abbreviation})`;
+    if (showMyScheduleOnly && faculty.abbreviation) {
+        const facultySchedules: SectionSchedule[] = [];
+        const facultyAbbr = `(${faculty.abbreviation})`;
 
-    parsedData.sections.forEach(section => {
-        const relevantRows = section.rows.filter(row => 
-            row.some(cell => cell.includes(facultyAbbr))
-        );
+        parsedData.sections.forEach(section => {
+            const relevantRows = section.rows.filter(row => 
+                row.some(cell => cell.includes(facultyAbbr))
+            );
 
-        if (relevantRows.length > 0) {
-            facultySchedules.push({
-                ...section,
-                rows: relevantRows
-            });
-        }
-    });
-    
-    if (facultySchedules.length === 0) return null;
-    
-    return { ...parsedData, sections: facultySchedules };
-  }, [schedule, faculty.abbreviation]);
+            if (relevantRows.length > 0) {
+                facultySchedules.push({
+                    ...section,
+                    rows: relevantRows
+                });
+            }
+        });
+        
+        if (facultySchedules.length === 0) return { ...parsedData, sections: [] };
+        
+        return { ...parsedData, sections: facultySchedules };
+    } else {
+        return parsedData;
+    }
+  }, [schedule, faculty.abbreviation, showMyScheduleOnly]);
 
   return (
      <div className="mx-auto grid w-full max-w-6xl gap-6">
@@ -166,13 +172,20 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
           <div className="pt-8 grid gap-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><CalendarCheck /> My Weekly Schedule</CardTitle>
-                    <CardDescription>{mySchedule?.programYearTitle || 'Your classes will appear here once published.'}</CardDescription>
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="grid gap-1">
+                            <CardTitle className="flex items-center gap-2"><CalendarCheck /> {showMyScheduleOnly ? 'My Weekly Schedule' : 'Full Weekly Schedule'}</CardTitle>
+                            <CardDescription>{displayedSchedule?.programYearTitle || 'A schedule has not been published yet.'}</CardDescription>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => setShowMyScheduleOnly(!showMyScheduleOnly)}>
+                            {showMyScheduleOnly ? 'Show Full Schedule' : 'Show My Schedule'}
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
-                     {mySchedule && mySchedule.sections.length > 0 ? (
+                     {displayedSchedule && displayedSchedule.sections.length > 0 ? (
                         <div className="grid grid-cols-1 gap-6">
-                            {mySchedule.sections.map((sectionSchedule, sectionIndex) => (
+                            {displayedSchedule.sections.map((sectionSchedule, sectionIndex) => (
                                 <Card key={sectionIndex}>
                                     <CardHeader>
                                         <CardTitle>{sectionSchedule.sectionName}</CardTitle>
@@ -203,7 +216,12 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     ) : (
                         <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
                             <p className="text-muted-foreground text-center">
-                                {schedule ? "You have no classes in the published schedule." : "Your schedule will appear here once it is published by the admin."}
+                                {!schedule
+                                    ? "A schedule has not been published yet."
+                                    : showMyScheduleOnly
+                                        ? "You have no classes in the published schedule."
+                                        : "No sections found in the published schedule."
+                                }
                             </p>
                         </div>
                     )}

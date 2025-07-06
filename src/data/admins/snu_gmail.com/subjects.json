@@ -218,7 +218,12 @@
     "departmentId": "1751639523860-izg6a3h",
     "programId": "1751057339642-xjm0gbd",
     "yearId": "1751057427398-ipaxk5j",
-    "facultyEmails": [],
+    "facultyEmails": [
+      "rohit.c3a@themintfire.com",
+      "rituoarna.c3a@themintfire.com",
+      "shiva.c3a@themintfire.com",
+      "mehakdeep.c3a@themintfire.com"
+    ],
     "theoryCredits": 1,
     "labCredits": 0,
     "id": "1751745843185-uzyxzuy"
