@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Wand2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -27,6 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '../ui/textarea';
 
 const assignmentSchema = z.object({
   sectionId: z.string(),
@@ -62,8 +63,8 @@ const ScheduleGeneratorSchema = z.object({
   endTime: z.string().min(1, 'End time is required.'),
   breakStart: z.string().min(1, 'Break start is required.'),
   breakEnd: z.string().min(1, 'Break end is required.'),
-
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
+  globalConstraints: z.string().optional(),
 });
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
@@ -105,6 +106,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       breakStart: '13:00',
       breakEnd: '14:00',
       activeDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      globalConstraints: '',
     },
   });
 
@@ -114,6 +116,44 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     control,
     name: "subjectConfigs"
   });
+
+  const handleFacultyChange = (subjectIndex: number, newPotentialFaculty: string[]) => {
+    const assignments = getValues(`subjectConfigs.${subjectIndex}.assignments`);
+    const updatedAssignments = assignments.map(assignment => {
+        if (assignment.facultyEmail && !newPotentialFaculty.includes(assignment.facultyEmail)) {
+            return { ...assignment, facultyEmail: '' }; // Reset if assigned faculty is no longer potential
+        }
+        return assignment;
+    });
+    setValue(`subjectConfigs.${subjectIndex}.potentialFaculty`, newPotentialFaculty);
+    setValue(`subjectConfigs.${subjectIndex}.assignments`, updatedAssignments);
+  };
+  
+  const handleAutoAssign = (subjectIndex: number) => {
+    const subjectConfig = getValues(`subjectConfigs.${subjectIndex}`);
+    const potentialFacultyEmails = subjectConfig.potentialFaculty;
+  
+    if (!potentialFacultyEmails || potentialFacultyEmails.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'No Faculty Available',
+        description: 'Please select faculty in "Available Faculty" before auto-assigning.',
+      });
+      return;
+    }
+  
+    const assignments = subjectConfig.assignments;
+    assignments.forEach((_assignment, assignmentIndex) => {
+      const facultyEmailToAssign = potentialFacultyEmails[assignmentIndex % potentialFacultyEmails.length];
+      setValue(`subjectConfigs.${subjectIndex}.assignments.${assignmentIndex}.facultyEmail`, facultyEmailToAssign, { shouldDirty: true });
+    });
+    
+    form.trigger(`subjectConfigs.${subjectIndex}.assignments`);
+    toast({
+        title: "Faculty Auto-Assigned",
+        description: `Successfully distributed faculty for ${subjectConfig.name}.`,
+    });
+  };
 
   const watchedSectionIds = watch("sectionIds", []);
   const watchedRooms = watch("availableRooms", []);
@@ -241,6 +281,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         breakTime: `${data.breakStart} - ${data.breakEnd}`,
       },
       activeDays: data.activeDays,
+      globalConstraints: data.globalConstraints,
     };
     
     try {
@@ -323,7 +364,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                          {subjectConfigFields.length > 0 ? (
                             <div className="space-y-4 pt-2">
                                 {subjectConfigFields.map((item, index) => {
-                                    const availableFacultyForSubject = faculty.filter(f => item.potentialFaculty.includes(f.email));
+                                    const availableFacultyForSubject = faculty.filter(f => (item.potentialFaculty || []).includes(f.email));
                                     return (
                                         <Card key={item.id} className="p-4 bg-muted/50">
                                             <div className="flex justify-between items-start">
@@ -338,10 +379,16 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                             <Separator className="my-4" />
                                             <div className="grid gap-6 md:grid-cols-2">
                                                 <Controller control={control} name={`subjectConfigs.${index}.potentialFaculty`} render={({ field }) => (
-                                                    <FormItem className="flex flex-col"><FormLabel>Available Faculty for this Subject</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty..."}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{faculty.filter(f => f.department === departments.find(d => d.id === getValues('departmentId'))?.name).map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                                    <FormItem className="flex flex-col"><FormLabel>Available Faculty for this Subject</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty..."}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{faculty.filter(f => f.department === departments.find(d => d.id === getValues('departmentId'))?.name).map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; handleFacultyChange(index, newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
                                                 )} />
                                                 <div className="space-y-2">
-                                                    <FormLabel>Section Assignments</FormLabel>
+                                                    <div className="flex items-center justify-between">
+                                                      <FormLabel>Section Assignments</FormLabel>
+                                                      <Button type="button" variant="link" size="sm" className="p-0 h-auto" onClick={() => handleAutoAssign(index)}>
+                                                          <Wand2 className="mr-2 h-4 w-4" />
+                                                          Auto-assign Faculty
+                                                      </Button>
+                                                    </div>
                                                     <div className="rounded-md border">
                                                         <Table>
                                                             <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead><User className="h-4 w-4" /> Assigned Faculty</TableHead></TableRow></TableHeader>
@@ -351,7 +398,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                                                         <TableCell className="font-medium">{assignment.sectionName}</TableCell>
                                                                         <TableCell>
                                                                             <FormField control={control} name={`subjectConfigs.${index}.assignments.${assignmentIndex}.facultyEmail`} render={({ field }) => (
-                                                                                <FormItem><Select onValueChange={field.onChange} value={field.value || undefined}><FormControl><SelectTrigger><SelectValue placeholder="Not Assigned" /></SelectTrigger></FormControl><SelectContent><SelectItem value="--NF--">NF (No Faculty)</SelectItem>{availableFacultyForSubject.map(fac => <SelectItem key={fac.email} value={fac.email}>{fac.name} ({fac.abbreviation})</SelectItem>)}</SelectContent></Select></FormItem>
+                                                                                <FormItem><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue placeholder="Not Assigned" /></SelectTrigger></FormControl><SelectContent><SelectItem value="--NF--">NF (No Faculty)</SelectItem>{availableFacultyForSubject.map(fac => <SelectItem key={fac.email} value={fac.email}>{fac.name} ({fac.abbreviation})</SelectItem>)}</SelectContent></Select></FormItem>
                                                                             )}/>
                                                                         </TableCell>
                                                                     </TableRow>
@@ -423,6 +470,19 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                         </div>
                          <FormField control={form.control} name="activeDays" render={({ field }) => (
                             <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
+                        )} />
+                        <Separator />
+                        <FormField control={form.control} name="globalConstraints" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Global Constraints</FormLabel>
+                                <FormDescription>
+                                    Add any specific rules or preferences for the AI to follow (e.g., "No classes for Year 1 before 10 AM").
+                                </FormDescription>
+                                <FormControl>
+                                    <Textarea placeholder="Enter any additional scheduling rules here..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                     </AccordionContent>
                   </AccordionItem>
