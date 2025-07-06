@@ -164,12 +164,18 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     const fileName = scheduleToDownload
-        ? `EduScheduler_${scheduleToDownload.programYearTitle.replace(/\s/g, '_')}.csv`
+        ? `EduScheduler_${scheduleToDownload.programYearTitle.replace(/[^a-zA-Z0-9\\-_]/g, '_')}.csv`
         : `EduScheduler_Schedules.csv`;
-    link.setAttribute('download', fileName);
+    
+    link.href = url;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    
+    setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }, 100);
   };
   
   const handleShare = async (scheduleToShare: ParsedSchedule) => {
