@@ -54,9 +54,12 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
             if (!headerLine.includes('|') || !separatorLine.includes('|--')) return null;
 
             const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
+            
             const rows = tableLines.slice(2).map(line =>
-                line.split('|').map(cell => cell.trim()).filter(Boolean)
+                // Slice to remove empty strings from leading/trailing pipes
+                line.split('|').slice(1, -1).map(cell => cell.trim())
             ).filter(row => row.length === header.length);
+
 
             if (header.length > 0 && rows.length > 0) {
                 return { sectionName, header, rows };
