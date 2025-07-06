@@ -111,22 +111,29 @@ This is the most important rule. There must be **ZERO** scheduling conflicts.
 {{/each}}
 
 **--- DETAILED SCHEDULING RULES ---**
-1.  **Credit Hours to Class Time**:
-    - Each credit point equals one 50-minute class per week. (e.g., 3 credits = three 50-minute classes).
-    - Schedule classes for the same subject on different days of the week where possible.
-    - **Priority Subjects**: For subjects marked as priority with theory credits, schedule one of their weekly classes as a combined 50+50 minute (100-minute) block. Other classes for that subject should be single 50-minute slots.
-2.  **Lab & Project Scheduling**:
-    - All 'Lab' or 'Theory+Lab' type subjects **MUST** be scheduled as a combined 50+50 minute block (100 minutes total).
+1.  **Credit Hours & Class Duration**:
+    - Each credit point equals one 50-minute class per week (e.g., 3 credits = three 50-minute classes).
+    - **Combined vs. Single Slots**:
+        - 'Lab', 'Theory+Lab', and 'Project' subjects **MUST** be scheduled as a single 100-minute block (two consecutive 50-minute slots). No 50-minute lab classes are allowed.
+        - For 'Theory' subjects marked as priority, schedule one of their weekly classes as a 100-minute block. The other classes for that subject should be single 50-minute slots.
+        - Spread classes for the same subject across different days of the week where possible.
+    - **Daily Combined Class Limit**: A section should have a maximum of **two** 100-minute class blocks on any given day. This limit **does not apply to lab sessions**.
+
+2.  **Lab & Student Grouping**:
     - **Student Splitting for Labs**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs. You must schedule **two separate 100-minute lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)", "Computer Networks Lab (Sec A, Gp B)").
     - Allocate labs only to rooms listed in 'Available Labs'.
+
 3.  **Faculty Constraints**:
     - For subjects with 'assignedFaculty', pick one faculty member per class slot from the provided list.
     - Strictly adhere to each faculty's 'weeklyOffDays' and do not exceed their 'weeklyMaxHours'.
+
 4.  **No-Faculty (NF) Subjects**:
     - Subjects with "Taught by: NF" **MUST be scheduled**.
     - In the schedule table, use \`(NF)\` for the faculty abbreviation for these classes.
+
 5.  **Slot Filling**:
     - Your goal is to schedule ALL required classes. Only mark a time slot as 'Free' or '-' if it is impossible to place a class without causing a conflict.
+
 6.  **Room Optimization**: As a secondary goal (after ensuring no conflicts), try to use the **minimum number of unique rooms and labs** possible.
 
 **--- OUTPUT FORMATTING ---**
