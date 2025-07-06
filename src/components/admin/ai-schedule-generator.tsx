@@ -64,12 +64,7 @@ const ScheduleGeneratorSchema = z.object({
   breakEnd: z.string().min(1, 'Break end is required.'),
 
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
-}).refine(
-    (data) => {
-       return data.subjectConfigs.some(s => s.assignments.some(a => a.facultyEmail));
-    },
-    { message: "Please assign at least one section to a faculty for any subject to continue.", path: ["subjectConfigs"]}
-);
+});
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
 
@@ -183,26 +178,27 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     const subjectsForAI = data.subjectConfigs.flatMap(config => {
         const assignmentsByFaculty = new Map<string, string[]>();
 
-        // Group sections by assigned faculty email
+        // Group sections by assigned faculty, or 'NF' for unassigned
         config.assignments.forEach(assignment => {
-            const emailKey = assignment.facultyEmail || 'NF';
-            if (!assignment.facultyEmail) return; // Skip unassigned sections
+            const facultyKey = (assignment.facultyEmail && assignment.facultyEmail !== '--NF--')
+                ? assignment.facultyEmail 
+                : 'NF';
 
-            if (!assignmentsByFaculty.has(emailKey)) {
-                assignmentsByFaculty.set(emailKey, []);
+            if (!assignmentsByFaculty.has(facultyKey)) {
+                assignmentsByFaculty.set(facultyKey, []);
             }
-            assignmentsByFaculty.get(emailKey)!.push(assignment.sectionName);
+            assignmentsByFaculty.get(facultyKey)!.push(assignment.sectionName);
         });
 
         if (assignmentsByFaculty.size === 0) {
-            return []; // Skip subjects with no assignments at all
+            return []; // Skip subjects with no assigned sections.
         }
 
         const subjectDetails = availableSubjects.find(s => s.id === config.id)!;
         
         // Create a separate subject config for each faculty (or NF) group
-        return Array.from(assignmentsByFaculty.entries()).map(([facultyEmail, sections]) => {
-            const assignedFacultyMember = faculty.find(f => f.email === facultyEmail);
+        return Array.from(assignmentsByFaculty.entries()).map(([facultyKey, sections]) => {
+            const assignedFacultyMember = faculty.find(f => f.email === facultyKey);
             return {
                 ...subjectDetails,
                 assignedFaculty: assignedFacultyMember ? [assignedFacultyMember.abbreviation] : [],
@@ -212,11 +208,12 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         });
     });
 
-    if (subjectsForAI.length === 0) {
+    const hasAssignments = data.subjectConfigs.some(s => s.assignments.length > 0);
+    if (!hasAssignments) {
         toast({
             variant: 'destructive',
             title: 'Configuration Error',
-            description: 'Please assign at least one section to a faculty for any subject.',
+            description: 'Please select a year with sections and subjects to generate a schedule.',
         });
         setIsLoading(false);
         return;
@@ -354,7 +351,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                                                         <TableCell className="font-medium">{assignment.sectionName}</TableCell>
                                                                         <TableCell>
                                                                             <FormField control={control} name={`subjectConfigs.${index}.assignments.${assignmentIndex}.facultyEmail`} render={({ field }) => (
-                                                                                <FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Not Assigned" /></SelectTrigger></FormControl><SelectContent><SelectItem value="">NF (No Faculty)</SelectItem>{availableFacultyForSubject.map(fac => <SelectItem key={fac.email} value={fac.email}>{fac.name} ({fac.abbreviation})</SelectItem>)}</SelectContent></Select></FormItem>
+                                                                                <FormItem><Select onValueChange={field.onChange} value={field.value || undefined}><FormControl><SelectTrigger><SelectValue placeholder="Not Assigned" /></SelectTrigger></FormControl><SelectContent><SelectItem value="--NF--">NF (No Faculty)</SelectItem>{availableFacultyForSubject.map(fac => <SelectItem key={fac.email} value={fac.email}>{fac.name} ({fac.abbreviation})</SelectItem>)}</SelectContent></Select></FormItem>
                                                                             )}/>
                                                                         </TableCell>
                                                                     </TableRow>
