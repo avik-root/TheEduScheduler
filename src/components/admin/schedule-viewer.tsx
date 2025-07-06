@@ -8,7 +8,7 @@ import { Download, CalendarCheck, ChevronLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
-import { Separator } from '../ui/separator';
+import { DeleteSingleScheduleDialog } from './delete-single-schedule-dialog';
 
 interface ScheduleViewerProps {
   schedule: string;
@@ -29,18 +29,15 @@ interface ParsedSchedule {
 function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     if (!markdown || markdown.trim() === '') return null;
 
-    // Split schedules by '## ' which indicates a new program/year title
-    // Add a newline at the beginning to ensure the first schedule is also captured by the split.
     const scheduleParts = ('\n' + markdown.trim()).split(/\n## /).filter(s => s.trim() !== '');
 
     if (scheduleParts.length === 0) return null;
 
     return scheduleParts.map(part => {
         const lines = part.trim().split('\n');
-        const programYearTitle = lines[0] || 'Schedule'; // Title is the first line
+        const programYearTitle = lines[0] || 'Schedule'; 
         const content = lines.slice(1).join('\n');
 
-        // Split sections by '### '
         const sectionParts = content.split(/\n### /).filter(s => s.trim() !== '');
 
         const sections = sectionParts.map(sectionPart => {
@@ -106,8 +103,9 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   }, [parsedSchedules, searchQuery]);
 
 
-  const handleDownloadCsv = () => {
-    if (!filteredSchedules || filteredSchedules.length === 0) return;
+  const handleDownloadCsv = (scheduleToDownload?: ParsedSchedule) => {
+    const schedulesToExport = scheduleToDownload ? [scheduleToDownload] : filteredSchedules;
+    if (!schedulesToExport || schedulesToExport.length === 0) return;
 
     const convertTo12Hour = (time24: string): string => {
         if (!/^\d{2}:\d{2}$/.test(time24)) return time24;
@@ -138,7 +136,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
 
     let csvContent: string[] = [];
 
-    filteredSchedules.forEach((scheduleItem, scheduleIdx) => {
+    schedulesToExport.forEach((scheduleItem, scheduleIdx) => {
         csvContent.push(`"${scheduleItem.programYearTitle}"`);
         csvContent.push('');
 
@@ -153,7 +151,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
           }
         });
 
-        if (scheduleIdx < filteredSchedules.length - 1) {
+        if (scheduleIdx < schedulesToExport.length - 1) {
             csvContent.push('');
             csvContent.push('');
         }
@@ -163,7 +161,9 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
     const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    const fileName = `EduScheduler_Schedules.csv`;
+    const fileName = scheduleToDownload
+        ? `EduScheduler_${scheduleToDownload.programYearTitle.replace(/\s/g, '_')}.csv`
+        : `EduScheduler_Schedules.csv`;
     link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
@@ -191,9 +191,9 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={handleDownloadCsv} disabled={!hasSchedule}>
+                <Button onClick={() => handleDownloadCsv()} disabled={!hasSchedule}>
                     <Download className="mr-2 h-4 w-4" />
-                    Download CSV
+                    Download All Filtered
                 </Button>
                  <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
             </div>
@@ -216,10 +216,17 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 <div className="space-y-8">
                     {filteredSchedules.map((scheduleItem, scheduleIndex) => (
                         <Card key={scheduleIndex} className="border shadow-md">
-                            <CardHeader className="bg-muted/50">
+                             <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
                                 <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadCsv(scheduleItem)}>
+                                        <Download className="h-4 w-4" />
+                                        <span className="sr-only">Download {scheduleItem.programYearTitle}</span>
+                                    </Button>
+                                    <DeleteSingleScheduleDialog adminEmail={adminEmail} scheduleTitle={scheduleItem.programYearTitle} />
+                                </div>
                             </CardHeader>
-                            <CardContent className="p-0 md:p-6 overflow-x-auto">
+                            <CardContent className="overflow-x-auto p-0 md:p-6">
                                 <div className="space-y-6">
                                     {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
                                         <div key={sectionIndex} className="p-6 md:p-0">

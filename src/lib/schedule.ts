@@ -69,9 +69,43 @@ export async function deletePublishedSchedule(adminEmail: string): Promise<{ suc
     };
     try {
         await writeScheduleFile(adminEmail, schedule);
-        return { success: true, message: 'Schedule deleted successfully.' };
+        return { success: true, message: 'All schedules deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete schedule:', error);
         return { success: false, message: 'An internal error occurred while deleting the schedule.' };
+    }
+}
+
+export async function deleteSinglePublishedSchedule(adminEmail: string, scheduleTitle: string): Promise<{ success: boolean; message: string }> {
+    if (!adminEmail) {
+        return { success: false, message: 'Admin email is required.' };
+    }
+    const scheduleData = await readScheduleFile(adminEmail);
+    if (!scheduleData || !scheduleData.content) {
+        return { success: false, message: 'No schedule found to delete.' };
+    }
+
+    const scheduleParts = ('\n' + scheduleData.content.trim()).split(/\n## /).filter(s => s.trim() !== '');
+    const originalCount = scheduleParts.length;
+
+    const updatedParts = scheduleParts.filter(part => !part.trim().startsWith(scheduleTitle));
+
+    if (updatedParts.length === originalCount) {
+        return { success: false, message: `Schedule for "${scheduleTitle}" not found.` };
+    }
+
+    const newContent = updatedParts.map(part => `## ${part}`).join('\n\n').trim();
+    
+    const newScheduleData: PublishedSchedule = {
+        content: newContent,
+        publishedAt: new Date().toISOString(),
+    };
+    
+    try {
+        await writeScheduleFile(adminEmail, newScheduleData);
+        return { success: true, message: `Schedule for "${scheduleTitle}" deleted successfully.` };
+    } catch (error) {
+        console.error('Failed to delete single schedule:', error);
+        return { success: false, message: 'An internal error occurred.' };
     }
 }
