@@ -5,7 +5,7 @@
  *
  * - generateSchedule - A function that handles the schedule generation process.
  * - GenerateScheduleInput - The input type for the generateSchedule function.
- * - GenerateScheduleOutput - The return type for the generateSchedule function.
+ * - GenerateScheduleOutput - The return type for the generateScheduleOutput function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -127,7 +127,7 @@ const prompt = ai.definePrompt({
     - **No-Faculty (NF) Subjects**:
         - Subjects marked with "Taught by: NF" **MUST be scheduled** like any other subject.
         - The faculty-specific constraints (double-booking, off-days, max hours) do not apply to them.
-        - In the schedule table, use `(NF)` for the faculty abbreviation for these classes.
+        - In the schedule table, use \`(NF)\` for the faculty abbreviation for these classes.
 7.  **Slot Filling Priority**: Prioritize scheduling all required classes based on their credits. Only mark a time slot as 'Free' or '-' if no class can possibly fit due to room or section conflicts. A slot should not be left free simply because a subject has no assigned faculty.
 8.  **Conflict Resolution**: There should be no scheduling conflicts for any section, faculty member, or room. A section cannot attend two classes simultaneously.
 9.  **Cell Output Format**: For each table cell, specify the **Subject Name**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "Computer Networks (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "Physics I (NF) in B_Room_101".
