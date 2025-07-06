@@ -4,12 +4,12 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Hash } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateSchedule, type GenerateScheduleOutput, type GenerateScheduleInput } from '@/ai/flows/generate-schedule';
 import type { Room } from '@/lib/buildings';
@@ -26,6 +26,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+const assignmentSchema = z.object({
+  sectionId: z.string(),
+  sectionName: z.string(),
+  facultyEmail: z.string(), // Empty string for 'NF'
+});
 
 const subjectConfigSchema = z.object({
   id: z.string(),
@@ -34,10 +41,11 @@ const subjectConfigSchema = z.object({
   type: z.string(),
   theoryCredits: z.coerce.number().optional(),
   labCredits: z.coerce.number().optional(),
-  assignedFaculty: z.array(z.string()),
+  potentialFaculty: z.array(z.string()),
   isPriority: z.boolean(),
-  sections: z.array(z.string()),
+  assignments: z.array(assignmentSchema),
 });
+
 
 const ScheduleGeneratorSchema = z.object({
   departmentId: z.string().min(1, 'Department is required.'),
@@ -58,10 +66,9 @@ const ScheduleGeneratorSchema = z.object({
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
 }).refine(
     (data) => {
-        const configuredSubjects = data.subjectConfigs.filter(s => s.sections.length > 0);
-        return configuredSubjects.length > 0;
+       return data.subjectConfigs.some(s => s.assignments.some(a => a.facultyEmail));
     },
-    { message: "Please configure at least one subject for the selected sections.", path: ["subjectConfigs"]}
+    { message: "Please assign at least one section to a faculty for any subject to continue.", path: ["subjectConfigs"]}
 );
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
@@ -158,9 +165,13 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     
     replaceSubjectConfigs(yearSubjects.map(s => ({
       ...s,
-      assignedFaculty: s.facultyEmails || [],
+      potentialFaculty: s.facultyEmails || [],
       isPriority: false,
-      sections: []
+      assignments: yearSections.map(sec => ({
+        sectionId: sec.id,
+        sectionName: sec.name,
+        facultyEmail: '', // Default to unassigned
+      }))
     })));
   };
 
@@ -169,29 +180,48 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     setIsLoading(true);
     setGeneratedSchedule(null);
     
-    const configuredSubjects = data.subjectConfigs
-        .filter(s => s.sections.length > 0)
-        .map(config => {
-            const subjectDetails = availableSubjects.find(s => s.id === config.id)!;
-            const assignedFacultyMembers = faculty.filter(f => config.assignedFaculty.includes(f.email));
-            return {
-                ...subjectDetails,
-                assignedFaculty: assignedFacultyMembers.length > 0 ? assignedFacultyMembers.map(f => f.abbreviation) : [],
-                isPriority: config.isPriority,
-                sections: config.sections,
-            };
+    const subjectsForAI = data.subjectConfigs.flatMap(config => {
+        const assignmentsByFaculty = new Map<string, string[]>();
+
+        // Group sections by assigned faculty email
+        config.assignments.forEach(assignment => {
+            const emailKey = assignment.facultyEmail || 'NF';
+            if (!assignment.facultyEmail) return; // Skip unassigned sections
+
+            if (!assignmentsByFaculty.has(emailKey)) {
+                assignmentsByFaculty.set(emailKey, []);
+            }
+            assignmentsByFaculty.get(emailKey)!.push(assignment.sectionName);
         });
 
-    if (configuredSubjects.length === 0) {
+        if (assignmentsByFaculty.size === 0) {
+            return []; // Skip subjects with no assignments at all
+        }
+
+        const subjectDetails = availableSubjects.find(s => s.id === config.id)!;
+        
+        // Create a separate subject config for each faculty (or NF) group
+        return Array.from(assignmentsByFaculty.entries()).map(([facultyEmail, sections]) => {
+            const assignedFacultyMember = faculty.find(f => f.email === facultyEmail);
+            return {
+                ...subjectDetails,
+                assignedFaculty: assignedFacultyMember ? [assignedFacultyMember.abbreviation] : [],
+                isPriority: config.isPriority,
+                sections: sections,
+            };
+        });
+    });
+
+    if (subjectsForAI.length === 0) {
         toast({
             variant: 'destructive',
             title: 'Configuration Error',
-            description: 'Please configure at least one subject for a section before generating.',
+            description: 'Please assign at least one section to a faculty for any subject.',
         });
         setIsLoading(false);
         return;
     }
-
+    
     const selectedDept = departments.find(d => d.id === data.departmentId)!;
     const selectedProg = availablePrograms.find(p => p.id === data.programId)!;
     const selectedYear = availableYears.find(y => y.id === data.yearId)!;
@@ -204,7 +234,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         year: selectedYear.name,
       },
       sections: selectedSections.map(s => ({ name: s.name, studentCount: s.studentCount })),
-      subjects: configuredSubjects,
+      subjects: subjectsForAI,
       faculty: faculty,
       availableRooms: data.availableRooms,
       availableLabs: data.availableLabs,
@@ -290,77 +320,49 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                   
                   {/* Step 2: Subject Configuration */}
                    <AccordionItem value="step-2">
-                    <AccordionTrigger className="text-lg font-semibold px-6">Step 2: Subject Configuration</AccordionTrigger>
-                    <AccordionContent className="px-6 pt-4 space-y-2">
-                        <p className="text-sm text-muted-foreground">Configure faculty, sections and priority for each subject in the selected year. Unconfigured subjects will not be scheduled.</p>
+                    <AccordionTrigger className="text-lg font-semibold px-6">Step 2: Subject & Faculty Configuration</AccordionTrigger>
+                    <AccordionContent className="px-6 pt-4 space-y-4">
+                        <p className="text-sm text-muted-foreground">For each subject, define potential faculty and then assign them to specific sections.</p>
                          {subjectConfigFields.length > 0 ? (
                             <div className="space-y-4 pt-2">
                                 {subjectConfigFields.map((item, index) => {
+                                    const availableFacultyForSubject = faculty.filter(f => item.potentialFaculty.includes(f.email));
                                     return (
-                                        <Card key={item.id} className="p-4">
-                                            <h4 className="font-semibold">{item.name} ({item.code})</h4>
-                                            <div className="grid gap-4 md:grid-cols-2 mt-2">
-                                                <Controller control={control} name={`subjectConfigs.${index}.assignedFaculty`} render={({ field }) => (
-                                                    <FormItem className="flex flex-col"><FormLabel>Assign Faculty</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty (NF)"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{faculty.map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
-                                                )} />
-                                                <FormField control={control} name={`subjectConfigs.${index}.sections`} render={({ field }) => (
-                                                    <FormItem>
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <FormLabel>Assign Sections</FormLabel>
-                                                            <div className="flex items-center gap-2">
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="link"
-                                                                    size="sm"
-                                                                    className="p-0 h-auto"
-                                                                    onClick={() => {
-                                                                        const allSectionNames = availableSections.map(s => s.name);
-                                                                        setValue(`subjectConfigs.${index}.sections`, allSectionNames, { shouldValidate: true });
-                                                                    }}
-                                                                >
-                                                                    Select All
-                                                                </Button>
-                                                                <Separator orientation="vertical" className="h-4" />
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="link"
-                                                                    size="sm"
-                                                                    className="p-0 h-auto text-destructive"
-                                                                    onClick={() => {
-                                                                        setValue(`subjectConfigs.${index}.sections`, [], { shouldValidate: true });
-                                                                    }}
-                                                                >
-                                                                    Clear All
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-x-4 gap-y-2 p-2 border rounded-md min-h-10 items-center">
-                                                            {availableSections.length > 0 ? availableSections.map(sec => (
-                                                                <FormField key={sec.id} control={control} name={`subjectConfigs.${index}.sections`} render={({ field: sectionField }) => {
-                                                                    return (
-                                                                        <FormItem key={sec.id} className="flex flex-row items-center space-x-2 space-y-0">
-                                                                            <FormControl>
-                                                                                <Checkbox
-                                                                                    checked={sectionField.value?.includes(sec.name)}
-                                                                                    onCheckedChange={(checked) => {
-                                                                                        return checked
-                                                                                            ? sectionField.onChange([...sectionField.value, sec.name])
-                                                                                            : sectionField.onChange(sectionField.value?.filter((value) => value !== sec.name))
-                                                                                    }}
-                                                                                />
-                                                                            </FormControl>
-                                                                            <FormLabel className="font-normal">{sec.name}</FormLabel>
-                                                                        </FormItem>
-                                                                    )
-                                                                }} />
-                                                            )) : <p className="text-xs text-muted-foreground">No sections in this year.</p>}
-                                                        </div>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )} />
-                                                 <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-center space-x-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Mark as Priority Subject</label></FormItem>
+                                        <Card key={item.id} className="p-4 bg-muted/50">
+                                            <div className="flex justify-between items-start">
+                                                <div className="grid gap-1">
+                                                    <h4 className="font-semibold">{item.name} ({item.code})</h4>
+                                                    <p className="text-xs text-muted-foreground">{item.type} &bull; T:{item.theoryCredits || 0}, L:{item.labCredits || 0}</p>
+                                                </div>
+                                                <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
+                                                    <FormItem className="flex flex-row items-center space-x-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Priority</label></FormItem>
                                                  )} />
+                                            </div>
+                                            <Separator className="my-4" />
+                                            <div className="grid gap-6 md:grid-cols-2">
+                                                <Controller control={control} name={`subjectConfigs.${index}.potentialFaculty`} render={({ field }) => (
+                                                    <FormItem className="flex flex-col"><FormLabel>Available Faculty for this Subject</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty..."}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{faculty.filter(f => f.department === departments.find(d => d.id === getValues('departmentId'))?.name).map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                                )} />
+                                                <div className="space-y-2">
+                                                    <FormLabel>Section Assignments</FormLabel>
+                                                    <div className="rounded-md border">
+                                                        <Table>
+                                                            <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead><User className="h-4 w-4" /> Assigned Faculty</TableHead></TableRow></TableHeader>
+                                                            <TableBody>
+                                                                {item.assignments.map((assignment, assignmentIndex) => (
+                                                                    <TableRow key={assignment.sectionId}>
+                                                                        <TableCell className="font-medium">{assignment.sectionName}</TableCell>
+                                                                        <TableCell>
+                                                                            <FormField control={control} name={`subjectConfigs.${index}.assignments.${assignmentIndex}.facultyEmail`} render={({ field }) => (
+                                                                                <FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Not Assigned" /></SelectTrigger></FormControl><SelectContent><SelectItem value="">NF (No Faculty)</SelectItem>{availableFacultyForSubject.map(fac => <SelectItem key={fac.email} value={fac.email}>{fac.name} ({fac.abbreviation})</SelectItem>)}</SelectContent></Select></FormItem>
+                                                                            )}/>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                ))}
+                                                            </TableBody>
+                                                        </Table>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </Card>
                                     )
