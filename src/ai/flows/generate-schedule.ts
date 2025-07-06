@@ -80,6 +80,10 @@ const prompt = ai.definePrompt({
 
 3.  **NO EMPTY DAYS**: Every section **MUST** have at least one class scheduled on every single 'Active Weekday'. It is not permissible to have a day with no classes for any section. This is a critical requirement.
 
+4.  **BALANCED DISTRIBUTION**: Distribute classes as evenly as possible across each day for each section.
+    - **Consecutive Class Limit**: **DO NOT** schedule more than three consecutive 50-minute theory class slots. A 100-minute block counts as two consecutive slots.
+    - **Spread Subjects**: Classes for the same subject **MUST** be spread across different days. For example, a 4-credit subject scheduled as two 100-minute blocks **must** have them on separate days. A 3-credit subject scheduled as one 100-minute block and one 50-minute slot **must** also have them on separate days.
+
 **--- SCHEDULING CONTEXT ---**
 - Department: {{academicInfo.department}}
 - Program: {{academicInfo.program}}
@@ -120,8 +124,6 @@ const prompt = ai.definePrompt({
     - **Combined vs. Single Slots**:
         - 'Lab', 'Theory+Lab', and 'Project' subjects **MUST** be scheduled as a single 100-minute block (two consecutive 50-minute slots). No 50-minute lab classes are allowed.
         - For 'Theory' subjects, if they have 3 or more credits, schedule one of their weekly classes as a 100-minute block. The other classes for that subject should be single 50-minute slots.
-    - **SPREAD CLASSES ACROSS DAYS (Mandatory)**: Classes for the same subject **MUST** be spread across different days. For example, a 4-credit subject scheduled as two 100-minute blocks **must** have them on separate days. A 3-credit subject scheduled as one 100-minute block and one 50-minute slot **must** also have them on separate days.
-    - **Daily Combined Class Limit**: A section should have a maximum of **two** 100-minute class blocks on any given day. This limit **does not apply to lab sessions**.
 
 2.  **Lab & Student Grouping**:
     - **Student Splitting for Labs**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs. You must schedule **two separate 100-minute lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)", "Computer Networks Lab (Sec A, Gp B)").
