@@ -1,10 +1,10 @@
-
 'use server';
 
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import { LogoSchema } from './validators/auth';
+import { revalidatePath } from 'next/cache';
 
 const logoFilePath = path.join(process.cwd(), 'src', 'data', 'logo.json');
 
@@ -41,6 +41,7 @@ export async function getLogo(): Promise<string | null> {
 export async function updateLogo(data: LogoData): Promise<{ success: boolean; message: string }> {
     try {
         await writeLogoFile({ dataUrl: data.logo });
+        revalidatePath('/', 'layout');
         return { success: true, message: 'Logo updated successfully.' };
     } catch (error) {
         console.error('Failed to update logo:', error);

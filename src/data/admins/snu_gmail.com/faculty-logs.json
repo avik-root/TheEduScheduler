@@ -1,5 +1,21 @@
 [
   {
+    "id": "1751765602164-o3em6am",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-06T01:33:22.164Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1751765422178-put8yik",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-06T01:30:22.178Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1751765318967-96x596k",
     "facultyName": "Aritra Ghosh",
     "facultyEmail": "aritra.cse@themintfire.com",
