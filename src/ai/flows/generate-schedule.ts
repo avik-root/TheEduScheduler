@@ -131,10 +131,12 @@ This is the most important rule. There must be **ZERO** scheduling conflicts.
     - Subjects with "Taught by: NF" **MUST be scheduled**.
     - In the schedule table, use \`(NF)\` for the faculty abbreviation for these classes.
 
-5.  **Slot Filling**:
-    - Your goal is to schedule ALL required classes. Only mark a time slot as 'Free' or '-' if it is impossible to place a class without causing a conflict.
+5.  **Daily Class Requirement**: Every section **MUST** have at least one class scheduled on every single 'Active Weekday'. It is not permissible to have a day with no classes for any section. This is a critical requirement for student engagement.
 
-6.  **Room Optimization**: As a secondary goal (after ensuring no conflicts), try to use the **minimum number of unique rooms and labs** possible.
+6.  **Slot Filling**:
+    - After satisfying all other rules, your goal is to schedule ALL remaining required classes. Only mark a time slot as 'Free' or '-' if it is impossible to place a class without causing a conflict.
+
+7.  **Room Optimization**: As a secondary goal (after ensuring no conflicts), try to use the **minimum number of unique rooms and labs** possible.
 
 **--- OUTPUT FORMATTING ---**
 1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
