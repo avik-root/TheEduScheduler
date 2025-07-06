@@ -58,3 +58,20 @@ export async function getPublishedSchedule(adminEmail: string): Promise<string> 
     const schedule = await readScheduleFile(adminEmail);
     return schedule?.content || '';
 }
+
+export async function deletePublishedSchedule(adminEmail: string): Promise<{ success: boolean; message: string }> {
+    if (!adminEmail) {
+        return { success: false, message: 'Admin email is required.' };
+    }
+    const schedule: PublishedSchedule = {
+        content: '',
+        publishedAt: '',
+    };
+    try {
+        await writeScheduleFile(adminEmail, schedule);
+        return { success: true, message: 'Schedule deleted successfully.' };
+    } catch (error) {
+        console.error('Failed to delete schedule:', error);
+        return { success: false, message: 'An internal error occurred while deleting the schedule.' };
+    }
+}
