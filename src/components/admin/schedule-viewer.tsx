@@ -28,62 +28,74 @@ interface SectionSchedule {
   rows: string[][];
 }
 
+interface ParsedSchedule {
+    programYearTitle: string;
+    sections: SectionSchedule[];
+}
 
-function parseMultiSectionSchedule(markdown: string): SectionSchedule[] {
+function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
     if (!markdown || markdown.trim() === '') {
-        return [];
+        return null;
     }
 
-    const sections = markdown.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
-    const parsedSchedules: SectionSchedule[] = [];
+    const lines = markdown.trim().split('\n');
+    let programYearTitle = "Published Schedule"; // Default title
+    let scheduleContent = markdown;
 
-    for (let i = 0; i < sections.length; i += 2) {
-        const sectionName = sections[i].trim().replace(/###\s*/, '');
-        const tableMarkdown = sections[i + 1];
+    if (lines[0].startsWith('## ')) {
+        programYearTitle = lines[0].substring(3).trim();
+        scheduleContent = lines.slice(1).join('\n');
+    }
+
+    const sectionsMarkdown = scheduleContent.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
+    const parsedSections: SectionSchedule[] = [];
+
+    for (let i = 0; i < sectionsMarkdown.length; i += 2) {
+        const sectionName = sectionsMarkdown[i].trim().replace(/###\s*/, '');
+        const tableMarkdown = sectionsMarkdown[i + 1];
 
         if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
 
-        const lines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
-        if (lines.length < 2) continue;
+        const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
+        if (tableLines.length < 2) continue;
 
-        const headerLine = lines[0];
-        const separatorLine = lines[1];
+        const headerLine = tableLines[0];
+        const separatorLine = tableLines[1];
         if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
 
         const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
-        const rows = lines.slice(2).map(line => 
+        const rows = tableLines.slice(2).map(line =>
             line.split('|').map(cell => cell.trim()).filter(Boolean)
         ).filter(row => row.length === header.length);
 
         if (header.length > 0 && rows.length > 0) {
-            parsedSchedules.push({ sectionName, header, rows });
+            parsedSections.push({ sectionName, header, rows });
         }
     }
 
-    return parsedSchedules;
+    return { programYearTitle, sections: parsedSections };
 }
 
 
 export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
-  const parsedSchedules = React.useMemo(() => parseMultiSectionSchedule(schedule), [schedule]);
+  const parsedSchedule = React.useMemo(() => parseCompleteSchedule(schedule), [schedule]);
   const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
 
 
   const handleDownloadPdf = () => {
-    if (!parsedSchedules || parsedSchedules.length === 0) return;
+    if (!parsedSchedule || parsedSchedule.sections.length === 0) return;
     
     const doc = new jsPDF({ orientation: 'landscape' });
-    doc.text("Published Schedules", 14, 15);
+    doc.text(parsedSchedule.programYearTitle, 14, 15);
 
     let startY = 20;
 
-    parsedSchedules.forEach((sectionSchedule, index) => {
-        if (index > 0) {
-            startY = (doc as any).lastAutoTable.finalY + 15;
-            if (startY > 180) { // Check if new page is needed
-                doc.addPage();
-                startY = 20;
-            }
+    parsedSchedule.sections.forEach((sectionSchedule) => {
+        if (startY > 20 && (startY + sectionSchedule.rows.length * 10) > 180) { // Check if new page is needed
+            doc.addPage();
+            startY = 15;
+        } else if (startY > 20) {
+             startY = (doc as any).lastAutoTable.finalY + 15;
         }
         
         doc.text(sectionSchedule.sectionName, 14, startY);
@@ -95,7 +107,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
         });
     });
 
-    doc.save('published-schedule.pdf');
+    doc.save(`${parsedSchedule.programYearTitle.replace(/\s/g, '_')}.pdf`);
   };
 
   return (
@@ -110,22 +122,22 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 </Link>
                 </Button>
                 <div className="grid gap-1">
-                    <CardTitle className="flex items-center gap-2"><CalendarCheck /> Published Schedule</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><CalendarCheck /> {parsedSchedule?.programYearTitle || 'Published Schedule'}</CardTitle>
                     <CardDescription>
                         This is the currently active schedule for the faculty. You can download it as a PDF.
                     </CardDescription>
                 </div>
             </div>
-            <Button onClick={handleDownloadPdf} disabled={!parsedSchedules || parsedSchedules.length === 0}>
+            <Button onClick={handleDownloadPdf} disabled={!parsedSchedule || parsedSchedule.sections.length === 0}>
                 <Download className="mr-2 h-4 w-4" />
                 Download PDF
             </Button>
         </div>
       </CardHeader>
       <CardContent>
-        {parsedSchedules && parsedSchedules.length > 0 ? (
+        {parsedSchedule && parsedSchedule.sections.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {parsedSchedules.map((sectionSchedule, sectionIndex) => (
+                {parsedSchedule.sections.map((sectionSchedule, sectionIndex) => (
                     <Card key={sectionIndex}>
                         <CardHeader>
                             <CardTitle>{sectionSchedule.sectionName}</CardTitle>

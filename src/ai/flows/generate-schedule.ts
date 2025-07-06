@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -126,7 +125,7 @@ const prompt = ai.definePrompt({
     - Any of the 'assignedFaculty' can teach a subject. If none are assigned (NF), leave the faculty slot blank, formatted as "(NF)".
 7.  **Conflict Resolution**: There should be no scheduling conflicts for any section, faculty member, or room. A section cannot attend two classes simultaneously.
 8.  **Cell Output Format**: For each table cell, specify the **Subject Name**, **(Faculty Abbreviation)**, and **in Room/Lab Name**. For split labs, include the group (Gp A/Gp B). Example: "Computer Networks (ANM) in A_Lab 202 (Gp A)". For no-faculty subjects: "Physics I (NF) in B_Room_101".
-9.  **Final Output**: Combine all section tables into a single string. This is the final schedule you will output.
+9.  **Final Output**: Combine all section tables into a single string. The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: '## {{academicInfo.program}} - {{academicInfo.year}}'. This is the final schedule you will output.
 
 Generate the complete, optimized weekly schedule now for all specified sections.
 `,

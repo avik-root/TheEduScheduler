@@ -2,8 +2,9 @@
 'use client';
 
 import * as React from 'react';
-import { User, Clock, CalendarOff, Settings, Building } from 'lucide-react';
+import { User, Clock, CalendarOff, Settings, Building, CalendarCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Faculty } from '@/lib/faculty';
 import type { Admin } from '@/lib/admin';
 import type { Room } from '@/lib/buildings';
@@ -27,42 +28,66 @@ interface SectionSchedule {
   rows: string[][];
 }
 
-function parseMultiSectionSchedule(markdown: string): SectionSchedule[] {
+interface ParsedSchedule {
+    programYearTitle: string;
+    sections: SectionSchedule[];
+}
+
+function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
     if (!markdown || markdown.trim() === '') {
-        return [];
+        return null;
     }
-    const sections = markdown.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
-    const parsedSchedules: SectionSchedule[] = [];
-    for (let i = 0; i < sections.length; i += 2) {
-        const sectionName = sections[i].trim().replace(/###\s*/, '');
-        const tableMarkdown = sections[i + 1];
+
+    const lines = markdown.trim().split('\n');
+    let programYearTitle = "Published Schedule"; // Default title
+    let scheduleContent = markdown;
+
+    if (lines[0].startsWith('## ')) {
+        programYearTitle = lines[0].substring(3).trim();
+        scheduleContent = lines.slice(1).join('\n');
+    }
+
+    const sectionsMarkdown = scheduleContent.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
+    const parsedSections: SectionSchedule[] = [];
+
+    for (let i = 0; i < sectionsMarkdown.length; i += 2) {
+        const sectionName = sectionsMarkdown[i].trim().replace(/###\s*/, '');
+        const tableMarkdown = sectionsMarkdown[i + 1];
+
         if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
-        const lines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
-        if (lines.length < 2) continue;
-        const headerLine = lines[0];
-        const separatorLine = lines[1];
+
+        const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
+        if (tableLines.length < 2) continue;
+
+        const headerLine = tableLines[0];
+        const separatorLine = tableLines[1];
         if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
+
         const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
-        const rows = lines.slice(2).map(line => 
+        const rows = tableLines.slice(2).map(line =>
             line.split('|').map(cell => cell.trim()).filter(Boolean)
         ).filter(row => row.length === header.length);
+
         if (header.length > 0 && rows.length > 0) {
-            parsedSchedules.push({ sectionName, header, rows });
+            parsedSections.push({ sectionName, header, rows });
         }
     }
-    return parsedSchedules;
+    
+    return { programYearTitle, sections: parsedSections };
 }
 
 export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule, initialRequests }: TeacherDashboardClientProps) {
 
   const mySchedule = React.useMemo(() => {
-    if (!schedule || !faculty.abbreviation) return '';
+    if (!schedule || !faculty.abbreviation) return null;
     
-    const allSectionSchedules = parseMultiSectionSchedule(schedule);
+    const parsedData = parseCompleteSchedule(schedule);
+    if (!parsedData) return null;
+
     const facultySchedules: SectionSchedule[] = [];
     const facultyAbbr = `(${faculty.abbreviation})`;
 
-    allSectionSchedules.forEach(section => {
+    parsedData.sections.forEach(section => {
         const relevantRows = section.rows.filter(row => 
             row.some(cell => cell.includes(facultyAbbr))
         );
@@ -75,14 +100,9 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
         }
     });
     
-    if (facultySchedules.length === 0) return '';
+    if (facultySchedules.length === 0) return null;
     
-    return facultySchedules.map(s => {
-        const header = `| ${s.header.join(' | ')} |`;
-        const separator = `| ${s.header.map(() => '---').join(' | ')} |`;
-        const rows = s.rows.map(row => `| ${row.join(' | ')} |`).join('\n');
-        return `### ${s.sectionName}\n${header}\n${separator}\n${rows}`;
-    }).join('\n\n');
+    return { ...parsedData, sections: facultySchedules };
   }, [schedule, faculty.abbreviation]);
 
   return (
@@ -146,21 +166,47 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
           <div className="pt-8 grid gap-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>My Weekly Schedule</CardTitle>
-                    <CardDescription>Your class schedule for the upcoming week. This is filtered to show only your classes.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><CalendarCheck /> My Weekly Schedule</CardTitle>
+                    <CardDescription>{mySchedule?.programYearTitle || 'Your classes will appear here once published.'}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     <div className="min-h-[200px] rounded-lg border bg-muted p-4 whitespace-pre-wrap font-mono text-sm">
-                        {mySchedule ? (
-                            <p>{mySchedule}</p>
-                        ) : (
-                            <div className="flex h-full items-center justify-center pt-16 font-sans">
-                                <p className="text-muted-foreground text-center">
-                                    {schedule ? "You have no classes in the published schedule." : "Your schedule will appear here once it is published by the admin."}
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                     {mySchedule && mySchedule.sections.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-6">
+                            {mySchedule.sections.map((sectionSchedule, sectionIndex) => (
+                                <Card key={sectionIndex}>
+                                    <CardHeader>
+                                        <CardTitle>{sectionSchedule.sectionName}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="overflow-x-auto p-0">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    {sectionSchedule.header.map((head, index) => (
+                                                        <TableHead key={index}>{head}</TableHead>
+                                                    ))}
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {sectionSchedule.rows.map((row, rowIndex) => (
+                                                    <TableRow key={rowIndex}>
+                                                        {row.map((cell, cellIndex) => (
+                                                            <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
+                                                        ))}
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
+                            <p className="text-muted-foreground text-center">
+                                {schedule ? "You have no classes in the published schedule." : "Your schedule will appear here once it is published by the admin."}
+                            </p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
             <RoomAvailabilityChecker
