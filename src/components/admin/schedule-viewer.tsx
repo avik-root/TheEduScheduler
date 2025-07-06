@@ -4,11 +4,12 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
 import { DeleteSingleScheduleDialog } from './delete-single-schedule-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface ScheduleViewerProps {
   schedule: string;
@@ -70,6 +71,7 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
 
 export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const { toast } = useToast();
   const parsedSchedules = React.useMemo(() => parseMultipleSchedules(schedule), [schedule]);
   const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
 
@@ -169,6 +171,54 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
     link.click();
     document.body.removeChild(link);
   };
+  
+  const handleShare = async (scheduleToShare: ParsedSchedule) => {
+    if (!navigator.share) {
+      toast({
+        variant: 'destructive',
+        title: 'Sharing Not Supported',
+        description: 'Your browser does not support the Web Share API.',
+      });
+      return;
+    }
+
+    let shareText = `${scheduleToShare.programYearTitle}\n\n`;
+    scheduleToShare.sections.forEach(section => {
+        shareText += `Section: ${section.sectionName}\n`;
+        section.rows.forEach(row => {
+            shareText += `\n${row[0]}:\n`; // Day of the week
+            row.slice(1).forEach((cell, index) => {
+                if (cell !== '-') {
+                    const timeSlot = section.header[index + 1];
+                    shareText += `  - ${timeSlot}: ${cell}\n`;
+                }
+            });
+        });
+        shareText += '\n---\n';
+    });
+
+    try {
+      await navigator.share({
+        title: `Schedule: ${scheduleToShare.programYearTitle}`,
+        text: shareText,
+      });
+      toast({
+          title: 'Shared Successfully',
+          description: 'The schedule has been shared.'
+      });
+    } catch (error) {
+      // Don't show an error toast if the user cancels the share dialog
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Error sharing:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Sharing Failed',
+            description: 'There was an error while trying to share the schedule.'
+        });
+      }
+    }
+  };
+
 
   const hasSchedule = parsedSchedules && parsedSchedules.length > 0;
 
@@ -219,6 +269,10 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                              <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
                                 <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
                                 <div className="flex items-center gap-2">
+                                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShare(scheduleItem)}>
+                                        <Share className="h-4 w-4" />
+                                        <span className="sr-only">Share {scheduleItem.programYearTitle}</span>
+                                    </Button>
                                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadCsv(scheduleItem)}>
                                         <Download className="h-4 w-4" />
                                         <span className="sr-only">Download {scheduleItem.programYearTitle}</span>
@@ -226,10 +280,10 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                     <DeleteSingleScheduleDialog adminEmail={adminEmail} scheduleTitle={scheduleItem.programYearTitle} />
                                 </div>
                             </CardHeader>
-                            <CardContent className="overflow-x-auto p-0 md:p-6">
-                                <div className="space-y-6">
+                            <CardContent className="overflow-x-auto">
+                                <div className="space-y-6 p-6 md:p-0">
                                     {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
-                                        <div key={sectionIndex} className="p-6 md:p-0">
+                                        <div key={sectionIndex}>
                                             <h3 className="text-lg font-semibold mb-2">{sectionSchedule.sectionName}</h3>
                                             <div className="rounded-md border">
                                                 <Table>
