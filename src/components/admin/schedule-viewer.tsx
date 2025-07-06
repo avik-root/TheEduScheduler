@@ -173,15 +173,6 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   };
   
   const handleShare = async (scheduleToShare: ParsedSchedule) => {
-    if (!navigator.share) {
-      toast({
-        variant: 'destructive',
-        title: 'Sharing Not Supported',
-        description: 'Your browser does not support the Web Share API.',
-      });
-      return;
-    }
-
     let shareText = `${scheduleToShare.programYearTitle}\n\n`;
     scheduleToShare.sections.forEach(section => {
         shareText += `Section: ${section.sectionName}\n`;
@@ -197,25 +188,34 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
         shareText += '\n---\n';
     });
 
-    try {
-      await navigator.share({
+    const shareData = {
         title: `Schedule: ${scheduleToShare.programYearTitle}`,
         text: shareText,
-      });
-      toast({
-          title: 'Shared Successfully',
-          description: 'The schedule has been shared.'
-      });
-    } catch (error) {
-      // Don't show an error toast if the user cancels the share dialog
-      if ((error as Error).name !== 'AbortError') {
-        console.error('Error sharing:', error);
+    };
+    
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        try {
+            await navigator.share(shareData);
+            toast({
+                title: 'Shared Successfully',
+                description: 'The schedule has been shared.'
+            });
+        } catch (error) {
+            if ((error as Error).name !== 'AbortError') {
+                console.error('Error sharing:', error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Sharing Failed',
+                    description: 'There was an error while trying to share the schedule. Please try again.',
+                });
+            }
+        }
+    } else {
         toast({
             variant: 'destructive',
-            title: 'Sharing Failed',
-            description: 'There was an error while trying to share the schedule.'
+            title: 'Sharing Not Supported',
+            description: 'Your browser or device does not support sharing this content.',
         });
-      }
     }
   };
 
@@ -280,12 +280,12 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                     <DeleteSingleScheduleDialog adminEmail={adminEmail} scheduleTitle={scheduleItem.programYearTitle} />
                                 </div>
                             </CardHeader>
-                            <CardContent className="overflow-x-auto">
-                                <div className="space-y-6 p-6 md:p-0">
+                            <CardContent className="overflow-x-auto p-0 md:p-6">
+                                <div className="space-y-6">
                                     {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
                                         <div key={sectionIndex}>
-                                            <h3 className="text-lg font-semibold mb-2">{sectionSchedule.sectionName}</h3>
-                                            <div className="rounded-md border">
+                                            <h3 className="text-lg font-semibold mb-2 px-6 md:px-0">{sectionSchedule.sectionName}</h3>
+                                            <div className="overflow-x-auto rounded-md border">
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow>
