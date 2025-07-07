@@ -30,6 +30,8 @@ import type { RoomRequest } from '@/lib/requests';
 import type { Department } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
 import type { Subject } from '@/lib/subjects';
+import { getPublishedSchedule } from '@/lib/schedule';
+import { GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 
 interface DashboardClientProps {
     admin: Admin | null;
@@ -43,7 +45,10 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, departments, faculty, subjects, publishedSchedule }: DashboardClientProps) {
+    const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
 
+    const scheduleToDisplay = generatedSchedule?.schedule || publishedSchedule;
+    
     return (
         <div className="mx-auto grid w-full max-w-6xl gap-6">
             <div className="my-8">
@@ -131,6 +136,8 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                   <TabsContent value="generator" className="mt-6">
                     <AiScheduleGenerator
                         allRooms={allRooms}
+                        generatedSchedule={generatedSchedule}
+                        setGeneratedSchedule={setGeneratedSchedule}
                         adminEmail={adminEmail}
                         departments={departments}
                         faculty={faculty}
@@ -152,7 +159,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                 <RoomAvailabilityChecker
                     userRole="admin"
                     allRooms={allRooms}
-                    schedule={publishedSchedule || ''}
+                    schedule={scheduleToDisplay}
                     adminEmail={adminEmail}
                 />
             </div>
