@@ -189,7 +189,7 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                       <Command>
                         <CommandInput placeholder="Search room, block, or floor..." />
-                        <CommandList>
+                        <CommandList className="max-h-[300px]">
                           <CommandEmpty>No room found for this subject type.</CommandEmpty>
                           {availableRooms.length > 0 && (
                             <CommandGroup heading="Classrooms">
