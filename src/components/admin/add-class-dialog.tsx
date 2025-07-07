@@ -46,6 +46,7 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
   });
 
   const selectedSubjectId = form.watch('subjectId');
+  const selectedRoomId = form.watch('roomId');
 
   const availableFaculty = React.useMemo(() => {
     if (!selectedSubjectId) {
@@ -104,6 +105,8 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
       form.reset();
     }
   }, [isOpen, form]);
+
+  const selectedRoom = rooms.find((room) => room.id === selectedRoomId);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -176,10 +179,8 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {field.value
-                            ? rooms.find(
-                                (room) => room.id === field.value
-                              )?.name
+                          {selectedRoom
+                            ? `${selectedRoom.name} (${selectedRoom.buildingName} / ${selectedRoom.floorName})`
                             : "Select a room"}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -187,14 +188,14 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                       <Command>
-                        <CommandInput placeholder="Search room..." />
+                        <CommandInput placeholder="Search room, block, or floor..." />
                         <CommandList>
                           <CommandEmpty>No room found for this subject type.</CommandEmpty>
                           {availableRooms.length > 0 && (
                             <CommandGroup heading="Classrooms">
                               {availableRooms.map((room) => (
                                 <CommandItem
-                                  value={room.name}
+                                  value={`${room.name} ${room.buildingName} ${room.floorName}`}
                                   key={room.id}
                                   onSelect={() => {
                                     form.setValue("roomId", room.id)
@@ -208,7 +209,10 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
                                         : "opacity-0"
                                     )}
                                   />
-                                  {room.name}
+                                  <span>{room.name}</span>
+                                  <span className="ml-auto pl-4 text-xs text-muted-foreground">
+                                    {room.buildingName} / {room.floorName}
+                                  </span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -217,7 +221,7 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
                             <CommandGroup heading="Labs">
                               {availableLabs.map((room) => (
                                 <CommandItem
-                                  value={room.name}
+                                  value={`${room.name} ${room.buildingName} ${room.floorName}`}
                                   key={room.id}
                                   onSelect={() => {
                                     form.setValue("roomId", room.id)
@@ -231,7 +235,10 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
                                         : "opacity-0"
                                     )}
                                   />
-                                  {room.name}
+                                  <span>{room.name}</span>
+                                  <span className="ml-auto pl-4 text-xs text-muted-foreground">
+                                    {room.buildingName} / {room.floorName}
+                                  </span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
