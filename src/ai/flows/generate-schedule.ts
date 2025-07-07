@@ -52,6 +52,7 @@ const GenerateScheduleInputSchema = z.object({
         breakTime: z.string().describe('The time slot for the daily break (e.g., "13:00 - 14:00").'),
     }),
     activeDays: z.array(z.string()),
+    globalConstraints: z.string().optional().describe("Additional high-level constraints for the AI to follow."),
 });
 export type GenerateScheduleInput = z.infer<typeof GenerateScheduleInputSchema>;
 
@@ -68,21 +69,14 @@ const prompt = ai.definePrompt({
   name: 'generateSchedulePrompt',
   input: {schema: GenerateScheduleInputSchema},
   output: {schema: GenerateScheduleOutputSchema},
-  prompt: `You are an AI assistant that creates a weekly class schedule. Your primary goal is to generate an optimal, 100% conflict-free schedule that adheres to all the following rules.
+  prompt: `You are an AI assistant that creates a weekly class schedule.
+Your goal is to generate a conflict-free schedule based on the provided information. Avoid any clashes for faculty or rooms.
 
-**--- CRITICAL DIRECTIVES: READ AND FOLLOW ALL ---**
-1.  **NO CONFLICTS (Most Important)**: There must be **ZERO** scheduling conflicts. This is your highest priority.
-    - **Faculty Conflict**: A faculty member **cannot** be assigned to two different sections at the same time. For example, if faculty \`(RK)\` is teaching \`Section 1\` on Monday from 11:00-11:50, they **cannot** also be scheduled to teach \`Section 2\` at the same time. Their classes for different sections must be in different, non-overlapping time slots.
-    - **Room Conflict**: A room or lab **cannot** be used by two different sections or for two different classes at the same time.
-    - **Section Conflict**: A section **cannot** attend two different classes at the same time.
-
-2.  **COMPLETE COVERAGE**: You **MUST** generate a full schedule table for **EVERY SINGLE SECTION** listed in the input. Do not omit any sections from the output.
-
-3.  **NO EMPTY DAYS**: Every section **MUST** have at least one class scheduled on every single 'Active Weekday'. It is not permissible to have a day with no classes for any section. This is a critical requirement.
-
-4.  **BALANCED DISTRIBUTION**: Distribute classes as evenly as possible across each day for each section.
-    - **Consecutive Class Limit**: **DO NOT** schedule more than three consecutive 50-minute theory class slots. A 100-minute block counts as two consecutive slots.
-    - **Spread Subjects**: Classes for the same subject **MUST** be spread across different days. For example, a 4-credit subject scheduled as two 100-minute blocks **must** have them on separate days. A 3-credit subject scheduled as one 100-minute block and one 50-minute slot **must** also have them on separate days.
+{{#if globalConstraints}}
+**--- ADDITIONAL CONSTRAINTS ---**
+Please also adhere to the following global constraints:
+{{{globalConstraints}}}
+{{/if}}
 
 **--- SCHEDULING CONTEXT ---**
 - Department: {{academicInfo.department}}
@@ -118,36 +112,13 @@ const prompt = ai.definePrompt({
   - For Sections: {{#each sections}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 {{/each}}
 
-**--- DETAILED SCHEDULING RULES ---**
-1.  **Credit Hours, Duration, & Spreading**:
-    - Each credit point equals one 50-minute class per week.
-    - **Combined vs. Single Slots**:
-        - 'Lab', 'Theory+Lab', and 'Project' subjects **MUST** be scheduled as a single 100-minute block (two consecutive 50-minute slots). No 50-minute lab classes are allowed.
-        - For 'Theory' subjects, if they have 3 or more credits, schedule one of their weekly classes as a 100-minute block. The other classes for that subject should be single 50-minute slots.
-
-2.  **Lab & Student Grouping**:
-    - **Student Splitting for Labs**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs. You must schedule **two separate 100-minute lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)", "Computer Networks Lab (Sec A, Gp B)").
-    - Allocate labs only to rooms listed in 'Available Labs'.
-
-3.  **Faculty Constraints**:
-    - For subjects with 'assignedFaculty', pick one faculty member per class slot from the provided list.
-    - Strictly adhere to each faculty's 'weeklyOffDays' and do not exceed their 'weeklyMaxHours'.
-
-4.  **No-Faculty (NF) Subjects**:
-    - Subjects with "Taught by: NF" **MUST be scheduled**.
-    - In the schedule table, use \`(NF)\` for the faculty abbreviation for these classes.
-
-5.  **Slot Filling**: After satisfying all other rules, your goal is to schedule ALL remaining required classes. Only mark a time slot as 'Free' or '-' if it is impossible to place a class without causing a conflict.
-
-6.  **Room Optimization**: As a secondary goal (after ensuring no conflicts), try to use the **minimum number of unique rooms and labs** possible.
-
 **--- OUTPUT FORMATTING ---**
 1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
-2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. This is not optional. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
+2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
 3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the 50-minute time slots (e.g., "09:00-09:50"). The rows will represent each active day of the week.
-4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101".
+4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects, use \`(NF)\` for the faculty abbreviation.
 
-Generate the complete, conflict-free, and optimized weekly schedule now for all specified sections.
+Generate the schedule now for all specified sections.
 `,
 });
 
@@ -162,3 +133,5 @@ const generateScheduleFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
