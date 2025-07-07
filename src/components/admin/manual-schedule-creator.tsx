@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, Grid, Settings, AlertCircle, Trash2 } from 'lucide-react';
+import { Loader2, Sparkles, Upload, Grid, Settings, AlertCircle, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -68,9 +68,8 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
     let breakAdded = false;
 
     while (currentTime < endTime) {
-        // Check if the current time is at or after the break start time.
         if (!breakAdded && currentTime >= breakStartTime) {
-            slots.push('Break');
+            slots.push(`${breakStart}-${breakEnd}`);
             currentTime = breakEndTime;
             breakAdded = true;
             continue;
@@ -78,17 +77,15 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
 
         const slotEnd = new Date(currentTime.getTime() + duration * 60000);
 
-        // Check if the next slot would overlap with the break.
         if (!breakAdded && slotEnd > breakStartTime) {
-            // This slot would cross into the break. Add break instead and jump time.
-            slots.push('Break');
+            slots.push(`${breakStart}-${breakEnd}`);
             currentTime = breakEndTime;
             breakAdded = true;
             continue;
         }
         
         if (slotEnd > endTime) {
-            break; // Don't add slots that extend beyond the college end time
+            break; 
         }
 
         slots.push(`${currentTime.toTimeString().substring(0, 5)}-${slotEnd.toTimeString().substring(0, 5)}`);
@@ -177,6 +174,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
         const selectedDept = departments.find(d => d.id === getValues('departmentId'))!;
         const selectedProg = availablePrograms.find(p => p.id === getValues('programId'))!;
         const selectedYear = availableYears.find(y => y.id === getValues('yearId'))!;
+        const breakTimeValue = `${getValues('breakStart')}-${getValues('breakEnd')}`;
         
         let markdown = `## ${selectedProg.name} - ${selectedYear.name}\n\n`;
 
@@ -188,7 +186,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
 
             sectionData.rows.forEach(row => {
                 const rowCells = row.slots.map((cell, index) => {
-                    if (timeSlots[index] === 'Break') {
+                    if (timeSlots[index] === breakTimeValue) {
                         return 'Break';
                     }
                     return cell || '-';
@@ -294,7 +292,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onGenerateTimetable)} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                <FormField control={form.control} name="departmentId" render={({ field }) => (
                                     <FormItem><FormLabel>Department</FormLabel><Select onValueChange={handleDepartmentChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger></FormControl><SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                                 )}/>
@@ -393,6 +391,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
     const selectedDept = departments.find(d => d.id === getValues('departmentId'))!;
     const selectedProg = availablePrograms.find(p => p.id === getValues('programId'))!;
     const selectedYear = availableYears.find(y => y.id === getValues('yearId'))!;
+    const breakTimeValue = `${getValues('breakStart')}-${getValues('breakEnd')}`;
     
     return (
         <Card>
@@ -430,28 +429,37 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                         {sectionData.rows.map((row, rowIndex) => (
                                             <TableRow key={row.day}>
                                                 <TableCell className="font-medium">{row.day}</TableCell>
-                                                {row.slots.map((cell, slotIndex) => (
-                                                    <TableCell 
-                                                        key={slotIndex} 
-                                                        className={`p-1 cursor-pointer hover:bg-muted/80 relative group ${timeSlots[slotIndex] === 'Break' ? 'bg-muted cursor-not-allowed' : ''}`}
-                                                        onClick={() => timeSlots[slotIndex] !== 'Break' && setEditingCell({ sectionIndex, rowIndex, slotIndex })}
-                                                    >
-                                                        {cell ? (
-                                                            <div className="bg-primary/10 text-primary-foreground p-2 rounded-md text-xs">
-                                                                {cell.split(' in ')[0]}
-                                                                <div className="font-semibold text-xs">{cell.split(' in ')[1]}</div>
-                                                                <Button 
-                                                                    variant="ghost" 
-                                                                    size="icon" 
-                                                                    className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive"
-                                                                    onClick={(e) => { e.stopPropagation(); handleClearCell(sectionIndex, rowIndex, slotIndex); }}
-                                                                >
-                                                                    <Trash2 className="h-3 w-3" />
-                                                                </Button>
-                                                            </div>
-                                                        ) : <div className="h-12"></div>}
-                                                    </TableCell>
-                                                ))}
+                                                {row.slots.map((cell, slotIndex) => {
+                                                    const isBreak = timeSlots[slotIndex] === breakTimeValue;
+                                                    return (
+                                                        <TableCell 
+                                                            key={slotIndex} 
+                                                            className={`p-1 cursor-pointer hover:bg-muted/80 relative group ${isBreak ? 'bg-muted cursor-not-allowed' : ''}`}
+                                                            onClick={() => !isBreak && setEditingCell({ sectionIndex, rowIndex, slotIndex })}
+                                                        >
+                                                            {cell ? (
+                                                                <div className="bg-primary/10 text-primary-foreground p-2 rounded-md text-xs">
+                                                                    {cell.split(' in ')[0]}
+                                                                    <div className="font-semibold text-xs">{cell.split(' in ')[1]}</div>
+                                                                    <Button 
+                                                                        variant="ghost" 
+                                                                        size="icon" 
+                                                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive"
+                                                                        onClick={(e) => { e.stopPropagation(); handleClearCell(sectionIndex, rowIndex, slotIndex); }}
+                                                                    >
+                                                                        <Trash2 className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            ) : isBreak ? (
+                                                                <div className="h-12 flex items-center justify-center text-muted-foreground font-medium text-xs">Break</div>
+                                                            ) : (
+                                                                <div className="h-12 flex items-center justify-center text-muted-foreground/20 group-hover:text-muted-foreground/70 transition-colors">
+                                                                    <Plus className="h-5 w-5" />
+                                                                </div>
+                                                            )}
+                                                        </TableCell>
+                                                    )
+                                                })}
                                             </TableRow>
                                         ))}
                                     </TableBody>
