@@ -53,7 +53,6 @@ const GenerateScheduleInputSchema = z.object({
         classDuration: z.number().describe("The duration of each class in minutes."),
     }),
     activeDays: z.array(z.string()),
-    globalConstraints: z.string().optional().describe("Additional high-level constraints for the AI to follow."),
 });
 export type GenerateScheduleInput = z.infer<typeof GenerateScheduleInputSchema>;
 
@@ -88,12 +87,6 @@ You MUST adhere to the following rules without exception:
 7.  **Daily Class Distribution**: Ensure each section has classes scheduled every active day (e.g., Monday to Friday).
 8.  **Time Allocation**: Use the provided college operating hours. Stagger start times for different sections if necessary to resolve faculty or room conflicts. Do not schedule anything during the Break Slot.
 9.  **Room Allocation**: Room capacity and type (lab or class) must match the subject type. Labs must be assigned only to lab-type rooms.
-
-{{#if globalConstraints}}
-**--- USER-PROVIDED CONSTRAINTS ---**
-In addition to the core rules, please adhere to these user-provided constraints:
-{{{globalConstraints}}}
-{{/if}}
 
 **--- SCHEDULING CONTEXT ---**
 - Department: {{academicInfo.department}}

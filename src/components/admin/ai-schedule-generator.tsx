@@ -66,7 +66,6 @@ const ScheduleGeneratorSchema = z.object({
   breakEnd: z.string().min(1, 'Break end is required.'),
   classDuration: z.coerce.number().min(10, 'Duration must be at least 10 minutes.'),
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
-  globalConstraints: z.string().optional(),
 });
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
@@ -110,7 +109,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       breakEnd: '14:00',
       classDuration: 50,
       activeDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-      globalConstraints: '',
     },
   });
 
@@ -285,7 +283,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         classDuration: data.classDuration,
       },
       activeDays: data.activeDays,
-      globalConstraints: data.globalConstraints,
     };
     
     try {
@@ -479,19 +476,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                         </div>
                          <FormField control={form.control} name="activeDays" render={({ field }) => (
                             <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
-                        )} />
-                        <Separator />
-                        <FormField control={form.control} name="globalConstraints" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Global Constraints</FormLabel>
-                                <FormDescription>
-                                    Add any specific rules or preferences for the AI to follow (e.g., "No classes for Year 1 before 10 AM").
-                                </FormDescription>
-                                <FormControl>
-                                    <Textarea placeholder="Enter any additional scheduling rules here..." {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
                         )} />
                     </AccordionContent>
                   </AccordionItem>
