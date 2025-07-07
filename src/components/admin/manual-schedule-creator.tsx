@@ -58,7 +58,7 @@ interface ManualScheduleCreatorProps {
 const allWeekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function generateTimeSlots(start: string, end: string, breakStart: string, breakEnd: string, duration: number): string[] {
-    const slots = [];
+    const slots: string[] = [];
     let currentTime = new Date(`1970-01-01T${start}:00`);
     const endTime = new Date(`1970-01-01T${end}:00`);
     const breakStartTime = new Date(`1970-01-01T${breakStart}:00`);
@@ -67,32 +67,24 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
     let breakAdded = false;
 
     while (currentTime < endTime) {
-        if (!breakAdded && currentTime >= breakStartTime) {
-             const breakSlotString = `${breakStartTime.toTimeString().substring(0, 5)}-${breakEndTime.toTimeString().substring(0, 5)}`;
-            slots.push(breakSlotString);
-            currentTime = breakEndTime;
-            breakAdded = true;
-            continue;
-        }
-
         const slotEnd = new Date(currentTime.getTime() + duration * 60000);
 
-        if (!breakAdded && slotEnd > breakStartTime) {
-             const breakSlotString = `${breakStartTime.toTimeString().substring(0, 5)}-${breakEndTime.toTimeString().substring(0, 5)}`;
-            slots.push(breakSlotString);
-            currentTime = breakEndTime;
+        if (!breakAdded && currentTime >= breakStartTime) {
+            const breakLabel = `${breakStartTime.toTimeString().substring(0, 5)}-${breakEndTime.toTimeString().substring(0, 5)}`;
+            slots.push(breakLabel);
+            currentTime = new Date(breakEndTime);
             breakAdded = true;
             continue;
         }
-        
+
         if (slotEnd > endTime) {
-            break; 
+            break;
         }
 
         slots.push(`${currentTime.toTimeString().substring(0, 5)}-${slotEnd.toTimeString().substring(0, 5)}`);
         currentTime = slotEnd;
     }
-    
+
     return slots;
 }
 
@@ -177,6 +169,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
         const selectedYear = availableYears.find(y => y.id === getValues('yearId'))!;
         
         let markdown = `## ${selectedProg.name} - ${selectedYear.name}\n\n`;
+        const breakSlotString = `${getValues('breakStart')}-${getValues('breakEnd')}`;
 
         scheduleData.forEach(sectionData => {
             markdown += `### ${sectionData.section.name}\n`;
@@ -186,8 +179,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
 
             sectionData.rows.forEach(row => {
                 const rowCells = row.slots.map((cell, index) => {
-                    const timeSlot = timeSlots[index];
-                     if (timeSlot.startsWith(getValues('breakStart'))) {
+                     if (timeSlots[index] === breakSlotString) {
                         return 'Break';
                     }
                     return cell || '-';
@@ -434,12 +426,13 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                                 <TableCell className="font-medium">{row.day}</TableCell>
                                                 {row.slots.map((cell, slotIndex) => {
                                                     const timeSlot = timeSlots[slotIndex];
-                                                    const isBreak = timeSlot.startsWith(getValues('breakStart'));
+                                                    const breakSlotString = `${getValues('breakStart')}-${getValues('breakEnd')}`;
+                                                    const isBreak = timeSlot === breakSlotString;
                                                     return (
                                                         <TableCell 
                                                             key={slotIndex} 
                                                             className={`p-1 relative group ${isBreak ? 'bg-muted cursor-not-allowed' : 'cursor-pointer hover:bg-muted/80'}`}
-                                                            onClick={() => !isBreak && setEditingCell({ sectionIndex, rowIndex, slotIndex })}
+                                                            onClick={() => !isBreak && !cell && setEditingCell({ sectionIndex, rowIndex, slotIndex })}
                                                         >
                                                             {cell ? (
                                                                 <div className="bg-primary text-primary-foreground p-2 rounded-md text-xs font-semibold">
@@ -448,7 +441,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                                                     <Button 
                                                                         variant="ghost" 
                                                                         size="icon" 
-                                                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/20 hover:text-destructive"
+                                                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground"
                                                                         onClick={(e) => { e.stopPropagation(); handleClearCell(sectionIndex, rowIndex, slotIndex); }}
                                                                     >
                                                                         <Trash2 className="h-3 w-3" />
