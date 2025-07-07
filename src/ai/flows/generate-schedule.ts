@@ -70,30 +70,11 @@ const prompt = ai.definePrompt({
   name: 'generateSchedulePrompt',
   input: {schema: GenerateScheduleInputSchema},
   output: {schema: GenerateScheduleOutputSchema},
-  prompt: `You are an AI assistant that creates a weekly class schedule. Your goal is to generate a conflict-free and optimal schedule based on the provided information and the following strict rules.
-
-**--- MANDATORY SCHEDULING RULES ---**
-You MUST adhere to these rules without exception.
-1.  **Faculty Conflict**: No faculty member can be assigned to more than one class at the same time across all sections and years. This is a critical constraint.
-2.  **Priority Classes**: Subjects marked as 'priority' must be scheduled as double-duration sessions. This means two consecutive {{timeSettings.classDuration}}-minute classes are combined into a single 100-minute slot.
-3.  **Daily Subject Limit (Theory)**: A single theory subject cannot have more than one class scheduled on the same day for any section. If a theory subject has a double class on a given day, no additional class of that same subject can be scheduled on that day for that section. This rule does not apply to labs.
-4.  **Credit-to-Class Conversion (Theory)**:
-    - 2-credit theory subjects require exactly 2 theory classes per week.
-    - 3-credit theory subjects require exactly 3 theory classes per week.
-5.  **Lab Class Grouping**:
-    - For lab subjects, if a section's student count is more than 30, it MUST be divided into 'Group A' and 'Group B'.
-    - Each group (A and B) must have its own separate 100-minute lab session.
-    - Each lab subject must be scheduled only once per week for each group.
-6.  **Daily Class Distribution**: The schedule must be distributed from Monday to Friday, ensuring that every section has classes scheduled on each of these five days.
-7.  **Staggered Start Times**: Sections may start their day at different times within the operating hours to prevent faculty and room overlaps.
-8.  **Class Duration**: Each class period is exactly {{timeSettings.classDuration}} minutes long. The next class must start immediately after the previous one with no gaps, except for the designated break time.
-9.  **Zero Overlap (Rooms)**: No room can be assigned to more than one class at the same time.
-10. **Resource Matching**: Lab-type subjects must be assigned to lab rooms (\`availableLabs\`). Theory-type subjects must be assigned to general-purpose rooms (\`availableRooms\`).
-11. **Validation**: Before finishing, you must validate that each subject is scheduled for the correct number of sessions per week as per its credit value and that all constraints are satisfied.
+  prompt: `You are an AI assistant that creates a weekly class schedule. Your goal is to generate a conflict-free and optimal schedule based on the provided information.
 
 {{#if globalConstraints}}
-**--- ADDITIONAL USER CONSTRAINTS ---**
-Please also adhere to these user-provided constraints:
+**--- USER-PROVIDED CONSTRAINTS ---**
+Please adhere to these user-provided constraints:
 {{{globalConstraints}}}
 {{/if}}
 
@@ -152,4 +133,3 @@ const generateScheduleFlow = ai.defineFlow(
     return output!;
   }
 );
-
