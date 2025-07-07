@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Wand2 } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Wand2, Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -86,6 +86,7 @@ const allWeekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sa
 export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule, adminEmail, departments, faculty, subjects }: AiScheduleGeneratorProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPublishing, setIsPublishing] = React.useState(false);
+  const [showPreview, setShowPreview] = React.useState(false);
   const { toast } = useToast();
   
   const [availablePrograms, setAvailablePrograms] = React.useState<Program[]>([]);
@@ -217,11 +218,11 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   async function onSubmit(data: FormData) {
     setIsLoading(true);
     setGeneratedSchedule(null);
+    setShowPreview(false);
     
     const subjectsForAI = data.subjectConfigs.flatMap(config => {
         const assignmentsByFaculty = new Map<string, string[]>();
 
-        // Group sections by assigned faculty, or 'NF' for unassigned
         config.assignments.forEach(assignment => {
             const facultyKey = (assignment.facultyEmail && assignment.facultyEmail !== '--NF--')
                 ? assignment.facultyEmail 
@@ -239,7 +240,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
 
         const subjectDetails = availableSubjects.find(s => s.id === config.id)!;
         
-        // Create a separate subject config for each faculty (or NF) group
         return Array.from(assignmentsByFaculty.entries()).map(([facultyKey, sections]) => {
             const assignedFacultyMember = faculty.find(f => f.email === facultyKey);
             return {
@@ -291,9 +291,10 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     try {
       const result = await generateSchedule(input);
       setGeneratedSchedule(result);
+      setShowPreview(true);
       toast({
         title: 'Schedule Generated',
-        description: 'The AI has successfully generated a new schedule.',
+        description: 'The AI has created a schedule draft. Click "Show Preview" to review.',
       });
     } catch (error) {
       console.error('Failed to generate schedule:', error);
@@ -508,8 +509,14 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                     <div className="flex items-center gap-2">
                         <Button type="submit" className="w-fit" disabled={isLoading}>
                           {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Sparkles className="mr-2 h-4 w-4" /> )}
-                          Generate Schedule
+                          {generatedSchedule ? 'Re-generate Schedule' : 'Generate Schedule'}
                         </Button>
+                        {generatedSchedule && (
+                            <Button type="button" variant="outline" onClick={() => setShowPreview(!showPreview)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                {showPreview ? 'Hide Preview' : 'Show Preview'}
+                            </Button>
+                        )}
                         <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
                             {isPublishing ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Upload className="mr-2 h-4 w-4" /> )}
                             Publish Schedule
@@ -525,7 +532,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             <p className="ml-3 text-muted-foreground">Generating schedule, this might take a moment...</p>
         </div>
       )}
-      {generatedSchedule && !isLoading && (
+      {showPreview && generatedSchedule && !isLoading && (
         <div className="mt-6">
           <h2 className="text-2xl font-semibold mb-2">Generated Schedule Preview</h2>
           <p className="text-muted-foreground mb-4">
