@@ -219,44 +219,35 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     setGeneratedSchedule(null);
     setGenerationError(null);
     setShowPreview(false);
-    
-    const subjectsForAI = data.subjectConfigs.flatMap(config => {
-        const assignmentsByFaculty = new Map<string, string[]>();
 
-        config.assignments.forEach(assignment => {
-            const facultyKey = (assignment.facultyEmail && assignment.facultyEmail !== '--NF--')
-                ? assignment.facultyEmail 
-                : 'NF';
-
-            if (!assignmentsByFaculty.has(facultyKey)) {
-                assignmentsByFaculty.set(facultyKey, []);
-            }
-            assignmentsByFaculty.get(facultyKey)!.push(assignment.sectionName);
-        });
-
-        if (assignmentsByFaculty.size === 0) {
-            return []; // Skip subjects with no assigned sections.
-        }
-
+    const subjectsForAI = data.subjectConfigs
+      .filter(config => config.assignments.some(a => a.facultyEmail))
+      .map(config => {
         const subjectDetails = availableSubjects.find(s => s.id === config.id)!;
-        
-        return Array.from(assignmentsByFaculty.entries()).map(([facultyKey, sections]) => {
-            const assignedFacultyMember = faculty.find(f => f.email === facultyKey);
-            return {
-                ...subjectDetails,
-                assignedFaculty: assignedFacultyMember ? [assignedFacultyMember.abbreviation] : [],
-                isPriority: config.isPriority,
-                sections: sections,
-            };
-        });
-    });
+        return {
+          name: subjectDetails.name,
+          code: subjectDetails.code,
+          type: subjectDetails.type,
+          theoryCredits: subjectDetails.theoryCredits,
+          labCredits: subjectDetails.labCredits,
+          isPriority: config.isPriority,
+          assignments: config.assignments
+            .filter(a => a.facultyEmail) 
+            .map(assignment => {
+              const facultyMember = faculty.find(f => f.email === assignment.facultyEmail);
+              return {
+                sectionName: assignment.sectionName,
+                facultyAbbreviation: facultyMember ? facultyMember.abbreviation : 'NF',
+              };
+            }),
+        };
+      });
 
-    const hasAssignments = data.subjectConfigs.some(s => s.assignments.length > 0);
-    if (!hasAssignments) {
+    if (subjectsForAI.length === 0) {
         toast({
             variant: 'destructive',
             title: 'Configuration Error',
-            description: 'Please select a year with sections and subjects to generate a schedule.',
+            description: 'Please assign at least one faculty member to a subject to generate a schedule.',
         });
         setIsLoading(false);
         return;
@@ -303,6 +294,8 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             title: 'Schedule Generated',
             description: 'The AI has created a schedule draft. Review the preview below.',
         });
+      } else {
+        setGenerationError("The AI returned an empty schedule without an error. This may be due to overly restrictive rules or a temporary service issue. Please try adjusting the constraints.");
       }
     } catch (error) {
       console.error('Failed to generate schedule:', error);
