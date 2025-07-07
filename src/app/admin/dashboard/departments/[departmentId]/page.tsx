@@ -11,8 +11,8 @@ import { DeleteDepartmentDialog } from '@/components/admin/departments/delete-de
 import { CreateProgramDialog } from '@/components/admin/departments/programs/create-program-dialog';
 import { AppLogo } from '@/components/common/app-logo';
 
-export default async function DepartmentProgramsPage({ params, searchParams }: { params: { departmentId: string }, searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function DepartmentProgramsPage({ params, searchParams }: { params: { departmentId: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

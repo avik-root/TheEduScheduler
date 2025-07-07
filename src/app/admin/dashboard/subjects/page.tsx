@@ -12,8 +12,8 @@ import { getFaculty } from '@/lib/faculty';
 import { SubjectsList } from '@/components/admin/subjects/subjects-list';
 import { AppLogo } from '@/components/common/app-logo';
 
-export default async function SubjectsPage({ searchParams }: { searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function SubjectsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

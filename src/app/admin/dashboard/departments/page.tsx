@@ -10,8 +10,8 @@ import { notFound } from 'next/navigation';
 import { DepartmentsList } from '@/components/admin/departments/departments-list';
 import { AppLogo } from '@/components/common/app-logo';
 
-export default async function DepartmentsPage({ searchParams }: { searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function DepartmentsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

@@ -13,9 +13,9 @@ import { getFacultyRoomRequests } from '@/lib/requests';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { AppLogo } from '@/components/common/app-logo';
 
-export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
-  const facultyEmail = searchParams.email;
-  const adminEmail = searchParams.adminEmail;
+export default async function TeacherDashboardPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const facultyEmail = searchParams.email as string;
+  const adminEmail = searchParams.adminEmail as string;
 
   if (!facultyEmail || !adminEmail) {
       notFound();

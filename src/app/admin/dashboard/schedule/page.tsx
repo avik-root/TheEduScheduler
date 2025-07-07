@@ -8,8 +8,8 @@ import { getPublishedSchedule } from '@/lib/schedule';
 import { AppLogo } from '@/components/common/app-logo';
 import { ScheduleViewer } from '@/components/admin/schedule-viewer';
 
-export default async function SchedulePage({ searchParams }: { searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function SchedulePage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

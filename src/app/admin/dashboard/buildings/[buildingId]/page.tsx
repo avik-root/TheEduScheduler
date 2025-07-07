@@ -11,8 +11,8 @@ import { DeleteBuildingDialog } from '@/components/admin/buildings/delete-buildi
 import { CreateFloorDialog } from '@/components/admin/buildings/create-floor-dialog';
 import { AppLogo } from '@/components/common/app-logo';
 
-export default async function BuildingFloorsPage({ params, searchParams }: { params: { buildingId: string }, searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function BuildingFloorsPage({ params, searchParams }: { params: { buildingId: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

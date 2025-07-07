@@ -16,8 +16,8 @@ import { getFaculty } from '@/lib/faculty';
 import { getSubjects } from '@/lib/subjects';
 import { getPublishedSchedule } from '@/lib/schedule';
 
-export default async function AdminDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function AdminDashboardPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

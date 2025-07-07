@@ -14,8 +14,8 @@ import { DeleteYearDialog } from '@/components/admin/departments/programs/years/
 import { AppLogo } from '@/components/common/app-logo';
 
 
-export default async function ProgramYearsPage({ params, searchParams }: { params: { departmentId: string, programId: string }, searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function ProgramYearsPage({ params, searchParams }: { params: { departmentId: string, programId: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

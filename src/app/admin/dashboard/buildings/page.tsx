@@ -9,8 +9,8 @@ import { CreateBuildingDialog } from '@/components/admin/buildings/create-buildi
 import { notFound } from 'next/navigation';
 import { AppLogo } from '@/components/common/app-logo';
 
-export default async function BuildingsPage({ searchParams }: { searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function BuildingsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }

@@ -12,8 +12,8 @@ import { DeleteYearDialog } from '@/components/admin/departments/programs/years/
 import { SectionsList } from '@/components/admin/departments/programs/years/sections/sections-list';
 import { AppLogo } from '@/components/common/app-logo';
 
-export default async function YearSectionsPage({ params, searchParams }: { params: { departmentId: string, programId: string, yearId: string }, searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
+export default async function YearSectionsPage({ params, searchParams }: { params: { departmentId: string, programId: string, yearId: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
+  const adminEmail = searchParams.email as string;
   if (!adminEmail) {
     notFound();
   }
