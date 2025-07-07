@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
@@ -41,6 +41,26 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
     },
   });
 
+  const selectedSubjectId = form.watch('subjectId');
+
+  const availableFaculty = React.useMemo(() => {
+    if (!selectedSubjectId) {
+      return [];
+    }
+    const selectedSubject = subjects.find(s => s.id === selectedSubjectId);
+    if (!selectedSubject || !selectedSubject.facultyEmails || selectedSubject.facultyEmails.length === 0) {
+      return [];
+    }
+    return faculty.filter(f => selectedSubject.facultyEmails.includes(f.email));
+  }, [selectedSubjectId, subjects, faculty]);
+
+  React.useEffect(() => {
+    // Reset facultyEmail when the available faculty changes and the current selection is no longer valid.
+    if (selectedSubjectId && !availableFaculty.some(f => f.email === form.getValues('facultyEmail'))) {
+      form.setValue('facultyEmail', '', { shouldValidate: true });
+    }
+  }, [selectedSubjectId, availableFaculty, form]);
+
   const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
     await onSave(data);
@@ -69,7 +89,7 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Subject</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Select a subject" /></SelectTrigger>
                     </FormControl>
@@ -87,12 +107,20 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Faculty</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={!selectedSubjectId || availableFaculty.length === 0}>
                     <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a faculty member" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder={!selectedSubjectId ? "Select a subject first" : "Select a faculty member"} />
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {faculty.map(f => <SelectItem key={f.email} value={f.email}>{f.name} ({f.abbreviation})</SelectItem>)}
+                      {availableFaculty.length > 0 ? (
+                         availableFaculty.map(f => <SelectItem key={f.email} value={f.email}>{f.name} ({f.abbreviation})</SelectItem>)
+                      ) : (
+                        <SelectItem value="disabled" disabled>
+                          No faculty assigned to this subject
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -105,7 +133,7 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Room</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Select a room" /></SelectTrigger>
                     </FormControl>
