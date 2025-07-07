@@ -84,7 +84,7 @@ You MUST adhere to the following rules without exception:
     - 4-credit theory subjects require exactly four 50-minute classes per week, distributed as two double-periods on two different days.
 6.  **Lab Scheduling**:
     - Lab subjects (1 credit) MUST be scheduled as a single 100-minute double-period session once per week.
-    - If a section's student count is over 30, it MUST be split into 'Gp A' and 'Gp B' for labs. Each group gets its own separate 100-minute lab session once per week. The groups can be scheduled in different labs at the same time if labs are available.
+    - If a section's student count is over 30, it MUST be split into 'Gp A' and 'Gp B' for labs. Each group gets its own separate 100-minute lab session once per week. To optimize lab utilization, try to schedule the other group's lab for a different subject at the same time if labs are available.
 7.  **Daily Class Distribution**: Ensure each section has classes scheduled every active day (e.g., Monday to Friday).
 8.  **Time Allocation**: Use the provided college operating hours. Stagger start times for different sections if necessary to resolve faculty or room conflicts. Do not schedule anything during the Break Slot.
 9.  **Room Allocation**: Room capacity and type (lab or class) must match the subject type. Labs must be assigned only to lab-type rooms.
@@ -143,7 +143,23 @@ const generateScheduleFlow = ai.defineFlow(
     outputSchema: GenerateScheduleOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+        const {output} = await prompt(input);
+        return output!;
+    } catch (error: any) {
+        // Check for specific 503 error from the AI service
+        if (error.message && (error.message.includes('503') || error.message.toLowerCase().includes('overloaded'))) {
+            return {
+                schedule: '',
+                errorReason: "The AI scheduling service is currently overloaded with requests. This is a temporary issue. Please try generating the schedule again in a few moments."
+            };
+        }
+        // For other errors, re-throw or handle as a generic failure
+        console.error("An unexpected error occurred during schedule generation:", error);
+        return {
+            schedule: '',
+            errorReason: "An unexpected error occurred while contacting the AI service. Please check the system logs for more details."
+        };
+    }
   }
 );
