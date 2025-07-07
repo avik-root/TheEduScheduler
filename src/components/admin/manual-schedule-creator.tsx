@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -69,7 +68,8 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
 
     while (currentTime < endTime) {
         if (!breakAdded && currentTime >= breakStartTime) {
-            slots.push(`${breakStart}-${breakEnd}`);
+             const breakSlotString = `${breakStartTime.toTimeString().substring(0, 5)}-${breakEndTime.toTimeString().substring(0, 5)}`;
+            slots.push(breakSlotString);
             currentTime = breakEndTime;
             breakAdded = true;
             continue;
@@ -78,7 +78,8 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
         const slotEnd = new Date(currentTime.getTime() + duration * 60000);
 
         if (!breakAdded && slotEnd > breakStartTime) {
-            slots.push(`${breakStart}-${breakEnd}`);
+             const breakSlotString = `${breakStartTime.toTimeString().substring(0, 5)}-${breakEndTime.toTimeString().substring(0, 5)}`;
+            slots.push(breakSlotString);
             currentTime = breakEndTime;
             breakAdded = true;
             continue;
@@ -174,7 +175,6 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
         const selectedDept = departments.find(d => d.id === getValues('departmentId'))!;
         const selectedProg = availablePrograms.find(p => p.id === getValues('programId'))!;
         const selectedYear = availableYears.find(y => y.id === getValues('yearId'))!;
-        const breakTimeValue = `${getValues('breakStart')}-${getValues('breakEnd')}`;
         
         let markdown = `## ${selectedProg.name} - ${selectedYear.name}\n\n`;
 
@@ -186,7 +186,8 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
 
             sectionData.rows.forEach(row => {
                 const rowCells = row.slots.map((cell, index) => {
-                    if (timeSlots[index] === breakTimeValue) {
+                    const timeSlot = timeSlots[index];
+                     if (timeSlot.startsWith(getValues('breakStart'))) {
                         return 'Break';
                     }
                     return cell || '-';
@@ -391,7 +392,6 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
     const selectedDept = departments.find(d => d.id === getValues('departmentId'))!;
     const selectedProg = availablePrograms.find(p => p.id === getValues('programId'))!;
     const selectedYear = availableYears.find(y => y.id === getValues('yearId'))!;
-    const breakTimeValue = `${getValues('breakStart')}-${getValues('breakEnd')}`;
     
     return (
         <Card>
@@ -430,7 +430,8 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                             <TableRow key={row.day}>
                                                 <TableCell className="font-medium">{row.day}</TableCell>
                                                 {row.slots.map((cell, slotIndex) => {
-                                                    const isBreak = timeSlots[slotIndex] === breakTimeValue;
+                                                    const timeSlot = timeSlots[slotIndex];
+                                                    const isBreak = timeSlot.startsWith(getValues('breakStart'));
                                                     return (
                                                         <TableCell 
                                                             key={slotIndex} 
@@ -438,13 +439,13 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                                             onClick={() => !isBreak && setEditingCell({ sectionIndex, rowIndex, slotIndex })}
                                                         >
                                                             {cell ? (
-                                                                <div className="bg-primary/10 text-primary-foreground p-2 rounded-md text-xs">
+                                                                <div className="bg-primary text-primary-foreground p-2 rounded-md text-xs">
                                                                     {cell.split(' in ')[0]}
                                                                     <div className="font-semibold text-xs">{cell.split(' in ')[1]}</div>
                                                                     <Button 
                                                                         variant="ghost" 
                                                                         size="icon" 
-                                                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive"
+                                                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/20"
                                                                         onClick={(e) => { e.stopPropagation(); handleClearCell(sectionIndex, rowIndex, slotIndex); }}
                                                                     >
                                                                         <Trash2 className="h-3 w-3" />
