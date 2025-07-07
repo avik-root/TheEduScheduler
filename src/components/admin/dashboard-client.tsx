@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -16,6 +15,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
+  CardFooter
 } from '@/components/ui/card';
 
 import type { Admin } from '@/lib/admin';
@@ -93,6 +94,17 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                       </CardHeader>
                       <CardContent className="flex-grow">
                           <p className="text-sm text-muted-foreground">Create and configure subjects/courses.</p>
+                      </CardContent>
+                  </Card>
+              </Link>
+              <Link href={`/admin/dashboard/schedule?email=${adminEmail}`}>
+                  <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-lg font-semibold">University Schedule</CardTitle>
+                          <CalendarCheck className="h-5 w-5 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent className="flex-grow">
+                          <p className="text-sm text-muted-foreground">View, download, share, and delete published schedules.</p>
                       </CardContent>
                   </Card>
               </Link>

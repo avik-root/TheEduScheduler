@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Share } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
@@ -30,7 +30,6 @@ interface ParsedSchedule {
 function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     if (!markdown || !markdown.trim()) return null;
 
-    // Use a lookahead split to handle multiple '##' headers correctly
     const scheduleParts = markdown.trim().split(/\n(?=## )/);
     if (scheduleParts.length === 0 || scheduleParts[0].trim() === '') return null;
 
@@ -39,7 +38,6 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
         const programYearTitle = lines[0]?.replace('## ', '').trim() || 'Schedule';
         const content = lines.slice(1).join('\n');
 
-        // Use a lookahead split for sections as well
         const sectionParts = content.trim().split(/\n(?=### )/);
 
         const sections = sectionParts.map(sectionPart => {
