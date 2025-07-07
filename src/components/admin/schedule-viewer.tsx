@@ -30,22 +30,27 @@ interface ParsedSchedule {
 function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     if (!markdown || !markdown.trim()) return null;
 
-    const scheduleParts = markdown.trim().split(/\n(?=## )/);
-    if (scheduleParts.length === 0 || scheduleParts[0].trim() === '') return null;
+    // Split the entire markdown string by '## ' which marks the start of a new schedule.
+    // Filter out any empty strings that might result from the split.
+    const scheduleBlocks = markdown.trim().split('## ').filter(Boolean);
+    if (scheduleBlocks.length === 0) return null;
 
-    return scheduleParts.map(part => {
-        const lines = part.trim().split('\n');
-        const programYearTitle = lines[0]?.replace('## ', '').trim() || 'Schedule';
-        const content = lines.slice(1).join('\n');
+    return scheduleBlocks.map(block => {
+        // In each block, the title is followed by sections marked with '### '.
+        // Split by '### ' to separate the title from its section content.
+        const parts = block.trim().split('### ');
+        
+        // The first part is always the title.
+        const programYearTitle = parts.shift()?.trim().replace(/#+$/, '').trim() || 'Schedule';
 
-        const sectionParts = content.trim().split(/\n(?=### )/);
-
-        const sections = sectionParts.map(sectionPart => {
+        const sections = parts.map(sectionPart => {
             if (!sectionPart.trim()) return null;
-            const sectionLines = sectionPart.trim().split('\n');
-            const sectionName = sectionLines[0]?.replace('### ', '').trim() || 'Section';
-            const tableMarkdown = sectionLines.slice(1).join('\n');
 
+            // The first line of a section part is its name.
+            const sectionLines = sectionPart.trim().split('\n');
+            const sectionName = sectionLines.shift()?.trim() || 'Section';
+            const tableMarkdown = sectionLines.join('\n');
+            
             const tableLines = tableMarkdown.trim().split('\n').filter(Boolean);
             if (tableLines.length < 2) return null;
 
@@ -58,7 +63,6 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
 
             const rows = tableLines.slice(2).map(line => {
                 const cells = line.split('|').slice(1, -1).map(cell => cell.trim());
-                // Pad or truncate cells to match header length for consistency
                 if (cells.length > header.length) {
                     return cells.slice(0, header.length);
                 }
@@ -74,7 +78,7 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
             }
             return null;
         }).filter((s): s is SectionSchedule => s !== null);
-
+        
         return { programYearTitle, sections };
     }).filter(s => s.sections.length > 0);
 }
