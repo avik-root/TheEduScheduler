@@ -63,6 +63,7 @@ const ScheduleGeneratorSchema = z.object({
   endTime: z.string().min(1, 'End time is required.'),
   breakStart: z.string().min(1, 'Break start is required.'),
   breakEnd: z.string().min(1, 'Break end is required.'),
+  classDuration: z.coerce.number().min(10, 'Duration must be at least 10 minutes.'),
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
   globalConstraints: z.string().optional(),
 });
@@ -105,6 +106,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       endTime: '17:00',
       breakStart: '13:00',
       breakEnd: '14:00',
+      classDuration: 50,
       activeDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
       globalConstraints: '',
     },
@@ -279,6 +281,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         startTime: data.startTime,
         endTime: data.endTime,
         breakTime: `${data.breakStart} - ${data.breakEnd}`,
+        classDuration: data.classDuration,
       },
       activeDays: data.activeDays,
       globalConstraints: data.globalConstraints,
@@ -452,7 +455,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                             </div>
                         </div>
                         <Separator />
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                            <div>
                                <FormLabel>Daily Timings</FormLabel>
                                <div className="grid grid-cols-2 gap-2 mt-2">
@@ -467,6 +470,15 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                    <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                                </div>
                            </div>
+                            <FormField control={form.control} name="classDuration" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Class Duration (mins)</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" placeholder="e.g., 50" {...field} className="mt-2" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
                         </div>
                          <FormField control={form.control} name="activeDays" render={({ field }) => (
                             <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>

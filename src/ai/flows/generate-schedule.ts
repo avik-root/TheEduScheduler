@@ -50,6 +50,7 @@ const GenerateScheduleInputSchema = z.object({
         startTime: z.string(),
         endTime: z.string(),
         breakTime: z.string().describe('The time slot for the daily break (e.g., "13:00 - 14:00").'),
+        classDuration: z.number().describe("The duration of each class in minutes."),
     }),
     activeDays: z.array(z.string()),
     globalConstraints: z.string().optional().describe("Additional high-level constraints for the AI to follow."),
@@ -75,12 +76,12 @@ const prompt = ai.definePrompt({
 You MUST adhere to these rules without exception.
 1.  **Unique Subject Placement**: Each section must have a unique subject placement pattern. No two sections taught by the same faculty can have the same subject in the same time slot to avoid faculty clashes.
 2.  **Varied Section Schedules**: Each section's schedule must be different, and they can start the day with different subjects.
-3.  **Class Duration**: Each class is exactly 50 minutes long. The next class must start immediately after the previous one with no gaps, except for the designated break time.
+3.  **Class Duration**: Each class is exactly {{timeSettings.classDuration}} minutes long. The next class must start immediately after the previous one with no gaps, except for the designated break time.
 4.  **Zero Overlap**: No faculty member or room can be assigned to more than one class at the same time across all sections. This is a critical constraint.
 5.  **Consecutive Periods (High-Credit)**: Subjects with 3 or more credits must have at least one session per week with two consecutive periods (a double period).
-6.  **3-Credit Theory Subjects**: Must be scheduled as one double period (100 mins) on one day and one single period (50 mins) on another day.
-7.  **4-Credit Theory Subjects**: Must be scheduled as two separate double periods (100 mins each) on two different days.
-8.  **1-Credit Lab Subjects**: Must always be scheduled as one double period (100 mins).
+6.  **3-Credit Theory Subjects**: Must be scheduled as one double period on one day and one single period on another day.
+7.  **4-Credit Theory Subjects**: Must be scheduled as two separate double periods on two different days.
+8.  **1-Credit Lab Subjects**: Must always be scheduled as one double period.
 9.  **Daily Subject Limit**: For any section, a single subject must not be assigned more than 2 theory periods on the same day.
 10. **Priority Scheduling**: Prioritize scheduling double periods for higher-credit subjects first, then fit the remaining single-period sessions into available slots.
 11. **Resource Matching**: Lab-type subjects must be assigned to lab rooms (\`availableLabs\`). Theory-type subjects must be assigned to general-purpose rooms (\`availableRooms\`).
@@ -104,6 +105,7 @@ Please also adhere to these user-provided constraints:
 
 **Time & Day Constraints:**
 - Daily Timings: From {{timeSettings.startTime}} to {{timeSettings.endTime}}
+- Class Duration: {{timeSettings.classDuration}} minutes.
 - Break Slot: {{timeSettings.breakTime}}. Do not schedule anything during this time.
 - Active Weekdays: {{#each activeDays}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 
@@ -128,7 +130,7 @@ Please also adhere to these user-provided constraints:
 **--- OUTPUT FORMATTING ---**
 1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
 2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
-3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the 50-minute time slots (e.g., "09:00-09:50"). The rows will represent each active day of the week.
+3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the {{timeSettings.classDuration}}-minute time slots (e.g., "09:00-09:50"). The rows will represent each active day of the week.
 4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects, use \`(NF)\` for the faculty abbreviation.
 
 Generate the schedule now for all specified sections.
@@ -146,5 +148,3 @@ const generateScheduleFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    
