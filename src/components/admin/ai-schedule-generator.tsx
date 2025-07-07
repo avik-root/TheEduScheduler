@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '../ui/textarea';
+import { ScheduleViewer } from './schedule-viewer';
 
 const assignmentSchema = z.object({
   sectionId: z.string(),
@@ -340,7 +341,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                   </CardDescription>
                 </CardHeader>
                 <Accordion type="multiple" defaultValue={['step-1']} className="w-full">
-                  {/* Step 1: Academic Target */}
                   <AccordionItem value="step-1">
                     <AccordionTrigger className="text-lg font-semibold px-6">Step 1: Academic Target</AccordionTrigger>
                     <AccordionContent className="px-6 pt-4 space-y-4">
@@ -358,8 +358,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                         </div>
                     </AccordionContent>
                   </AccordionItem>
-                  
-                  {/* Step 2: Subject Configuration */}
                    <AccordionItem value="step-2">
                     <AccordionTrigger className="text-lg font-semibold px-6">Step 2: Subject & Faculty Configuration</AccordionTrigger>
                     <AccordionContent className="px-6 pt-4 space-y-4">
@@ -420,8 +418,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                         )}
                     </AccordionContent>
                   </AccordionItem>
-                  
-                  {/* Step 3: Resources & Time */}
                   <AccordionItem value="step-3">
                     <AccordionTrigger className="text-lg font-semibold px-6">Step 3: Resources & Time Constraints</AccordionTrigger>
                     <AccordionContent className="px-6 pt-4 space-y-6">
@@ -455,15 +451,15 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                             </div>
                         </div>
                         <Separator />
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                           <div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                           <div className="md:col-span-1">
                                <FormLabel>Daily Timings</FormLabel>
                                <div className="grid grid-cols-2 gap-2 mt-2">
                                    <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                                    <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                                </div>
                            </div>
-                           <div>
+                           <div className="md:col-span-1">
                                <FormLabel>Break Slot</FormLabel>
                                 <div className="grid grid-cols-2 gap-2 mt-2">
                                    <FormField control={form.control} name="breakStart" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
@@ -471,7 +467,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                </div>
                            </div>
                             <FormField control={form.control} name="classDuration" render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="md:col-span-1">
                                     <FormLabel>Class Duration (mins)</FormLabel>
                                     <FormControl>
                                         <Input type="number" placeholder="e.g., 50" {...field} className="mt-2" />
@@ -523,6 +519,21 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             </Card>
         </form>
       </Form>
+      {isLoading && (
+        <div className="flex items-center justify-center rounded-lg border bg-muted mt-6 h-60">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="ml-3 text-muted-foreground">Generating schedule, this might take a moment...</p>
+        </div>
+      )}
+      {generatedSchedule && !isLoading && (
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-2">Generated Schedule Preview</h2>
+          <p className="text-muted-foreground mb-4">
+            Review the schedule below. If it looks correct, click "Publish Schedule" above to make it live for all faculty.
+          </p>
+          <ScheduleViewer schedule={generatedSchedule.schedule} adminEmail={adminEmail} showControls={false} />
+        </div>
+      )}
     </div>
   );
 }

@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 interface ScheduleViewerProps {
   schedule: string;
   adminEmail: string;
+  showControls?: boolean;
 }
 
 interface SectionSchedule {
@@ -30,23 +31,16 @@ interface ParsedSchedule {
 function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     if (!markdown || !markdown.trim()) return null;
 
-    // Split the entire markdown string by '## ' which marks the start of a new schedule.
-    // Filter out any empty strings that might result from the split.
     const scheduleBlocks = markdown.trim().split('## ').filter(Boolean);
     if (scheduleBlocks.length === 0) return null;
 
     return scheduleBlocks.map(block => {
-        // In each block, the title is followed by sections marked with '### '.
-        // Split by '### ' to separate the title from its section content.
-        const parts = block.trim().split('### ');
-        
-        // The first part is always the title.
+        const parts = block.trim().split(/[\r\n]+### /).filter(Boolean);
         const programYearTitle = parts.shift()?.trim().replace(/#+$/, '').trim() || 'Schedule';
 
         const sections = parts.map(sectionPart => {
             if (!sectionPart.trim()) return null;
 
-            // The first line of a section part is its name.
             const sectionLines = sectionPart.trim().split('\n');
             const sectionName = sectionLines.shift()?.trim() || 'Section';
             const tableMarkdown = sectionLines.join('\n');
@@ -84,7 +78,7 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
 }
 
 
-export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
+export function ScheduleViewer({ schedule, adminEmail, showControls = true }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const { toast } = useToast();
   const parsedSchedules = React.useMemo(() => parseMultipleSchedules(schedule), [schedule]);
@@ -245,50 +239,52 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-start gap-4">
-                <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                <Link href={dashboardPath}>
-                    <ChevronLeft className="h-4 w-4" />
-                    <span className="sr-only">Back to Dashboard</span>
-                </Link>
-                </Button>
-                <div className="grid gap-1">
-                    <CardTitle className="flex items-center gap-2"><CalendarCheck /> Published Schedule</CardTitle>
-                    <CardDescription>
-                        This is the currently active schedule. You can search, download, or delete it.
-                    </CardDescription>
+      {showControls && (
+        <CardHeader>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-start gap-4">
+                    <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                    <Link href={dashboardPath}>
+                        <ChevronLeft className="h-4 w-4" />
+                        <span className="sr-only">Back to Dashboard</span>
+                    </Link>
+                    </Button>
+                    <div className="grid gap-1">
+                        <CardTitle className="flex items-center gap-2"><CalendarCheck /> Published Schedule</CardTitle>
+                        <CardDescription>
+                            This is the currently active schedule. You can search, download, or delete it.
+                        </CardDescription>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button onClick={() => handleDownloadCsv()} disabled={!hasSchedule}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download All Filtered
+                    </Button>
+                    <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
                 </div>
             </div>
-            <div className="flex items-center gap-2">
-                <Button onClick={() => handleDownloadCsv()} disabled={!hasSchedule}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download All Filtered
-                </Button>
-                 <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
-            </div>
-        </div>
-         {hasSchedule && (
-            <div className="relative mt-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search by program, year, section, subject..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                />
-            </div>
-        )}
-      </CardHeader>
-      <CardContent>
+            {hasSchedule && (
+                <div className="relative mt-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by program, year, section, subject..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                    />
+                </div>
+            )}
+        </CardHeader>
+      )}
+      <CardContent className={!showControls ? "pt-6" : ""}>
         {hasSchedule ? (
-            filteredSchedules.length > 0 ? (
-                <div className="space-y-8">
-                    {filteredSchedules.map((scheduleItem, scheduleIndex) => (
-                        <Card key={scheduleIndex} className="border shadow-md">
-                             <CardHeader className="bg-muted/50 flex-row items-center justify-between">
-                                <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
+            <div className="space-y-8">
+                {filteredSchedules.map((scheduleItem, scheduleIndex) => (
+                    <Card key={scheduleIndex} className="border shadow-md">
+                         <CardHeader className="bg-muted/50 flex-row items-center justify-between">
+                            <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
+                            {showControls && (
                                 <div className="flex items-center gap-2">
                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShare(scheduleItem)}>
                                         <Share className="h-4 w-4" />
@@ -300,47 +296,43 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                     </Button>
                                     <DeleteSingleScheduleDialog adminEmail={adminEmail} scheduleTitle={scheduleItem.programYearTitle} />
                                 </div>
-                            </CardHeader>
-                            <CardContent className="p-0 md:p-6">
-                                <div className="space-y-6">
-                                    {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
-                                        <div key={sectionIndex}>
-                                            <h3 className="text-lg font-semibold mb-2 px-6 md:px-0">{sectionSchedule.sectionName}</h3>
-                                            <div className="overflow-x-auto rounded-md border">
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            {sectionSchedule.header.map((head, index) => (
-                                                                <TableHead key={index}>{head}</TableHead>
+                            )}
+                        </CardHeader>
+                        <CardContent className="p-0 md:p-6">
+                            <div className="space-y-6">
+                                {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
+                                    <div key={sectionIndex}>
+                                        <h3 className="text-lg font-semibold mb-2 px-6 md:px-0">{sectionSchedule.sectionName}</h3>
+                                        <div className="overflow-x-auto rounded-md border">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        {sectionSchedule.header.map((head, index) => (
+                                                            <TableHead key={index}>{head}</TableHead>
+                                                        ))}
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {sectionSchedule.rows.map((row, rowIndex) => (
+                                                        <TableRow key={rowIndex}>
+                                                            {row.map((cell, cellIndex) => (
+                                                                <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
                                                             ))}
                                                         </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {sectionSchedule.rows.map((row, rowIndex) => (
-                                                            <TableRow key={rowIndex}>
-                                                                {row.map((cell, cellIndex) => (
-                                                                    <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
-                                                                ))}
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                            </div>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
                                         </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            ) : (
-                <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
-                    <p className="text-muted-foreground">No schedules match your search query.</p>
-                </div>
-            )
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         ) : (
              <div className="flex h-40 items-center justify-center rounded-lg border bg-muted">
-                <p className="text-muted-foreground">No schedule has been published yet.</p>
+                <p className="text-muted-foreground">{showControls ? "No schedule has been published yet." : "Your generated schedule will appear here..."}</p>
             </div>
         )}
       </CardContent>
