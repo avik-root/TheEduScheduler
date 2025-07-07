@@ -65,15 +65,36 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
     const breakStartTime = new Date(`1970-01-01T${breakStart}:00`);
     const breakEndTime = new Date(`1970-01-01T${breakEnd}:00`);
 
+    let breakAdded = false;
+
     while (currentTime < endTime) {
-        const slotEnd = new Date(currentTime.getTime() + duration * 60000);
-        if (currentTime >= breakStartTime && currentTime < breakEndTime) {
+        // Check if the current time is at or after the break start time.
+        if (!breakAdded && currentTime >= breakStartTime) {
             slots.push('Break');
-        } else {
-             slots.push(`${currentTime.toTimeString().substring(0, 5)}-${slotEnd.toTimeString().substring(0, 5)}`);
+            currentTime = breakEndTime;
+            breakAdded = true;
+            continue;
         }
+
+        const slotEnd = new Date(currentTime.getTime() + duration * 60000);
+
+        // Check if the next slot would overlap with the break.
+        if (!breakAdded && slotEnd > breakStartTime) {
+            // This slot would cross into the break. Add break instead and jump time.
+            slots.push('Break');
+            currentTime = breakEndTime;
+            breakAdded = true;
+            continue;
+        }
+        
+        if (slotEnd > endTime) {
+            break; // Don't add slots that extend beyond the college end time
+        }
+
+        slots.push(`${currentTime.toTimeString().substring(0, 5)}-${slotEnd.toTimeString().substring(0, 5)}`);
         currentTime = slotEnd;
     }
+    
     return slots;
 }
 
@@ -166,7 +187,12 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
             markdown += header + separator;
 
             sectionData.rows.forEach(row => {
-                const rowCells = row.slots.map(cell => cell || '-').join(' | ');
+                const rowCells = row.slots.map((cell, index) => {
+                    if (timeSlots[index] === 'Break') {
+                        return 'Break';
+                    }
+                    return cell || '-';
+                }).join(' | ');
                 markdown += `| ${row.day} | ${rowCells} |\n`;
             });
             markdown += '\n';
