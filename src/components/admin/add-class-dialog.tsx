@@ -4,14 +4,18 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronsUpDown, Check } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import type { Subject } from '@/lib/subjects';
 import type { Faculty } from '@/lib/faculty';
 import type { Room } from '@/lib/buildings';
+import { cn } from '@/lib/utils';
 
 const AddClassSchema = z.object({
   subjectId: z.string().min(1, "Please select a subject."),
@@ -54,12 +58,39 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
     return faculty.filter(f => selectedSubject.facultyEmails.includes(f.email));
   }, [selectedSubjectId, subjects, faculty]);
 
+  const { availableRooms, availableLabs } = React.useMemo(() => {
+    const selectedSubject = subjects.find(s => s.id === selectedSubjectId);
+    const theoryRooms = rooms.filter(r => !r.name.toLowerCase().includes('lab'));
+    const labRooms = rooms.filter(r => r.name.toLowerCase().includes('lab'));
+
+    if (selectedSubject?.type === 'Lab') {
+        return { availableRooms: [], availableLabs: labRooms };
+    }
+    if (selectedSubject?.type === 'Theory') {
+        return { availableRooms: theoryRooms, availableLabs: [] };
+    }
+    // For 'Theory+Lab', 'Project', or no subject selected, return all
+    return { availableRooms: theoryRooms, availableLabs: labRooms };
+  }, [selectedSubjectId, subjects, rooms]);
+
+
   React.useEffect(() => {
     // Reset facultyEmail when the available faculty changes and the current selection is no longer valid.
     if (selectedSubjectId && !availableFaculty.some(f => f.email === form.getValues('facultyEmail'))) {
       form.setValue('facultyEmail', '', { shouldValidate: true });
     }
   }, [selectedSubjectId, availableFaculty, form]);
+
+   React.useEffect(() => {
+    const currentRoomId = form.getValues('roomId');
+    if (currentRoomId) {
+        const allAvailableIds = [...availableRooms.map(r => r.id), ...availableLabs.map(r => r.id)];
+        if (!allAvailableIds.includes(currentRoomId)) {
+            form.setValue('roomId', '', { shouldValidate: true });
+        }
+    }
+  }, [availableRooms, availableLabs, form]);
+
 
   const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
@@ -131,16 +162,84 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
               control={form.control}
               name="roomId"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Room</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a room" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {rooms.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          disabled={!selectedSubjectId}
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? rooms.find(
+                                (room) => room.id === field.value
+                              )?.name
+                            : "Select a room"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search room..." />
+                        <CommandList>
+                          <CommandEmpty>No room found for this subject type.</CommandEmpty>
+                          {availableRooms.length > 0 && (
+                            <CommandGroup heading="Classrooms">
+                              {availableRooms.map((room) => (
+                                <CommandItem
+                                  value={room.name}
+                                  key={room.id}
+                                  onSelect={() => {
+                                    form.setValue("roomId", room.id)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      room.id === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {room.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          )}
+                           {availableLabs.length > 0 && (
+                            <CommandGroup heading="Labs">
+                              {availableLabs.map((room) => (
+                                <CommandItem
+                                  value={room.name}
+                                  key={room.id}
+                                  onSelect={() => {
+                                    form.setValue("roomId", room.id)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      room.id === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {room.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          )}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
