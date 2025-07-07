@@ -86,6 +86,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [showPreview, setShowPreview] = React.useState(false);
+  const [generationError, setGenerationError] = React.useState<string | null>(null);
   const { toast } = useToast();
   
   const [availablePrograms, setAvailablePrograms] = React.useState<Program[]>([]);
@@ -216,6 +217,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   async function onSubmit(data: FormData) {
     setIsLoading(true);
     setGeneratedSchedule(null);
+    setGenerationError(null);
     setShowPreview(false);
     
     const subjectsForAI = data.subjectConfigs.flatMap(config => {
@@ -287,18 +289,28 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     
     try {
       const result = await generateSchedule(input);
-      setGeneratedSchedule(result);
-      setShowPreview(true);
-      toast({
-        title: 'Schedule Generated',
-        description: 'The AI has created a schedule draft. Click "Show Preview" to review.',
-      });
+      if (result.errorReason) {
+        setGenerationError(result.errorReason);
+        toast({
+            variant: 'destructive',
+            title: 'Schedule Generation Failed',
+            description: 'The AI could not create a valid schedule. See details below.',
+        });
+      } else if (result.schedule) {
+        setGeneratedSchedule(result);
+        setShowPreview(true);
+        toast({
+            title: 'Schedule Generated',
+            description: 'The AI has created a schedule draft. Review the preview below.',
+        });
+      }
     } catch (error) {
       console.error('Failed to generate schedule:', error);
+      setGenerationError('An unexpected system error occurred. Please check the browser console for more details.');
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
-        description: 'An error occurred while generating the schedule. Check console for details.',
+        description: 'An unexpected error occurred while generating the schedule.',
       });
     } finally {
       setIsLoading(false);
@@ -515,6 +527,15 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <p className="ml-3 text-muted-foreground">Generating schedule, this might take a moment...</p>
         </div>
+      )}
+       {generationError && !isLoading && (
+        <Alert variant="destructive" className="mt-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Generation Error</AlertTitle>
+          <AlertDescription>
+            {generationError}
+          </AlertDescription>
+        </Alert>
       )}
       {showPreview && generatedSchedule && !isLoading && (
         <div className="mt-6">

@@ -57,7 +57,8 @@ const GenerateScheduleInputSchema = z.object({
 export type GenerateScheduleInput = z.infer<typeof GenerateScheduleInputSchema>;
 
 const GenerateScheduleOutputSchema = z.object({
-  schedule: z.string().describe('The generated schedule as a well-formatted string, containing multiple Markdown tables, one for each section.'),
+  schedule: z.string().describe('The generated schedule as a well-formatted string, containing multiple Markdown tables, one for each section. If schedule generation fails, this MUST be an empty string.'),
+  errorReason: z.string().optional().describe('If you cannot generate a schedule that satisfies all rules, provide a detailed, user-friendly explanation here. For example: "Could not schedule all classes for Section A due to a persistent faculty conflict with Dr. Grant on Tuesday mornings."'),
 });
 export type GenerateScheduleOutput = z.infer<typeof GenerateScheduleOutputSchema>;
 
@@ -127,6 +128,9 @@ You MUST adhere to the following rules without exception:
 2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. Precede each table with a level 3 heading for the section name (e.g., ### Section 1).
 3.  **Table Structure**: The first column of each table must be 'Day'. The subsequent columns must be the {{timeSettings.classDuration}}-minute time slots (e.g., "09:00-09:50"). Double-periods should span two columns.
 4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., '(Gp A)'. For subjects with no faculty assigned, use '(NF)' for the faculty abbreviation.
+
+**--- ERROR HANDLING ---**
+If you are completely unable to generate a valid schedule that satisfies all the core rules, you MUST set the 'schedule' output field to an empty string and provide a clear, user-friendly explanation in the 'errorReason' field. Describe the specific, most critical conflict you encountered (e.g., "Faculty Conflict: Dr. Alan Grant is double-booked on Monday at 10:00 AM for both 'Intro to AI' and 'Advanced Algorithms'.", or "Resource Shortage: Not enough lab rooms available on Tuesday afternoons to accommodate all required lab sessions.").
 
 Generate the schedule now, ensuring every subject receives the correct number of sessions per week and all rules are satisfied.
 `,
