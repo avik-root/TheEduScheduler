@@ -40,7 +40,6 @@ interface CreateFacultyFormProps {
 }
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const EMAIL_DOMAIN = '@themintfire.com';
 
 export function CreateFacultyForm({ onSuccess, departments, adminEmail }: CreateFacultyFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -68,17 +67,16 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
 
   const { setError, clearErrors } = form;
 
-  const handleEmailCheck = React.useCallback(async (username: string) => {
+  const handleEmailCheck = React.useCallback(async (email: string) => {
     setIsCheckingEmail(true);
-    if (!username) {
+    if (!email) {
       clearErrors("email");
       setIsCheckingEmail(false);
       return;
     }
 
-    const fullEmail = `${username}${EMAIL_DOMAIN}`;
     try {
-      const isTaken = await isFacultyEmailTaken(fullEmail);
+      const isTaken = await isFacultyEmailTaken(email);
       if (isTaken) {
         setError("email", { type: "manual", message: "This email is already taken." });
       } else {
@@ -92,12 +90,12 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
     }
   }, [setError, clearErrors]);
   
-  const debouncedEmailCheck = React.useCallback((username: string) => {
+  const debouncedEmailCheck = React.useCallback((email: string) => {
       if (emailDebounceTimeoutRef.current) {
           clearTimeout(emailDebounceTimeoutRef.current);
       }
       emailDebounceTimeoutRef.current = setTimeout(() => {
-          handleEmailCheck(username);
+          handleEmailCheck(email);
       }, 500);
   }, [handleEmailCheck]);
   
@@ -136,11 +134,9 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-
-    const fullEmail = `${data.email}${EMAIL_DOMAIN}`;
     
     const [isEmailTakenResult, isAbbrTakenResult] = await Promise.all([
-        isFacultyEmailTaken(fullEmail),
+        isFacultyEmailTaken(data.email),
         isFacultyAbbreviationTaken(data.abbreviation)
     ]);
 
@@ -159,7 +155,7 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
         return;
     }
 
-    const submissionData: FacultyData = { ...data, email: fullEmail };
+    const submissionData: FacultyData = data;
 
     const result = await createFaculty(adminEmail, submissionData);
 
@@ -239,34 +235,30 @@ export function CreateFacultyForm({ onSuccess, departments, adminEmail }: Create
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
-               <div className="flex items-center">
-                    <div className="relative flex-grow">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <FormControl>
-                            <Input
-                                placeholder="username"
-                                {...field}
-                                onChange={(e) => {
-                                    field.onChange(e);
-                                    debouncedEmailCheck(e.target.value);
-                                }}
-                                className="pl-10 rounded-r-none focus:ring-0 focus:z-10"
-                            />
-                        </FormControl>
-                    </div>
-                    <span className="inline-flex h-10 items-center rounded-r-md border border-l-0 border-input bg-muted px-3 text-sm text-muted-foreground">
-                        {EMAIL_DOMAIN}
-                    </span>
-                </div>
-                <div className="h-5 pt-1">
-                 {isCheckingEmail ? (
-                    <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Checking availability...
-                    </p>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="teacher@example.com"
+                    {...field}
+                    onChange={(e) => {
+                        field.onChange(e);
+                        debouncedEmailCheck(e.target.value);
+                    }}
+                    className="pl-10"
+                  />
+                </FormControl>
+              </div>
+              <div className="h-5 pt-1">
+                {isCheckingEmail ? (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Checking availability...
+                  </p>
                 ) : (
-                    <FormMessage />
+                  <FormMessage />
                 )}
-               </div>
+              </div>
             </FormItem>
           )}
         />

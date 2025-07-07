@@ -74,9 +74,7 @@ export const FacultySchema = z.object({
 export const CreateFacultyFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   abbreviation: z.string().min(1, { message: 'Abbreviation is required.' }).max(10, { message: 'Abbreviation cannot exceed 10 characters.' }),
-  email: z.string()
-    .min(1, { message: 'Email username is required.' })
-    .regex(/^[a-zA-Z0-9._+-]+$/, { message: 'Invalid characters in username.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   department: z.string().min(1, { message: 'Please select a department.' }),
   weeklyMaxHours: z.coerce.number().min(0, { message: "Weekly max hours can't be negative." }),
