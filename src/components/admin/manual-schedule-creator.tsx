@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, Grid, Settings, AlertCircle, Trash2, Plus } from 'lucide-react';
+import { Loader2, Plus, Grid, Settings, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -14,10 +14,8 @@ import { publishSchedule } from '@/lib/schedule';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AddClassDialog } from './add-class-dialog';
-import { checkScheduleConflict } from '@/ai/flows/check-schedule-conflict';
 import type { Department, Program, Year, Section } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
 import type { Subject } from '@/lib/subjects';
@@ -63,19 +61,18 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
     const endTime = new Date(`1970-01-01T${end}:00`);
     const breakStartTime = new Date(`1970-01-01T${breakStart}:00`);
     const breakEndTime = new Date(`1970-01-01T${breakEnd}:00`);
-
-    let breakAdded = false;
+    const breakLabel = `Break`;
 
     while (currentTime < endTime) {
-        const slotEnd = new Date(currentTime.getTime() + duration * 60000);
-
-        if (!breakAdded && currentTime >= breakStartTime) {
-            const breakLabel = `${breakStartTime.toTimeString().substring(0, 5)}-${breakEndTime.toTimeString().substring(0, 5)}`;
-            slots.push(breakLabel);
+        if (currentTime >= breakStartTime && currentTime < breakEndTime) {
+            if (!slots.includes(breakLabel)) {
+                slots.push(breakLabel);
+            }
             currentTime = new Date(breakEndTime);
-            breakAdded = true;
             continue;
         }
+
+        const slotEnd = new Date(currentTime.getTime() + duration * 60000);
 
         if (slotEnd > endTime) {
             break;
@@ -88,7 +85,7 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
     return slots;
 }
 
-export function ManualScheduleCreator({ allRooms, adminEmail, departments, faculty, subjects }: ManualScheduleCreatorProps) {
+export function ManualScheduleCreator({ allRooms, adminEmail, departments, faculty, subjects, publishedSchedule }: ManualScheduleCreatorProps) {
     const [isPublishing, setIsPublishing] = React.useState(false);
     const [view, setView] = React.useState<'settings' | 'grid'>('settings');
     const [timeSlots, setTimeSlots] = React.useState<string[]>([]);
@@ -164,12 +161,10 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
     }
 
     function convertScheduleDataToMarkdown(): string {
-        const selectedDept = departments.find(d => d.id === getValues('departmentId'))!;
         const selectedProg = availablePrograms.find(p => p.id === getValues('programId'))!;
         const selectedYear = availableYears.find(y => y.id === getValues('yearId'))!;
         
         let markdown = `## ${selectedProg.name} - ${selectedYear.name}\n\n`;
-        const breakSlotString = `${getValues('breakStart')}-${getValues('breakEnd')}`;
 
         scheduleData.forEach(sectionData => {
             markdown += `### ${sectionData.section.name}\n`;
@@ -179,7 +174,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
 
             sectionData.rows.forEach(row => {
                 const rowCells = row.slots.map((cell, index) => {
-                     if (timeSlots[index] === breakSlotString) {
+                     if (timeSlots[index] === 'Break') {
                         return 'Break';
                     }
                     return cell || '-';
@@ -192,14 +187,48 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
         return markdown.trim();
     }
 
-    async function handleAddClass(data: { subjectId: string; facultyEmail: string; roomId: string; }) {
+    const checkConflicts = (newClass: { faculty: string; room: string; sectionName: string }, sectionIndex: number, rowIndex: number, slotIndex: number): { isConflict: boolean, reason?: string } => {
+        // 1. Section Conflict
+        if (scheduleData[sectionIndex].rows[rowIndex].slots[slotIndex]) {
+            return { isConflict: true, reason: `Section Conflict: This time slot is already occupied for ${newClass.sectionName}.` };
+        }
+
+        // 2. Room and Faculty Conflict
+        for (let i = 0; i < scheduleData.length; i++) {
+            // Skip the current section we are trying to add to
+            if (i === sectionIndex) continue;
+
+            const otherSectionSchedule = scheduleData[i];
+            const existingCell = otherSectionSchedule.rows[rowIndex].slots[slotIndex];
+
+            if (existingCell) {
+                const roomMatch = existingCell.match(/in (.*)$/);
+                const facultyMatch = existingCell.match(/\(([^)]+)\)/);
+                
+                const existingRoom = roomMatch ? roomMatch[1].trim() : null;
+                const existingFaculty = facultyMatch ? facultyMatch[1].trim() : null;
+                
+                // Room Conflict Check
+                if (existingRoom && existingRoom === newClass.room) {
+                    return { isConflict: true, reason: `Room Conflict: Room ${newClass.room} is already booked for ${otherSectionSchedule.section.name} at this time.` };
+                }
+
+                // Faculty Conflict Check (skip for 'NF')
+                if (newClass.faculty !== 'NF' && existingFaculty && existingFaculty === newClass.faculty) {
+                    return { isConflict: true, reason: `Faculty Conflict: ${newClass.faculty} is already teaching in ${otherSectionSchedule.section.name} at this time.` };
+                }
+            }
+        }
+
+        return { isConflict: false };
+    };
+
+
+    function handleAddClass(data: { subjectId: string; facultyEmail: string; roomId: string; }) {
         if (!editingCell) return;
         const { sectionIndex, rowIndex, slotIndex } = editingCell;
         
-        const currentMarkdown = convertScheduleDataToMarkdown();
         const section = scheduleData[sectionIndex].section;
-        const day = scheduleData[sectionIndex].rows[rowIndex].day;
-        const timeSlot = timeSlots[slotIndex];
         const subject = availableSubjects.find(s => s.id === data.subjectId)!;
         const room = allRooms.find(r => r.id === data.roomId)!;
         
@@ -207,43 +236,29 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
         const facultyMember = isNoFaculty ? null : faculty.find(f => f.email === data.facultyEmail);
         const facultyAbbr = facultyMember ? facultyMember.abbreviation : 'NF';
         
-        const conflictInput = {
-            currentSchedule: currentMarkdown,
-            newClass: {
-                subject: subject.name,
-                faculty: facultyAbbr,
-                room: room.name,
-                day,
-                timeSlot,
-                section: section.name,
-            }
+        const newClassDetails = {
+            faculty: facultyAbbr,
+            room: room.name,
+            sectionName: section.name
         };
+        
+        const conflictResult = checkConflicts(newClassDetails, sectionIndex, rowIndex, slotIndex);
 
-        try {
-            const conflictResult = await checkScheduleConflict(conflictInput);
-            if (conflictResult.isConflict) {
-                toast({
-                    variant: 'destructive',
-                    title: 'Scheduling Conflict',
-                    description: conflictResult.reason,
-                });
-            } else {
-                const newScheduleData = [...scheduleData];
-                const newCellContent = `${subject.name} (${facultyAbbr}) in ${room.name}`;
-                newScheduleData[sectionIndex].rows[rowIndex].slots[slotIndex] = newCellContent;
-                setScheduleData(newScheduleData);
-                setEditingCell(null);
-                toast({
-                    title: 'Class Added',
-                    description: `${subject.name} has been added to the schedule.`,
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        if (conflictResult.isConflict) {
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: 'An unexpected error occurred while checking for conflicts.'
+                title: 'Scheduling Conflict',
+                description: conflictResult.reason,
+            });
+        } else {
+            const newScheduleData = [...scheduleData];
+            const newCellContent = `${subject.name} (${facultyAbbr}) in ${room.name}`;
+            newScheduleData[sectionIndex].rows[rowIndex].slots[slotIndex] = newCellContent;
+            setScheduleData(newScheduleData);
+            setEditingCell(null);
+            toast({
+                title: 'Class Added',
+                description: `${subject.name} has been added to the schedule.`,
             });
         }
     }
@@ -384,7 +399,6 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
         );
     }
     
-    const selectedDept = departments.find(d => d.id === getValues('departmentId'))!;
     const selectedProg = availablePrograms.find(p => p.id === getValues('programId'))!;
     const selectedYear = availableYears.find(y => y.id === getValues('yearId'))!;
     
@@ -425,9 +439,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                             <TableRow key={row.day}>
                                                 <TableCell className="font-medium">{row.day}</TableCell>
                                                 {row.slots.map((cell, slotIndex) => {
-                                                    const timeSlot = timeSlots[slotIndex];
-                                                    const breakSlotString = `${getValues('breakStart')}-${getValues('breakEnd')}`;
-                                                    const isBreak = timeSlot === breakSlotString;
+                                                    const isBreak = timeSlots[slotIndex] === 'Break';
                                                     return (
                                                         <TableCell 
                                                             key={slotIndex} 
@@ -471,7 +483,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                         onClose={() => setEditingCell(null)}
                         onSave={handleAddClass}
                         subjects={availableSubjects}
-                        faculty={faculty.filter(f => f.department === selectedDept.name)}
+                        faculty={faculty}
                         rooms={allRooms}
                     />
                 )}
