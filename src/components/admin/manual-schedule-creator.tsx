@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -278,22 +279,56 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                     <FormItem><FormLabel>Year</FormLabel><Select onValueChange={handleYearChange} value={field.value} disabled={!watch('programId')}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent>{availableYears.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                                 )}/>
                             </div>
-                            <FormField control={form.control} name="sectionIds" render={() => (
-                                <FormItem>
-                                    <FormLabel>Sections</FormLabel>
-                                    <div className="flex flex-wrap gap-4 pt-2">
+                            <FormField
+                                control={form.control}
+                                name="sectionIds"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <div className="mb-2">
+                                        <FormLabel>Sections</FormLabel>
+                                    </div>
+                                    {availableSections.length > 0 && (
+                                        <div className="flex items-center space-x-2 mb-4 p-2 rounded-md bg-muted/50 border">
+                                            <Checkbox
+                                                id="select-all-sections"
+                                                checked={field.value?.length === availableSections.length}
+                                                onCheckedChange={(checked) => {
+                                                    return field.onChange(
+                                                        checked ? availableSections.map((s) => s.id) : []
+                                                    );
+                                                }}
+                                            />
+                                            <label
+                                                htmlFor="select-all-sections"
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                Select All
+                                            </label>
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                                         {availableSections.map((item) => (
-                                            <FormField key={item.id} control={form.control} name="sectionIds" render={({ field }) => (
-                                                <FormItem key={item.id} className="flex flex-row items-start space-x-2 space-y-0">
-                                                    <FormControl><Checkbox checked={field.value?.includes(item.id)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item.id]) : field.onChange(field.value?.filter((value) => value !== item.id))}} /></FormControl>
-                                                    <FormLabel className="font-normal">{item.name}</FormLabel>
-                                                </FormItem>
-                                            )}/>
+                                            <FormItem key={item.id} className="flex flex-row items-start space-x-2 space-y-0">
+                                                <FormControl>
+                                                <Checkbox
+                                                    checked={field.value?.includes(item.id)}
+                                                    onCheckedChange={(checked) => {
+                                                    return checked
+                                                        ? field.onChange([...field.value, item.id])
+                                                        : field.onChange(field.value?.filter(
+                                                            (value) => value !== item.id
+                                                        ));
+                                                    }}
+                                                />
+                                                </FormControl>
+                                                <FormLabel className="font-normal">{item.name}</FormLabel>
+                                            </FormItem>
                                         ))}
                                     </div>
                                     <FormMessage />
-                                </FormItem>
-                            )}/>
+                                    </FormItem>
+                                )}
+                                />
                             <Separator />
                              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                                 <div className="md:col-span-1">
