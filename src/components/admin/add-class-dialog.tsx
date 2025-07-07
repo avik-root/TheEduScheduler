@@ -16,6 +16,7 @@ import type { Subject } from '@/lib/subjects';
 import type { Faculty } from '@/lib/faculty';
 import type { Room } from '@/lib/buildings';
 import { cn } from '@/lib/utils';
+import { Separator } from '../ui/separator';
 
 const AddClassSchema = z.object({
   subjectId: z.string().min(1, "Please select a subject."),
@@ -76,8 +77,8 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
 
 
   React.useEffect(() => {
-    // Reset facultyEmail when the available faculty changes and the current selection is no longer valid.
-    if (selectedSubjectId && !availableFaculty.some(f => f.email === form.getValues('facultyEmail'))) {
+    const currentFaculty = form.getValues('facultyEmail');
+    if (selectedSubjectId && currentFaculty && currentFaculty !== '--NF--' && !availableFaculty.some(f => f.email === currentFaculty)) {
       form.setValue('facultyEmail', '', { shouldValidate: true });
     }
   }, [selectedSubjectId, availableFaculty, form]);
@@ -141,20 +142,15 @@ export function AddClassDialog({ isOpen, onClose, onSave, subjects, faculty, roo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Faculty</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={!selectedSubjectId || availableFaculty.length === 0}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={!selectedSubjectId}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={!selectedSubjectId ? "Select a subject first" : "Select a faculty member"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {availableFaculty.length > 0 ? (
-                         availableFaculty.map(f => <SelectItem key={f.email} value={f.email}>{f.name} ({f.abbreviation})</SelectItem>)
-                      ) : (
-                        <SelectItem value="disabled" disabled>
-                          No faculty assigned to this subject
-                        </SelectItem>
-                      )}
+                        <SelectItem value="--NF--">NF (No Faculty)</SelectItem>
+                        {availableFaculty.map(f => <SelectItem key={f.email} value={f.email}>{f.name} ({f.abbreviation})</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />

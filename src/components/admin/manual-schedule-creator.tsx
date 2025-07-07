@@ -209,14 +209,17 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
         const day = scheduleData[sectionIndex].rows[rowIndex].day;
         const timeSlot = timeSlots[slotIndex];
         const subject = availableSubjects.find(s => s.id === data.subjectId)!;
-        const facultyMember = faculty.find(f => f.email === data.facultyEmail)!;
         const room = allRooms.find(r => r.id === data.roomId)!;
+        
+        const isNoFaculty = data.facultyEmail === '--NF--';
+        const facultyMember = isNoFaculty ? null : faculty.find(f => f.email === data.facultyEmail);
+        const facultyAbbr = facultyMember ? facultyMember.abbreviation : 'NF';
         
         const conflictInput = {
             currentSchedule: currentMarkdown,
             newClass: {
                 subject: subject.name,
-                faculty: facultyMember.abbreviation,
+                faculty: facultyAbbr,
                 room: room.name,
                 day,
                 timeSlot,
@@ -234,7 +237,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                 });
             } else {
                 const newScheduleData = [...scheduleData];
-                const newCellContent = `${subject.name} (${facultyMember.abbreviation}) in ${room.name}`;
+                const newCellContent = `${subject.name} (${facultyAbbr}) in ${room.name}`;
                 newScheduleData[sectionIndex].rows[rowIndex].slots[slotIndex] = newCellContent;
                 setScheduleData(newScheduleData);
                 setEditingCell(null);
@@ -435,17 +438,17 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
                                                     return (
                                                         <TableCell 
                                                             key={slotIndex} 
-                                                            className={`p-1 cursor-pointer hover:bg-muted/80 relative group ${isBreak ? 'bg-muted cursor-not-allowed' : ''}`}
+                                                            className={`p-1 relative group ${isBreak ? 'bg-muted cursor-not-allowed' : 'cursor-pointer hover:bg-muted/80'}`}
                                                             onClick={() => !isBreak && setEditingCell({ sectionIndex, rowIndex, slotIndex })}
                                                         >
                                                             {cell ? (
-                                                                <div className="bg-primary text-primary-foreground p-2 rounded-md text-xs">
+                                                                <div className="bg-primary text-primary-foreground p-2 rounded-md text-xs font-semibold">
                                                                     {cell.split(' in ')[0]}
-                                                                    <div className="font-semibold text-xs">{cell.split(' in ')[1]}</div>
+                                                                    <div className="font-normal opacity-90">{cell.split(' in ')[1]}</div>
                                                                     <Button 
                                                                         variant="ghost" 
                                                                         size="icon" 
-                                                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/20"
+                                                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/20 hover:text-destructive"
                                                                         onClick={(e) => { e.stopPropagation(); handleClearCell(sectionIndex, rowIndex, slotIndex); }}
                                                                     >
                                                                         <Trash2 className="h-3 w-3" />

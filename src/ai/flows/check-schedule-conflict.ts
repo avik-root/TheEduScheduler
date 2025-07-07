@@ -42,7 +42,7 @@ const prompt = ai.definePrompt({
   prompt: `You are a schedule conflict detector. Given a current schedule in Markdown format and a new class to add, determine if there is a conflict.
 
 A conflict exists if:
-1.  **Faculty Conflict**: The faculty member ('{{newClass.faculty}}') is already assigned to another class in any section at the same time ('{{newClass.timeSlot}}') on the same day ('{{newClass.day}}').
+1.  **Faculty Conflict**: The faculty member ('{{newClass.faculty}}') is already assigned to another class in any section at the same time ('{{newClass.timeSlot}}') on the same day ('{{newClass.day}}'). IMPORTANT: If the faculty is 'NF' (No Faculty), you should skip this check as there is no faculty conflict.
 2.  **Room Conflict**: The room ('{{newClass.room}}') is already occupied by another class in any section at the same time ('{{newClass.timeSlot}}') on the same day ('{{newClass.day}}').
 3.  **Section Conflict**: The section ('{{newClass.section}}') is already assigned to a class at the same time ('{{newClass.timeSlot}}') on the same day ('{{newClass.day}}').
 
