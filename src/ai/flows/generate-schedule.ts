@@ -69,12 +69,26 @@ const prompt = ai.definePrompt({
   name: 'generateSchedulePrompt',
   input: {schema: GenerateScheduleInputSchema},
   output: {schema: GenerateScheduleOutputSchema},
-  prompt: `You are an AI assistant that creates a weekly class schedule.
-Your goal is to generate a conflict-free schedule based on the provided information. Avoid any clashes for faculty or rooms.
+  prompt: `You are an AI assistant that creates a weekly class schedule. Your goal is to generate a conflict-free and optimal schedule based on the provided information and the following strict rules.
+
+**--- MANDATORY SCHEDULING RULES ---**
+You MUST adhere to these rules without exception.
+1.  **Unique Subject Placement**: Each section must have a unique subject placement pattern. No two sections taught by the same faculty can have the same subject in the same time slot to avoid faculty clashes.
+2.  **Varied Section Schedules**: Each section's schedule must be different, and they can start the day with different subjects.
+3.  **Class Duration**: Each class is exactly 50 minutes long. The next class must start immediately after the previous one with no gaps, except for the designated break time.
+4.  **Zero Overlap**: No faculty member or room can be assigned to more than one class at the same time across all sections. This is a critical constraint.
+5.  **Consecutive Periods (High-Credit)**: Subjects with 3 or more credits must have at least one session per week with two consecutive periods (a double period).
+6.  **3-Credit Theory Subjects**: Must be scheduled as one double period (100 mins) on one day and one single period (50 mins) on another day.
+7.  **4-Credit Theory Subjects**: Must be scheduled as two separate double periods (100 mins each) on two different days.
+8.  **1-Credit Lab Subjects**: Must always be scheduled as one double period (100 mins).
+9.  **Daily Subject Limit**: For any section, a single subject must not be assigned more than 2 theory periods on the same day.
+10. **Priority Scheduling**: Prioritize scheduling double periods for higher-credit subjects first, then fit the remaining single-period sessions into available slots.
+11. **Resource Matching**: Lab-type subjects must be assigned to lab rooms (\`availableLabs\`). Theory-type subjects must be assigned to general-purpose rooms (\`availableRooms\`).
+12. **Validation**: Before finishing, you must validate that every subject for every section is scheduled for the exact number of periods per week required by its credit value and that all hard constraints are satisfied.
 
 {{#if globalConstraints}}
-**--- ADDITIONAL CONSTRAINTS ---**
-Please also adhere to the following global constraints:
+**--- ADDITIONAL USER CONSTRAINTS ---**
+Please also adhere to these user-provided constraints:
 {{{globalConstraints}}}
 {{/if}}
 
@@ -108,7 +122,6 @@ Please also adhere to the following global constraints:
   - Type: {{type}}
   - Theory Credits: {{#if theoryCredits}}{{theoryCredits}}{{else}}N/A{{/if}}, Lab Credits: {{#if labCredits}}{{labCredits}}{{else}}N/A{{/if}}
   - Taught by: {{#if assignedFaculty}}{{#each assignedFaculty}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}NF{{/if}}
-  - Priority: {{#if isPriority}}Yes{{else}}No{{/if}}
   - For Sections: {{#each sections}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 {{/each}}
 
