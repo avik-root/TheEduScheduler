@@ -96,17 +96,6 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                       </CardContent>
                   </Card>
               </Link>
-               <Link href={`/admin/dashboard/schedule?email=${adminEmail}`}>
-                  <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-lg font-semibold">Published Schedule</CardTitle>
-                          <CalendarCheck className="h-5 w-5 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent className="flex-grow">
-                          <p className="text-sm text-muted-foreground">View the active schedule and download as PDF.</p>
-                      </CardContent>
-                  </Card>
-              </Link>
               <Link href={`/admin/dashboard/logs?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
