@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 import { Loader2, Plus, Grid, Settings, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -61,23 +62,23 @@ function generateTimeSlots(start: string, end: string, breakStart: string, break
     const endTime = new Date(`1970-01-01T${end}:00`);
     const breakStartTime = new Date(`1970-01-01T${breakStart}:00`);
     const breakEndTime = new Date(`1970-01-01T${breakEnd}:00`);
-    const breakLabel = `Break`;
-
-    while (currentTime < endTime) {
-        if (currentTime >= breakStartTime && currentTime < breakEndTime) {
-            if (!slots.includes(breakLabel)) {
-                slots.push(breakLabel);
-            }
-            currentTime = new Date(breakEndTime);
-            continue;
-        }
-
+    
+    // Generate slots before the break
+    while (currentTime < breakStartTime && currentTime < endTime) {
         const slotEnd = new Date(currentTime.getTime() + duration * 60000);
+        if (slotEnd > breakStartTime) break;
+        slots.push(`${currentTime.toTimeString().substring(0, 5)}-${slotEnd.toTimeString().substring(0, 5)}`);
+        currentTime = slotEnd;
+    }
 
-        if (slotEnd > endTime) {
-            break;
-        }
+    // Add the break slot
+    slots.push('Break');
 
+    // Generate slots after the break
+    currentTime = new Date(breakEndTime);
+    while (currentTime < endTime) {
+        const slotEnd = new Date(currentTime.getTime() + duration * 60000);
+        if (slotEnd > endTime) break;
         slots.push(`${currentTime.toTimeString().substring(0, 5)}-${slotEnd.toTimeString().substring(0, 5)}`);
         currentTime = slotEnd;
     }
@@ -92,6 +93,7 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
     const [scheduleData, setScheduleData] = React.useState<ScheduleData>([]);
     const [editingCell, setEditingCell] = React.useState<{ sectionIndex: number; rowIndex: number; slotIndex: number } | null>(null);
     const { toast } = useToast();
+    const router = useRouter();
   
     const [availablePrograms, setAvailablePrograms] = React.useState<Program[]>([]);
     const [availableYears, setAvailableYears] = React.useState<Year[]>([]);
@@ -188,20 +190,16 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
     }
 
     const checkConflicts = (newClass: { faculty: string; room: string; sectionName: string }, sectionIndex: number, rowIndex: number, slotIndex: number): { isConflict: boolean, reason?: string } => {
-        // 1. Section Conflict
-        if (scheduleData[sectionIndex].rows[rowIndex].slots[slotIndex]) {
-            return { isConflict: true, reason: `Section Conflict: This time slot is already occupied for ${newClass.sectionName}.` };
-        }
-
-        // 2. Room and Faculty Conflict
         for (let i = 0; i < scheduleData.length; i++) {
-            // Skip the current section we are trying to add to
-            if (i === sectionIndex) continue;
-
             const otherSectionSchedule = scheduleData[i];
             const existingCell = otherSectionSchedule.rows[rowIndex].slots[slotIndex];
 
             if (existingCell) {
+                // Section Conflict (if checking the same section)
+                if (i === sectionIndex) {
+                    return { isConflict: true, reason: `Section Conflict: This time slot is already occupied for ${newClass.sectionName}.` };
+                }
+
                 const roomMatch = existingCell.match(/in (.*)$/);
                 const facultyMatch = existingCell.match(/\(([^)]+)\)/);
                 
@@ -283,6 +281,8 @@ export function ManualScheduleCreator({ allRooms, adminEmail, departments, facul
               title: 'Schedule Published',
               description: 'The schedule is now available for faculty members.'
           });
+          setView('settings');
+          router.refresh();
       } else {
           toast({
               variant: 'destructive',

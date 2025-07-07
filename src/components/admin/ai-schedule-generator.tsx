@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Wand2, Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -88,6 +89,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   const [showPreview, setShowPreview] = React.useState(false);
   const [generationError, setGenerationError] = React.useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
   
   const [availablePrograms, setAvailablePrograms] = React.useState<Program[]>([]);
   const [availableYears, setAvailableYears] = React.useState<Year[]>([]);
@@ -319,6 +321,9 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
               title: 'Schedule Published',
               description: 'The schedule is now available for faculty members.'
           });
+          setGeneratedSchedule(null);
+          setShowPreview(false);
+          router.refresh();
       } else {
           toast({
               variant: 'destructive',
