@@ -74,18 +74,22 @@ const prompt = ai.definePrompt({
 
 **--- MANDATORY SCHEDULING RULES ---**
 You MUST adhere to these rules without exception.
-1.  **Unique Subject Placement**: Each section must have a unique subject placement pattern. No two sections taught by the same faculty can have the same subject in the same time slot to avoid faculty clashes.
-2.  **Varied Section Schedules**: Each section's schedule must be different, and they can start the day with different subjects.
-3.  **Class Duration**: Each class is exactly {{timeSettings.classDuration}} minutes long. The next class must start immediately after the previous one with no gaps, except for the designated break time.
-4.  **Zero Overlap**: No faculty member or room can be assigned to more than one class at the same time across all sections. This is a critical constraint.
-5.  **Consecutive Periods (High-Credit)**: Subjects with 3 or more credits must have at least one session per week with two consecutive periods (a double period).
-6.  **3-Credit Theory Subjects**: Must be scheduled as one double period on one day and one single period on another day.
-7.  **4-Credit Theory Subjects**: Must be scheduled as two separate double periods on two different days.
-8.  **1-Credit Lab Subjects**: Must always be scheduled as one double period.
-9.  **Daily Subject Limit**: For any section, a single subject must not be assigned more than 2 theory periods on the same day.
-10. **Priority Scheduling**: Prioritize scheduling double periods for higher-credit subjects first, then fit the remaining single-period sessions into available slots.
-11. **Resource Matching**: Lab-type subjects must be assigned to lab rooms (\`availableLabs\`). Theory-type subjects must be assigned to general-purpose rooms (\`availableRooms\`).
-12. **Validation**: Before finishing, you must validate that every subject for every section is scheduled for the exact number of periods per week required by its credit value and that all hard constraints are satisfied.
+1.  **Faculty Conflict**: No faculty member can be assigned to more than one class at the same time across all sections and years. This is a critical constraint.
+2.  **Priority Classes**: Subjects marked as 'priority' must be scheduled as double-duration sessions. This means two consecutive {{timeSettings.classDuration}}-minute classes are combined into a single 100-minute slot.
+3.  **Daily Subject Limit (Theory)**: A single theory subject cannot have more than one class scheduled on the same day for any section. If a theory subject has a double class on a given day, no additional class of that same subject can be scheduled on that day for that section. This rule does not apply to labs.
+4.  **Credit-to-Class Conversion (Theory)**:
+    - 2-credit theory subjects require exactly 2 theory classes per week.
+    - 3-credit theory subjects require exactly 3 theory classes per week.
+5.  **Lab Class Grouping**:
+    - For lab subjects, if a section's student count is more than 30, it MUST be divided into 'Group A' and 'Group B'.
+    - Each group (A and B) must have its own separate 100-minute lab session.
+    - Each lab subject must be scheduled only once per week for each group.
+6.  **Daily Class Distribution**: The schedule must be distributed from Monday to Friday, ensuring that every section has classes scheduled on each of these five days.
+7.  **Staggered Start Times**: Sections may start their day at different times within the operating hours to prevent faculty and room overlaps.
+8.  **Class Duration**: Each class period is exactly {{timeSettings.classDuration}} minutes long. The next class must start immediately after the previous one with no gaps, except for the designated break time.
+9.  **Zero Overlap (Rooms)**: No room can be assigned to more than one class at the same time.
+10. **Resource Matching**: Lab-type subjects must be assigned to lab rooms (\`availableLabs\`). Theory-type subjects must be assigned to general-purpose rooms (\`availableRooms\`).
+11. **Validation**: Before finishing, you must validate that each subject is scheduled for the correct number of sessions per week as per its credit value and that all constraints are satisfied.
 
 {{#if globalConstraints}}
 **--- ADDITIONAL USER CONSTRAINTS ---**
@@ -148,3 +152,4 @@ const generateScheduleFlow = ai.defineFlow(
     return output!;
   }
 );
+
