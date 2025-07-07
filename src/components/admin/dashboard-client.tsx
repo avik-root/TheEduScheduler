@@ -2,7 +2,6 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import {
   Users,
   Building2,
@@ -18,11 +17,13 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
 import type { Admin } from '@/lib/admin';
 import type { Room } from '@/lib/buildings';
-import type { GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 import { AiScheduleGenerator } from '@/components/admin/ai-schedule-generator';
+import { ManualScheduleCreator } from '@/components/admin/manual-schedule-creator';
 import { RoomAvailabilityChecker } from '@/components/admin/room-availability-checker';
 import { RoomRequests } from './room-requests';
 import type { RoomRequest } from '@/lib/requests';
@@ -42,7 +43,6 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, departments, faculty, subjects, publishedSchedule }: DashboardClientProps) {
-    const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
 
     return (
         <div className="mx-auto grid w-full max-w-6xl gap-6">
@@ -122,19 +122,37 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
           </div>
             <div className="grid gap-6 pt-8">
                 <RoomRequests initialRequests={roomRequests} adminEmail={adminEmail} />
-                <AiScheduleGenerator
-                    allRooms={allRooms}
-                    generatedSchedule={generatedSchedule}
-                    setGeneratedSchedule={setGeneratedSchedule}
-                    adminEmail={adminEmail}
-                    departments={departments}
-                    faculty={faculty}
-                    subjects={subjects}
-                />
+                
+                <Tabs defaultValue="generator" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="generator">AI Schedule Generator</TabsTrigger>
+                    <TabsTrigger value="manual">Manual Schedule Creator</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="generator" className="mt-6">
+                    <AiScheduleGenerator
+                        allRooms={allRooms}
+                        adminEmail={adminEmail}
+                        departments={departments}
+                        faculty={faculty}
+                        subjects={subjects}
+                    />
+                  </TabsContent>
+                  <TabsContent value="manual" className="mt-6">
+                    <ManualScheduleCreator
+                        allRooms={allRooms}
+                        adminEmail={adminEmail}
+                        departments={departments}
+                        faculty={faculty}
+                        subjects={subjects}
+                        publishedSchedule={publishedSchedule}
+                    />
+                  </TabsContent>
+                </Tabs>
+
                 <RoomAvailabilityChecker
                     userRole="admin"
                     allRooms={allRooms}
-                    schedule={generatedSchedule?.schedule || publishedSchedule || ''}
+                    schedule={publishedSchedule || ''}
                     adminEmail={adminEmail}
                 />
             </div>
