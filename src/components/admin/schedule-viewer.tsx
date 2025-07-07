@@ -28,40 +28,50 @@ interface ParsedSchedule {
 }
 
 function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
-    if (!markdown || markdown.trim() === '') return null;
+    if (!markdown || !markdown.trim()) return null;
 
-    const scheduleParts = ('\n' + markdown.trim()).split(/\n## /).filter(s => s.trim() !== '');
-
-    if (scheduleParts.length === 0) return null;
+    // Use a lookahead split to handle multiple '##' headers correctly
+    const scheduleParts = markdown.trim().split(/\n(?=## )/);
+    if (scheduleParts.length === 0 || scheduleParts[0].trim() === '') return null;
 
     return scheduleParts.map(part => {
         const lines = part.trim().split('\n');
-        const programYearTitle = lines[0] || 'Schedule'; 
+        const programYearTitle = lines[0]?.replace('## ', '').trim() || 'Schedule';
         const content = lines.slice(1).join('\n');
 
-        const sectionParts = content.split(/\n### /).filter(s => s.trim() !== '');
+        // Use a lookahead split for sections as well
+        const sectionParts = content.trim().split(/\n(?=### )/);
 
         const sections = sectionParts.map(sectionPart => {
+            if (!sectionPart.trim()) return null;
             const sectionLines = sectionPart.trim().split('\n');
-            const sectionName = sectionLines[0] || 'Section';
+            const sectionName = sectionLines[0]?.replace('### ', '').trim() || 'Section';
             const tableMarkdown = sectionLines.slice(1).join('\n');
 
-            const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
+            const tableLines = tableMarkdown.trim().split('\n').filter(Boolean);
             if (tableLines.length < 2) return null;
 
             const headerLine = tableLines[0];
             const separatorLine = tableLines[1];
             if (!headerLine.includes('|') || !separatorLine.includes('|--')) return null;
 
-            const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
-            
-            const rows = tableLines.slice(2).map(line =>
-                // Slice to remove empty strings from leading/trailing pipes
-                line.split('|').slice(1, -1).map(cell => cell.trim())
-            ).filter(row => row.length === header.length);
+            const header = headerLine.split('|').slice(1, -1).map(h => h.trim());
+            if (header.length === 0) return null;
+
+            const rows = tableLines.slice(2).map(line => {
+                const cells = line.split('|').slice(1, -1).map(cell => cell.trim());
+                // Pad or truncate cells to match header length for consistency
+                if (cells.length > header.length) {
+                    return cells.slice(0, header.length);
+                }
+                while (cells.length < header.length) {
+                    cells.push('-');
+                }
+                return cells;
+            });
 
 
-            if (header.length > 0 && rows.length > 0) {
+            if (rows.length > 0) {
                 return { sectionName, header, rows };
             }
             return null;
@@ -275,7 +285,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 <div className="space-y-8">
                     {filteredSchedules.map((scheduleItem, scheduleIndex) => (
                         <Card key={scheduleIndex} className="border shadow-md">
-                             <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
+                             <CardHeader className="bg-muted/50 flex-row items-center justify-between">
                                 <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
                                 <div className="flex items-center gap-2">
                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShare(scheduleItem)}>
@@ -289,7 +299,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                     <DeleteSingleScheduleDialog adminEmail={adminEmail} scheduleTitle={scheduleItem.programYearTitle} />
                                 </div>
                             </CardHeader>
-                            <CardContent className="overflow-x-auto p-0 md:p-6">
+                            <CardContent className="p-0 md:p-6">
                                 <div className="space-y-6">
                                     {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
                                         <div key={sectionIndex}>
