@@ -3,7 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { FacultySchema, UpdateFacultySchema, LoginSchema, FacultyChangePasswordSchema } from '@/lib/validators/auth';
 import { getAdminDataPath } from './common';
 import { getAdminEmails } from './admin';

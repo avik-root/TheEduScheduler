@@ -3,7 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { LoginSchema, SignupSchema, UpdateAdminSchema } from '@/lib/validators/auth';
 
 const adminFilePath = path.join(process.cwd(), 'src', 'data', 'admin.json');

@@ -3,7 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { LoginSchema, SignupSchema, UpdateSuperAdminSchema } from '@/lib/validators/auth';
 
 // Define the path to the super admin data file
