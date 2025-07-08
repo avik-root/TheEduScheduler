@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Clock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -64,6 +64,7 @@ const ScheduleGeneratorSchema = z.object({
   breakEnd: z.string().min(1, 'Break end is required.'),
 
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
+  classDuration: z.coerce.number().min(30, 'Duration must be at least 30 mins.').max(120, 'Duration cannot exceed 120 mins.'),
 });
 
 type FormData = z.infer<typeof ScheduleGeneratorSchema>;
@@ -105,6 +106,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       breakStart: '13:00',
       breakEnd: '14:00',
       activeDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      classDuration: 50,
     },
   });
 
@@ -170,6 +172,32 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     })));
   };
 
+  const handleAutoAssign = (subjectIndex: number) => {
+    const subjectConfig = getValues(`subjectConfigs.${subjectIndex}`);
+    const potentialFaculty = subjectConfig.potentialFaculty;
+    const assignments = subjectConfig.assignments;
+
+    if (!potentialFaculty || potentialFaculty.length === 0) {
+        toast({
+            variant: 'destructive',
+            title: 'No Faculty Available',
+            description: 'Please select available faculty for this subject first.',
+        });
+        return;
+    }
+
+    const newAssignments = assignments.map((assignment, index) => {
+        const facultyEmail = potentialFaculty[index % potentialFaculty.length];
+        return { ...assignment, facultyEmail };
+    });
+
+    setValue(`subjectConfigs.${subjectIndex}.assignments`, newAssignments, { shouldDirty: true, shouldValidate: true });
+    toast({
+        title: 'Faculty Auto-Assigned',
+        description: `Faculty have been distributed among the sections for ${subjectConfig.name}.`
+    });
+  };
+
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
@@ -224,6 +252,13 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     const selectedYear = availableYears.find(y => y.id === data.yearId)!;
     const selectedSections = availableSections.filter(s => data.sectionIds.includes(s.id));
 
+    const facultyForAI = faculty.map(f => ({
+        name: f.name,
+        abbreviation: f.abbreviation,
+        weeklyMaxHours: f.weeklyMaxHours,
+        weeklyOffDays: f.weeklyOffDays || [],
+    }));
+
     const input: GenerateScheduleInput = {
       academicInfo: {
         department: selectedDept.name,
@@ -232,13 +267,14 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       },
       sections: selectedSections.map(s => ({ name: s.name, studentCount: s.studentCount })),
       subjects: subjectsForAI,
-      faculty: faculty,
+      faculty: facultyForAI,
       availableRooms: data.availableRooms,
       availableLabs: data.availableLabs,
       timeSettings: {
         startTime: data.startTime,
         endTime: data.endTime,
         breakTime: `${data.breakStart} - ${data.breakEnd}`,
+        classDuration: data.classDuration,
       },
       activeDays: data.activeDays,
     };
@@ -344,7 +380,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                                     <FormLabel>Section Assignments</FormLabel>
                                                     <div className="rounded-md border">
                                                         <Table>
-                                                            <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead><User className="h-4 w-4" /> Assigned Faculty</TableHead></TableRow></TableHeader>
+                                                            <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead className="flex items-center justify-between"><span><User className="h-4 w-4 inline-block mr-2" /> Assigned Faculty</span><Button type="button" variant="link" size="sm" className="p-0 h-auto" disabled={!item.potentialFaculty?.length} onClick={() => handleAutoAssign(index)}>Auto-Assign</Button></TableHead></TableRow></TableHeader>
                                                             <TableBody>
                                                                 {item.assignments.map((assignment, assignmentIndex) => (
                                                                     <TableRow key={assignment.sectionId}>
@@ -405,7 +441,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                             </div>
                         </div>
                         <Separator />
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                            <div>
                                <FormLabel>Daily Timings</FormLabel>
                                <div className="grid grid-cols-2 gap-2 mt-2">
@@ -420,6 +456,24 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                    <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                                </div>
                            </div>
+                           <div>
+                                <FormField
+                                control={form.control}
+                                name="classDuration"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Class Duration (minutes)</FormLabel>
+                                    <div className="relative mt-2">
+                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <FormControl>
+                                        <Input type="number" step="5" {...field} className="pl-10" />
+                                        </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                            </div>
                         </div>
                          <FormField control={form.control} name="activeDays" render={({ field }) => (
                             <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>

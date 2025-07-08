@@ -50,6 +50,7 @@ const GenerateScheduleInputSchema = z.object({
         startTime: z.string(),
         endTime: z.string(),
         breakTime: z.string().describe('The time slot for the daily break (e.g., "13:00 - 14:00").'),
+        classDuration: z.number().describe("The duration of a single class period in minutes."),
     }),
     activeDays: z.array(z.string()),
 });
@@ -72,7 +73,7 @@ const prompt = ai.definePrompt({
 
 **--- CRITICAL DIRECTIVES: READ AND FOLLOW ALL ---**
 1.  **NO CONFLICTS (Most Important)**: There must be **ZERO** scheduling conflicts. This is your highest priority.
-    - **Faculty Conflict**: A faculty member **cannot** be assigned to two different sections at the same time. For example, if faculty \`(RK)\` is teaching \`Section 1\` on Monday from 11:00-11:50, they **cannot** also be scheduled to teach \`Section 2\` at the same time. Their classes for different sections must be in different, non-overlapping time slots.
+    - **Faculty Conflict**: A faculty member **cannot** be assigned to two different sections at the same time.
     - **Room Conflict**: A room or lab **cannot** be used by two different sections or for two different classes at the same time.
     - **Section Conflict**: A section **cannot** attend two different classes at the same time.
 
@@ -81,8 +82,8 @@ const prompt = ai.definePrompt({
 3.  **NO EMPTY DAYS**: Every section **MUST** have at least one class scheduled on every single 'Active Weekday'. It is not permissible to have a day with no classes for any section. This is a critical requirement.
 
 4.  **BALANCED DISTRIBUTION**: Distribute classes as evenly as possible across each day for each section.
-    - **Consecutive Class Limit**: **DO NOT** schedule more than three consecutive 50-minute theory class slots. A 100-minute block counts as two consecutive slots.
-    - **Spread Subjects**: Classes for the same subject **MUST** be spread across different days. For example, a 4-credit subject scheduled as two 100-minute blocks **must** have them on separate days. A 3-credit subject scheduled as one 100-minute block and one 50-minute slot **must** also have them on separate days.
+    - **Consecutive Class Limit**: **DO NOT** schedule more than three consecutive theory class slots. A double-length block counts as two consecutive slots.
+    - **Spread Subjects**: Classes for the same subject **MUST** be spread across different days. For example, a 4-credit subject scheduled as two double-length blocks **must** have them on separate days. A 3-credit subject scheduled as one double-length block and one single-length slot **must** also have them on separate days.
 
 **--- SCHEDULING CONTEXT ---**
 - Department: {{academicInfo.department}}
@@ -98,6 +99,7 @@ const prompt = ai.definePrompt({
 - Daily Timings: From {{timeSettings.startTime}} to {{timeSettings.endTime}}
 - Break Slot: {{timeSettings.breakTime}}. Do not schedule anything during this time.
 - Active Weekdays: {{#each activeDays}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+- **Class Duration**: Each standard class period is **{{timeSettings.classDuration}} minutes**.
 
 **Available Resources:**
 - Rooms: {{#if availableRooms}}{{#each availableRooms}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
@@ -120,13 +122,13 @@ const prompt = ai.definePrompt({
 
 **--- DETAILED SCHEDULING RULES ---**
 1.  **Credit Hours, Duration, & Spreading**:
-    - Each credit point equals one 50-minute class per week.
+    - Each credit point equals one **{{timeSettings.classDuration}}-minute** class per week.
     - **Combined vs. Single Slots**:
-        - 'Lab', 'Theory+Lab', and 'Project' subjects **MUST** be scheduled as a single 100-minute block (two consecutive 50-minute slots). No 50-minute lab classes are allowed.
-        - For 'Theory' subjects, if they have 3 or more credits, schedule one of their weekly classes as a 100-minute block. The other classes for that subject should be single 50-minute slots.
+        - 'Lab', 'Theory+Lab', and 'Project' subjects **MUST** be scheduled as a single double-length block (two consecutive {{timeSettings.classDuration}}-minute slots). No single-slot lab classes are allowed.
+        - For 'Theory' subjects, if they have 3 or more credits, schedule one of their weekly classes as a double-length block. The other classes for that subject should be single {{timeSettings.classDuration}}-minute slots.
 
 2.  **Lab & Student Grouping**:
-    - **Student Splitting for Labs**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs. You must schedule **two separate 100-minute lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)", "Computer Networks Lab (Sec A, Gp B)").
+    - **Student Splitting for Labs**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs. You must schedule **two separate double-length lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)", "Computer Networks Lab (Sec A, Gp B)").
     - Allocate labs only to rooms listed in 'Available Labs'.
 
 3.  **Faculty Constraints**:
@@ -144,7 +146,7 @@ const prompt = ai.definePrompt({
 **--- OUTPUT FORMATTING ---**
 1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
 2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. This is not optional. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
-3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the 50-minute time slots (e.g., "09:00-09:50"). The rows will represent each active day of the week.
+3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the **{{timeSettings.classDuration}}-minute time slots**. You must calculate these time slots yourself based on the daily start/end times. For example, if start time is "09:00" and duration is 50 minutes, the first time slot column is "09:00-09:50". The rows will represent each active day of the week.
 4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101".
 
 Generate the complete, conflict-free, and optimized weekly schedule now for all specified sections.
