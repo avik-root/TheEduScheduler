@@ -27,7 +27,7 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
   const publishedSchedule = await getPublishedSchedule(adminEmail);
   const myRequests = await getFacultyRoomRequests(adminEmail, facultyEmail);
   
-  if (!faculty) {
+  if (!faculty || faculty.isLocked) {
       notFound();
   }
 

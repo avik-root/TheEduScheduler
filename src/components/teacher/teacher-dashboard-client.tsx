@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { User, Clock, CalendarOff, Settings, Building, CalendarCheck } from 'lucide-react';
+import { User, Clock, CalendarOff, Settings, Building, CalendarCheck, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Faculty } from '@/lib/faculty';
@@ -13,6 +13,7 @@ import { RoomAvailabilityChecker } from '../admin/room-availability-checker';
 import type { RoomRequest } from '@/lib/requests';
 import { MyRequestsList } from './my-requests-list';
 import { Button } from '../ui/button';
+import { TwoFactorSettingsDialog } from './two-factor-settings-dialog';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -166,11 +167,12 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
               </Card>
               <Card className="lg:col-span-1">
                 <CardHeader>
-                    <CardTitle>Settings</CardTitle>
-                    <CardDescription>Manage your account settings.</CardDescription>
+                    <CardTitle>Security Settings</CardTitle>
+                    <CardDescription>Manage your account security features.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-2">
                     <ChangePasswordDialog facultyEmail={faculty.email} adminEmail={adminEmail} />
+                    <TwoFactorSettingsDialog faculty={faculty} adminEmail={adminEmail} />
                 </CardContent>
               </Card>
           </div>
