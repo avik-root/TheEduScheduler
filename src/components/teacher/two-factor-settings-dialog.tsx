@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -26,9 +25,9 @@ import { useRouter } from 'next/navigation';
 const TwoFactorSettingsSchema = z.object({
   isEnabled: z.boolean(),
   pin: z.string().optional(),
-  currentPassword: z.string(),
+  currentPassword: z.string().optional(),
 }).refine(data => {
-    if (data.isEnabled && (!data.pin || data.pin.length !== 6)) {
+    if (data.isEnabled && (!data.pin || data.pin.length !== 6 || !/^\d+$/.test(data.pin))) {
         return false;
     }
     return true;
@@ -36,12 +35,13 @@ const TwoFactorSettingsSchema = z.object({
     message: "A 6-digit PIN is required to enable 2FA.",
     path: ["pin"],
 }).refine(data => {
-    if (!data.currentPassword) {
+    // If disabling 2FA, password is required. Otherwise, it's not.
+    if (!data.isEnabled && !data.currentPassword) {
         return false;
     }
     return true;
 }, {
-    message: "Your current password is required to save changes.",
+    message: "Your current password is required to disable 2FA.",
     path: ["currentPassword"],
 });
 
@@ -163,7 +163,7 @@ export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettin
                     name="currentPassword"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Current Password</FormLabel>
+                        <FormLabel>Current Password {isEnabled ? '(Optional)' : '(Required to disable)'}</FormLabel>
                         <FormControl>
                             <Input type="password" {...field} placeholder="Enter password to confirm" />
                         </FormControl>

@@ -1,4 +1,3 @@
-
 [
   {
     "name": "BP",
@@ -67,7 +66,10 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "isTwoFactorEnabled": true,
+    "twoFactorPin": "$2a$10$fHB/DzV.sITHwt9w2W.Ey.7gp3XHfBYFueU1j5yONUP9ffgPzQEm2",
+    "twoFactorAttempts": 0
   },
   {
     "name": "Shiva Seth Alam",

@@ -1,5 +1,21 @@
 [
   {
+    "id": "1752152496200-0kfu9ro",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:01:36.201Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752152478370-5zh6768",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:01:18.371Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1752151933595-zfl24sr",
     "facultyName": "Rituparna Sarka",
     "facultyEmail": "rituporna.c3a@themintfire.com",

@@ -1,4 +1,3 @@
-
 'use server';
 
 import fs from 'fs/promises';
@@ -325,10 +324,16 @@ export async function setTwoFactor(data: TwoFactorSettingsData): Promise<{ succe
     }
 
     const faculty = facultyList[facultyIndex];
+    
+    if (!isEnabled && !currentPassword) {
+        return { success: false, message: 'Your current password is required to disable 2FA.' };
+    }
 
-    const passwordMatch = await bcryptjs.compare(currentPassword, faculty.password);
-    if (!passwordMatch) {
-        return { success: false, message: 'Incorrect password. Settings not saved.' };
+    if (currentPassword) {
+        const passwordMatch = await bcryptjs.compare(currentPassword, faculty.password);
+        if (!passwordMatch) {
+            return { success: false, message: 'Incorrect password. Settings not saved.' };
+        }
     }
     
     faculty.isTwoFactorEnabled = isEnabled;
