@@ -181,6 +181,15 @@ export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, 
     setEditingCell(null);
   }
 
+    const handleApplyFixes = (newScheduleMarkdown: string) => {
+        const newParsedSchedules = parseMultipleSchedules(newScheduleMarkdown);
+        if (newParsedSchedules) {
+            setParsedSchedules(newParsedSchedules);
+            setIsDirty(true);
+        }
+    };
+
+
   const filteredSchedules = React.useMemo(() => {
     if (!parsedSchedules) return [];
     if (!searchQuery.trim()) return parsedSchedules;
@@ -246,7 +255,7 @@ export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, 
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <ScheduleCheckerDialog schedules={parsedSchedules || []} />
+                <ScheduleCheckerDialog schedules={parsedSchedules || []} onApplyFixes={handleApplyFixes} />
                 <Button onClick={handleSaveAndPublish} disabled={!isDirty || isSaving}>
                     {isSaving ? (<>Saving...</>) : (<>Save & Publish Changes</>)}
                     <Save className="ml-2 h-4 w-4" />
@@ -319,7 +328,7 @@ export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, 
                                                                             {cellIndex > 0 ? (
                                                                                 <Popover open={isEditing} onOpenChange={(isOpen) => !isOpen && setEditingCell(null)}>
                                                                                     <PopoverTrigger asChild>
-                                                                                        <div className={cn("w-full h-full flex items-center", isDirty && newSchedules[editingCell.scheduleIndex].sections[editingCell.sectionIndex].rows[editingCell.rowIndex][editingCell.cellIndex] !== schedule.sections[editingCell.sectionIndex].rows[editingCell.rowIndex][editingCell.cellIndex] ? "bg-yellow-100/50 dark:bg-yellow-900/50" : "")}>
+                                                                                        <div className={cn("w-full h-full flex items-center", isDirty && parsedSchedules && parsedSchedules[scheduleIndex].sections[sectionIndex].rows[rowIndex][cellIndex] !== (parseMultipleSchedules(schedule)?.[scheduleIndex].sections[sectionIndex].rows[rowIndex][cellIndex] ?? '') ? "bg-yellow-100/50 dark:bg-yellow-900/50" : "")}>
                                                                                             {cell}
                                                                                         </div>
                                                                                     </PopoverTrigger>
@@ -397,5 +406,3 @@ export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, 
     </Card>
   );
 }
-
-    

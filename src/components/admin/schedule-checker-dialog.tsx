@@ -22,9 +22,10 @@ import { ScrollArea } from '../ui/scroll-area';
 
 interface ScheduleCheckerDialogProps {
     schedules: ParsedSchedule[];
+    onApplyFixes: (newScheduleMarkdown: string) => void;
 }
 
-export function ScheduleCheckerDialog({ schedules }: ScheduleCheckerDialogProps) {
+export function ScheduleCheckerDialog({ schedules, onApplyFixes }: ScheduleCheckerDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedSchedule, setSelectedSchedule] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
@@ -64,8 +65,20 @@ export function ScheduleCheckerDialog({ schedules }: ScheduleCheckerDialogProps)
     }
   };
 
+  const handleApply = () => {
+    if (result?.correctedSchedule) {
+        onApplyFixes(result.correctedSchedule);
+        setOpen(false);
+        toast({
+            title: "Fixes Applied",
+            description: "The AI's suggestions have been applied to the schedule. Remember to Save & Publish.",
+        });
+    }
+  };
+
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => { if(!isOpen) setResult(null); setOpen(isOpen);}}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <Wand className="mr-2 h-4 w-4" />
@@ -119,8 +132,9 @@ export function ScheduleCheckerDialog({ schedules }: ScheduleCheckerDialogProps)
                         </div>
                     </ScrollArea>
                     <div className="pt-4 flex justify-end">
-                       <Button disabled>
-                            Apply Fixes (Coming Soon)
+                       <Button onClick={handleApply} disabled={!result.correctedSchedule}>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Apply Fixes
                         </Button>
                     </div>
                 </div>
