@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, Save, FilePenLine } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, Save, FilePenLine, Wand } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
@@ -19,6 +19,8 @@ import { Label } from '@/components/ui/label';
 import type { Subject } from '@/lib/subjects';
 import type { Faculty } from '@/lib/faculty';
 import type { Room } from '@/lib/buildings';
+import * as PopoverPrimitive from "@radix-ui/react-popover"
+import { ScheduleCheckerDialog } from './schedule-checker-dialog';
 
 
 interface ScheduleViewerProps {
@@ -35,7 +37,7 @@ interface SectionSchedule {
   rows: string[][];
 }
 
-interface ParsedSchedule {
+export interface ParsedSchedule {
     programYearTitle: string;
     sections: SectionSchedule[];
 }
@@ -69,9 +71,11 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
             if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
             const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
             if (tableLines.length < 2) continue;
+
             const headerLine = tableLines[0];
             const separatorLine = tableLines[1];
             if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
+
             const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
             const rows = tableLines.slice(2).map(line =>
                 line.split('|').map(cell => cell.trim()).filter(Boolean)
@@ -84,7 +88,7 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     }).filter(s => s.sections.length > 0);
 }
 
-function schedulesToMarkdown(schedules: ParsedSchedule[]): string {
+export function schedulesToMarkdown(schedules: ParsedSchedule[]): string {
     return schedules.map(schedule => {
         let markdown = `## ${schedule.programYearTitle}\n\n`;
         schedule.sections.forEach(section => {
@@ -242,8 +246,9 @@ export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, 
                 </div>
             </div>
             <div className="flex items-center gap-2">
+                <ScheduleCheckerDialog schedules={parsedSchedules || []} />
                 <Button onClick={handleSaveAndPublish} disabled={!isDirty || isSaving}>
-                    {isSaving ? "Saving..." : "Save & Publish Changes"}
+                    {isSaving ? (<>Saving...</>) : (<>Save & Publish Changes</>)}
                     <Save className="ml-2 h-4 w-4" />
                 </Button>
                  <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
@@ -314,11 +319,14 @@ export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, 
                                                                             {cellIndex > 0 ? (
                                                                                 <Popover open={isEditing} onOpenChange={(isOpen) => !isOpen && setEditingCell(null)}>
                                                                                     <PopoverTrigger asChild>
-                                                                                        <div className={cn("w-full h-full flex items-center", isDirty ? "bg-yellow-100/50 dark:bg-yellow-900/50" : "")}>
+                                                                                        <div className={cn("w-full h-full flex items-center", isDirty && newSchedules[editingCell.scheduleIndex].sections[editingCell.sectionIndex].rows[editingCell.rowIndex][editingCell.cellIndex] !== schedule.sections[editingCell.sectionIndex].rows[editingCell.rowIndex][editingCell.cellIndex] ? "bg-yellow-100/50 dark:bg-yellow-900/50" : "")}>
                                                                                             {cell}
                                                                                         </div>
                                                                                     </PopoverTrigger>
                                                                                     <PopoverContent className="w-80">
+                                                                                        <PopoverPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                                                                                            <span className="sr-only">Close</span>
+                                                                                        </PopoverPrimitive.Close>
                                                                                         <div className="grid gap-4">
                                                                                             <div className="space-y-2">
                                                                                                 <h4 className="font-medium leading-none">Edit Class Slot</h4>
@@ -389,3 +397,5 @@ export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, 
     </Card>
   );
 }
+
+    
