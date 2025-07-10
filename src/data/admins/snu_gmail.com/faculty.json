@@ -18,7 +18,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "twoFactorAttempts": 0
   },
   {
     "name": "Rishika Roy",
@@ -67,9 +68,10 @@
       "Sunday",
       "Saturday"
     ],
-    "isTwoFactorEnabled": false,
+    "isTwoFactorEnabled": true,
     "twoFactorAttempts": 0,
-    "isLocked": false
+    "isLocked": false,
+    "twoFactorPin": "$2a$10$0cSlEGpw9X.ah3sbiXZjJOjIU/7cnc4tPwX3v29HyXBqmNtm0psXG"
   },
   {
     "name": "Shiva Seth Alam",

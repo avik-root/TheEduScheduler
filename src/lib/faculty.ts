@@ -273,14 +273,18 @@ export async function loginFaculty(credentials: LoginData): Promise<{ success: b
                 if (show2FADisabledAlert) {
                     facultyList[facultyIndex].twoFactorDisabledByAdmin = false; // Reset the flag
                 }
-
+                
                 await writeFacultyFile(adminEmail, facultyList);
+                
+                if (faculty.isTwoFactorEnabled) {
+                    return { success: true, message: 'Password correct, 2FA required.', adminEmail, requiresTwoFactor: true };
+                }
 
                 const forwarded = headers().get('x-forwarded-for');
                 const ip = forwarded ? forwarded.split(/, /)[0] : headers().get('x-real-ip');
                 await addFacultyLog(adminEmail, faculty.name, faculty.email, 'login', ip ?? undefined);
 
-                return { success: true, message: 'Login successful!', adminEmail, requiresTwoFactor: faculty.isTwoFactorEnabled, show2FADisabledAlert };
+                return { success: true, message: 'Login successful!', adminEmail, requiresTwoFactor: false, show2FADisabledAlert };
             }
         }
     }
@@ -306,6 +310,11 @@ export async function verifyTwoFactor(adminEmail: string, facultyEmail: string, 
     if (pinMatch) {
         faculty.twoFactorAttempts = 0;
         await writeFacultyFile(adminEmail, facultyList);
+
+        const forwarded = headers().get('x-forwarded-for');
+        const ip = forwarded ? forwarded.split(/, /)[0] : headers().get('x-real-ip');
+        await addFacultyLog(adminEmail, faculty.name, faculty.email, 'login', ip ?? undefined);
+
         return { success: true, message: '2FA verification successful.' };
     }
 
