@@ -12,9 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { BellRing } from 'lucide-react';
-import type { UpcomingClass } from './upcoming-classes';
 import { Button } from '../ui/button';
+import { type UpcomingClass } from './upcoming-classes';
+import { BellRing } from 'lucide-react';
 
 interface ReleaseRoomDialogProps {
   open: boolean;
@@ -34,19 +34,20 @@ export function ReleaseRoomDialog({ open, onOpenChange, classDetails, onConfirm 
             <BellRing className="h-5 w-5" />
             Confirm Class Cancellation
           </AlertDialogTitle>
-          <div className="text-sm text-muted-foreground pt-2">
-            <p>You are marking the following class as 'Not Conducted':</p>
-            <div className="my-2 rounded-md border bg-muted p-3 text-sm text-foreground">
-              <strong>{classDetails.subject}</strong> at {classDetails.time} in {classDetails.room}
+          <AlertDialogDescription asChild>
+             <div className="text-sm text-muted-foreground pt-2">
+                <p>You are marking the following class as 'Not Conducted':</p>
+                <div className="my-2 rounded-md border bg-muted p-3 text-sm text-foreground">
+                <strong>{classDetails.subject}</strong> at {classDetails.time} in {classDetails.room}
+                </div>
+                <p>Would you like to release the room for this time slot, making it available for other faculty to request?</p>
             </div>
-            <p>Would you like to release the room for this time slot, making it available for other faculty to request?</p>
-          </div>
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button variant="secondary" onClick={() => onConfirm(false)}>
+          <AlertDialogCancel onClick={() => onConfirm(false)}>
             Just Cancel Class
-          </Button>
+          </AlertDialogCancel>
           <AlertDialogAction onClick={() => onConfirm(true)}>
             Release Room & Cancel
           </AlertDialogAction>
