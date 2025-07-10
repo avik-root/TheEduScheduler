@@ -52,42 +52,43 @@ function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
         return null;
     }
 
-    const lines = markdown.trim().split('\n');
-    let programYearTitle = "Published Schedule"; // Default title
-    let scheduleContent = markdown;
+    const scheduleParts = ('\n' + markdown.trim()).split(/\n## /).filter(s => s.trim() !== '');
 
-    if (lines[0].startsWith('## ')) {
-        programYearTitle = lines[0].substring(3).trim();
-        scheduleContent = lines.slice(1).join('\n');
-    }
+    if (scheduleParts.length === 0) return null;
 
-    const sectionsMarkdown = scheduleContent.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
-    const parsedSections: SectionSchedule[] = [];
+    return scheduleParts.map(part => {
+        const lines = part.trim().split('\n');
+        const programYearTitle = lines[0] || 'Schedule'; 
+        const content = lines.slice(1).join('\n');
 
-    for (let i = 0; i < sectionsMarkdown.length; i += 2) {
-        const sectionName = sectionsMarkdown[i].trim().replace(/###\s*/, '');
-        const tableMarkdown = sectionsMarkdown[i + 1];
+        const sectionParts = content.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
+        const parsedSections: SectionSchedule[] = [];
 
-        if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
+        for (let i = 0; i < sectionsMarkdown.length; i += 2) {
+            const sectionName = sectionsMarkdown[i].trim().replace(/###\s*/, '');
+            const tableMarkdown = sectionsMarkdown[i + 1];
 
-        const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
-        if (tableLines.length < 2) continue;
+            if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
 
-        const headerLine = tableLines[0];
-        const separatorLine = tableLines[1];
-        if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
+            const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
+            if (tableLines.length < 2) continue;
 
-        const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
-        const rows = tableLines.slice(2).map(line =>
-            line.split('|').map(cell => cell.trim()).filter(Boolean)
-        ).filter(row => row.length === header.length);
+            const headerLine = tableLines[0];
+            const separatorLine = tableLines[1];
+            if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
 
-        if (header.length > 0 && rows.length > 0) {
-            parsedSections.push({ sectionName, header, rows });
+            const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
+            const rows = tableLines.slice(2).map(line =>
+                line.split('|').map(cell => cell.trim()).filter(Boolean)
+            ).filter(row => row.length === header.length);
+
+            if (header.length > 0 && rows.length > 0) {
+                parsedSections.push({ sectionName, header, rows });
+            }
         }
-    }
-    
-    return { programYearTitle, sections: parsedSections };
+        
+        return { programYearTitle, sections: parsedSections };
+    }).filter(s => s.sections.length > 0)[0] || null;
 }
 
 export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule, initialRequests }: TeacherDashboardClientProps) {
