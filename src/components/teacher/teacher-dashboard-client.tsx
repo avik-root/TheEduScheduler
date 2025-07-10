@@ -18,8 +18,10 @@ import { TwoFactorSettingsDialog } from './two-factor-settings-dialog';
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
@@ -90,13 +92,19 @@ function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
 export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule, initialRequests }: TeacherDashboardClientProps) {
   const [showMyScheduleOnly, setShowMyScheduleOnly] = React.useState(true);
   const [show2FADisabledAlert, setShow2FADisabledAlert] = React.useState(false);
+  const [show2FAPrompt, setShow2FAPrompt] = React.useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
   const searchParams = useSearchParams();
 
   React.useEffect(() => {
     if (searchParams.get('show2FADisabled') === 'true') {
         setShow2FADisabledAlert(true);
         // Clean the URL to prevent the dialog from reappearing on refresh
-        window.history.replaceState(null, '', window.location.pathname + window.location.search.replace('&show2FADisabled=true', '').replace('?show2FADisabled=true', ''));
+        window.history.replaceState(null, '', window.location.pathname + window.location.search.replace(/&?show2FADisabled=true/, ''));
+    }
+    if (searchParams.get('prompt2FA') === 'true') {
+        setShow2FAPrompt(true);
+         window.history.replaceState(null, '', window.location.pathname + window.location.search.replace(/&?prompt2FA=true/, ''));
     }
   }, [searchParams]);
 
@@ -155,6 +163,30 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
             </AlertDialogContent>
         </AlertDialog>
 
+        <AlertDialog open={show2FAPrompt} onOpenChange={setShow2FAPrompt}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                        <ShieldCheck className="h-6 w-6 text-primary" />
+                        Enhance Your Account Security
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Enable Two-Factor Authentication (2FA) for an extra layer of protection. It's quick, easy, and keeps your account safe.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Maybe Later</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                        setShow2FAPrompt(false);
+                        setSettingsDialogOpen(true);
+                    }}>
+                        Enable 2FA Now
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+
         <div className="mx-auto grid w-full max-w-6xl gap-6">
             <div className="my-8">
                 <h1 className="text-3xl font-semibold">Faculty Dashboard</h1>
@@ -209,7 +241,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     </CardHeader>
                     <CardContent className="space-y-2">
                         <ChangePasswordDialog facultyEmail={faculty.email} adminEmail={adminEmail} />
-                        <TwoFactorSettingsDialog faculty={faculty} adminEmail={adminEmail} />
+                        <TwoFactorSettingsDialog faculty={faculty} adminEmail={adminEmail} open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} />
                     </CardContent>
                 </Card>
             </div>

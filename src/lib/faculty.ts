@@ -249,7 +249,7 @@ export async function deleteMultipleFaculty(adminEmail: string, emails: string[]
 }
 
 
-export async function loginFaculty(credentials: LoginData): Promise<{ success: boolean; message: string; adminEmail?: string; requiresTwoFactor?: boolean; show2FADisabledAlert?: boolean; }> {
+export async function loginFaculty(credentials: LoginData): Promise<{ success: boolean; message: string; adminEmail?: string; requiresTwoFactor?: boolean; show2FADisabledAlert?: boolean; promptFor2FA?: boolean; }> {
     const adminEmails = await getAdminEmails();
 
     for (const adminEmail of adminEmails) {
@@ -284,7 +284,14 @@ export async function loginFaculty(credentials: LoginData): Promise<{ success: b
                 const ip = forwarded ? forwarded.split(/, /)[0] : headers().get('x-real-ip');
                 await addFacultyLog(adminEmail, faculty.name, faculty.email, 'login', ip ?? undefined);
 
-                return { success: true, message: 'Login successful!', adminEmail, requiresTwoFactor: false, show2FADisabledAlert };
+                return { 
+                    success: true, 
+                    message: 'Login successful!', 
+                    adminEmail, 
+                    requiresTwoFactor: false, 
+                    show2FADisabledAlert,
+                    promptFor2FA: !faculty.isTwoFactorEnabled
+                };
             }
         }
     }

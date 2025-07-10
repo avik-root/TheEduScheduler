@@ -34,6 +34,7 @@ interface LoginResult {
     adminEmail?: string;
     requiresTwoFactor?: boolean;
     show2FADisabledAlert?: boolean;
+    promptFor2FA?: boolean;
 }
 
 export function TeacherLoginForm() {
@@ -74,6 +75,9 @@ export function TeacherLoginForm() {
          let redirectUrl = `/teacher/dashboard?email=${encodeURIComponent(data.email)}&adminEmail=${encodeURIComponent(result.adminEmail!)}`;
          if (result.show2FADisabledAlert) {
             redirectUrl += '&show2FADisabled=true';
+         }
+         if (result.promptFor2FA) {
+            redirectUrl += '&prompt2FA=true';
          }
          router.push(redirectUrl);
       }

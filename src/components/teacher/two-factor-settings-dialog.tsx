@@ -43,15 +43,22 @@ type FormData = z.infer<typeof TwoFactorSettingsSchema>;
 interface TwoFactorSettingsDialogProps {
     faculty: Faculty;
     adminEmail: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettingsDialogProps) {
-  const [open, setOpen] = React.useState(false);
+export function TwoFactorSettingsDialog({ faculty, adminEmail, open, onOpenChange }: TwoFactorSettingsDialogProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPin, setShowPin] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+  const dialogOpen = isControlled ? open : internalOpen;
+  const setDialogOpen = isControlled ? onOpenChange : setInternalOpen;
+
 
   const form = useForm<FormData>({
     resolver: zodResolver(TwoFactorSettingsSchema),
@@ -63,6 +70,17 @@ export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettin
   });
 
   const isEnabled = form.watch('isEnabled');
+  
+  // Reset form when dialog opens
+    React.useEffect(() => {
+        if (dialogOpen) {
+            form.reset({
+                isEnabled: faculty.isTwoFactorEnabled || false,
+                pin: '',
+                currentPassword: '',
+            });
+        }
+    }, [dialogOpen, form, faculty.isTwoFactorEnabled]);
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
@@ -78,7 +96,7 @@ export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettin
         description: 'Your 2FA settings have been saved.',
       });
       router.refresh();
-      setOpen(false);
+      setDialogOpen(false);
     } else {
       toast({
         variant: 'destructive',
@@ -90,7 +108,7 @@ export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettin
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <ShieldCheck className="mr-2 h-4 w-4" />

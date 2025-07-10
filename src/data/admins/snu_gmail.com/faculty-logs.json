@@ -1,5 +1,85 @@
 [
   {
+    "id": "1752162610954-egiru02",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:50:10.954Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162552145-lt2lrqa",
+    "facultyName": "Trishita Gautam",
+    "facultyEmail": "trishita.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:49:12.145Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162544176-cgmkiwu",
+    "facultyName": "Trishita Gautam",
+    "facultyEmail": "trishita.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:49:04.176Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162523479-pz9rrml",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:48:43.479Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162521316-4agxszn",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:48:41.316Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162470092-6hyp29l",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:47:50.092Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162464485-fn0n9eq",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:47:44.485Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162452360-sszes3d",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:47:32.360Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162450280-dmyh4j9",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:47:30.280Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752162432995-armge0n",
+    "facultyName": "Rohit Roy Choudhury ",
+    "facultyEmail": "rohit.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:47:12.995Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1752162261056-ky9qzt6",
     "facultyName": "Rohit Roy Choudhury ",
     "facultyEmail": "rohit.c3a@themintfire.com",
