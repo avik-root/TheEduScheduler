@@ -1,5 +1,53 @@
 [
   {
+    "id": "1752153003040-6y5jvie",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:10:03.040Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752152971321-6a0125a",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:09:31.321Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752152947269-phzlity",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:09:07.269Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752152933685-6snp5vp",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:08:53.685Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752152914136-t3dyifj",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:08:34.136Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752152901239-bjef8ob",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T13:08:21.239Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1752152496200-0kfu9ro",
     "facultyName": "Rituparna Sarka",
     "facultyEmail": "rituporna.c3a@themintfire.com",

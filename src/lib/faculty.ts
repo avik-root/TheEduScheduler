@@ -1,3 +1,4 @@
+
 'use server';
 
 import fs from 'fs/promises';
@@ -134,6 +135,13 @@ export async function updateFaculty(adminEmail: string, data: UpdateFacultyData)
     facultyToUpdate.department = data.department;
     facultyToUpdate.weeklyMaxHours = data.weeklyMaxHours;
     facultyToUpdate.weeklyOffDays = data.weeklyOffDays || [];
+    facultyToUpdate.isTwoFactorEnabled = data.isTwoFactorEnabled;
+
+    if (!data.isTwoFactorEnabled) {
+        facultyToUpdate.isLocked = false;
+        facultyToUpdate.twoFactorAttempts = 0;
+        facultyToUpdate.twoFactorPin = undefined;
+    }
 
 
     if (data.password) {

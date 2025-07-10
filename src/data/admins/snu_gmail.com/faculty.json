@@ -67,8 +67,10 @@
       "Sunday",
       "Saturday"
     ],
-    "isTwoFactorEnabled": false,
-    "twoFactorAttempts": 0
+    "isTwoFactorEnabled": true,
+    "twoFactorAttempts": 0,
+    "twoFactorPin": "$2a$10$iApAmfUJwp5aJc.Eb5swQ.579WDANz4MEVG35DMSKdUd3WkT5oMym",
+    "isLocked": false
   },
   {
     "name": "Shiva Seth Alam",
