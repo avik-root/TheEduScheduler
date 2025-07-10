@@ -327,15 +327,13 @@ export async function setTwoFactor(data: TwoFactorSettingsData): Promise<{ succe
 
     const faculty = facultyList[facultyIndex];
     
-    if (!isEnabled && !currentPassword) {
-        return { success: false, message: 'Your current password is required to disable 2FA.' };
+    if (!currentPassword) {
+        return { success: false, message: 'Your current password is required to save changes.' };
     }
-
-    if (currentPassword) {
-        const passwordMatch = await bcryptjs.compare(currentPassword, faculty.password);
-        if (!passwordMatch) {
-            return { success: false, message: 'Incorrect password. Settings not saved.' };
-        }
+    
+    const passwordMatch = await bcryptjs.compare(currentPassword, faculty.password);
+    if (!passwordMatch) {
+        return { success: false, message: 'Incorrect password. Settings not saved.' };
     }
     
     faculty.isTwoFactorEnabled = isEnabled;
@@ -430,5 +428,25 @@ export async function changeFacultyPassword(data: ChangePasswordData): Promise<{
     } catch (error) {
         console.error('Failed to change faculty password:', error);
         return { success: false, message: 'An internal error occurred. Please try again.' };
+    }
+}
+
+export async function unlockFacultyAccount(adminEmail: string, facultyEmail: string): Promise<{ success: boolean; message: string }> {
+    if (!adminEmail) return { success: false, message: 'Admin not identified.' };
+    const facultyList = await readFacultyFile(adminEmail);
+    const facultyIndex = facultyList.findIndex(f => f.email === facultyEmail);
+
+    if (facultyIndex === -1) {
+        return { success: false, message: 'Faculty member not found.' };
+    }
+
+    facultyList[facultyIndex].isLocked = false;
+    facultyList[facultyIndex].twoFactorAttempts = 0;
+    
+    try {
+        await writeFacultyFile(adminEmail, facultyList);
+        return { success: true, message: 'Account unlocked successfully.' };
+    } catch (error) {
+        return { success: false, message: 'Failed to unlock account.' };
     }
 }

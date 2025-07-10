@@ -26,7 +26,7 @@ import { useRouter } from 'next/navigation';
 const TwoFactorSettingsSchema = z.object({
   isEnabled: z.boolean(),
   pin: z.string().optional(),
-  currentPassword: z.string().optional(),
+  currentPassword: z.string().min(1, { message: 'Your current password is required to save changes.' }),
 }).refine(data => {
     if (data.isEnabled && (!data.pin || data.pin.length !== 6 || !/^\d+$/.test(data.pin))) {
         return false;
@@ -35,14 +35,6 @@ const TwoFactorSettingsSchema = z.object({
 }, {
     message: "A 6-digit PIN is required to enable 2FA.",
     path: ["pin"],
-}).refine(data => {
-    if (!data.isEnabled && !data.currentPassword) {
-        return false;
-    }
-    return true;
-}, {
-    message: "Your current password is required to disable 2FA.",
-    path: ["currentPassword"],
 });
 
 
@@ -176,7 +168,7 @@ export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettin
                     name="currentPassword"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Current Password {isEnabled ? '(Optional)' : '(Required to disable)'}</FormLabel>
+                        <FormLabel>Current Password (Required)</FormLabel>
                         <div className="relative">
                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                            <FormControl>
