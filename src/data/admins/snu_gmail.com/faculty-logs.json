@@ -1,5 +1,21 @@
 [
   {
+    "id": "1752163307415-6kb6tfp",
+    "facultyName": "Shiva Seth Alam",
+    "facultyEmail": "shiva.c3a@themintfire.com",
+    "timestamp": "2025-07-10T16:01:47.415Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752163292925-5manmzp",
+    "facultyName": "Shiva Seth Alam",
+    "facultyEmail": "shiva.c3a@themintfire.com",
+    "timestamp": "2025-07-10T16:01:32.925Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1752163146511-djcblrl",
     "facultyName": "Shiva Seth Alam",
     "facultyEmail": "shiva.c3a@themintfire.com",
