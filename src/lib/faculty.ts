@@ -12,6 +12,8 @@ import { addFacultyLog } from './logs';
 import { headers } from 'next/headers';
 
 const facultyFileName = 'faculty.json';
+const securityKeysFilePath = path.join(process.cwd(), 'src', 'data', 'security-keys.json');
+
 
 export type Faculty = z.infer<typeof FacultySchema>;
 type UpdateFacultyData = z.infer<typeof UpdateFacultySchema>;
@@ -135,15 +137,7 @@ export async function updateFaculty(adminEmail: string, data: UpdateFacultyData)
     facultyToUpdate.department = data.department;
     facultyToUpdate.weeklyMaxHours = data.weeklyMaxHours;
     facultyToUpdate.weeklyOffDays = data.weeklyOffDays || [];
-    facultyToUpdate.isTwoFactorEnabled = data.isTwoFactorEnabled;
-
-    if (!data.isTwoFactorEnabled) {
-        facultyToUpdate.isLocked = false;
-        facultyToUpdate.twoFactorAttempts = 0;
-        facultyToUpdate.twoFactorPin = undefined;
-    }
-
-
+    
     if (data.password) {
         const hashedPassword = await bcryptjs.hash(data.password, 10);
         facultyToUpdate.password = hashedPassword;
@@ -361,7 +355,25 @@ export async function setTwoFactor(data: TwoFactorSettingsData): Promise<{ succe
     }
 }
 
-export async function unlockFacultyAccount(adminEmail: string, facultyEmail: string): Promise<{ success: boolean, message: string }> {
+async function getSecurityKey(): Promise<string | null> {
+    try {
+        const fileContent = await fs.readFile(securityKeysFilePath, 'utf-8');
+        const data = JSON.parse(fileContent);
+        return data.disableKey || null;
+    } catch (error) {
+        return null;
+    }
+}
+
+export async function disableFaculty2FA(adminEmail: string, facultyEmail: string, disableKey: string): Promise<{ success: boolean; message: string }> {
+    const securityKey = await getSecurityKey();
+    if (!securityKey) {
+        return { success: false, message: 'Security key is not configured.' };
+    }
+    if (securityKey !== disableKey) {
+        return { success: false, message: 'The provided security key is incorrect.' };
+    }
+    
     const facultyList = await readFacultyFile(adminEmail);
     const facultyIndex = facultyList.findIndex(f => f.email === facultyEmail);
 
@@ -370,18 +382,21 @@ export async function unlockFacultyAccount(adminEmail: string, facultyEmail: str
     }
 
     const faculty = facultyList[facultyIndex];
+    faculty.isTwoFactorEnabled = false;
     faculty.isLocked = false;
     faculty.twoFactorAttempts = 0;
+    faculty.twoFactorPin = undefined;
     
     facultyList[facultyIndex] = faculty;
     
     try {
         await writeFacultyFile(adminEmail, facultyList);
-        return { success: true, message: 'Account unlocked.' };
+        return { success: true, message: '2FA has been disabled and the account is unlocked.' };
     } catch (error) {
-        return { success: false, message: 'Failed to unlock account.' };
+        return { success: false, message: 'Failed to update faculty account.' };
     }
 }
+
 
 export async function changeFacultyPassword(data: ChangePasswordData): Promise<{ success: boolean; message: string }> {
     const { adminEmail, email, currentPassword, password: newPassword } = data;

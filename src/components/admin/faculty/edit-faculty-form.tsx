@@ -31,8 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { DisableFaculty2FADialog } from './disable-faculty-2fa-dialog';
+
 
 type FormData = z.infer<typeof UpdateFacultySchema>;
 
@@ -66,7 +67,6 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
       weeklyOffDays: faculty.weeklyOffDays ?? [],
       password: '',
       confirmPassword: '',
-      isTwoFactorEnabled: faculty.isTwoFactorEnabled,
     },
   });
   
@@ -307,29 +307,9 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
         <Separator />
         
         <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground">Security</h3>
-             <FormField
-                control={form.control}
-                name="isTwoFactorEnabled"
-                render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                        <div className="space-y-0.5">
-                            <FormLabel>Two-Factor Authentication</FormLabel>
-                            <FormDescription>
-                                Disable this to reset the faculty&apos;s 2FA and unlock their account.
-                            </FormDescription>
-                        </div>
-                        <FormControl>
-                            <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                            />
-                        </FormControl>
-                    </FormItem>
-                )}
-            />
              {isChangingPassword ? (
               <div className="space-y-6 rounded-md border p-4">
+                 <h3 className="text-sm font-medium text-foreground">Change Password</h3>
                 <FormField
                   control={form.control}
                   name="password"
@@ -402,6 +382,24 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
             )}
         </div>
 
+        {faculty.isTwoFactorEnabled && (
+            <div className="space-y-4">
+                 <Separator />
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                        <FormLabel>Two-Factor Authentication</FormLabel>
+                        <FormDescription>
+                            2FA is currently enabled for this user.
+                        </FormDescription>
+                    </div>
+                    <DisableFaculty2FADialog 
+                        faculty={faculty}
+                        adminEmail={adminEmail}
+                        onSuccess={() => onSuccess?.()}
+                    />
+                </FormItem>
+            </div>
+        )}
 
         <Button type="submit" className="w-full" disabled={isLoading || isCheckingAbbreviation}>
           {(isLoading || isCheckingAbbreviation) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

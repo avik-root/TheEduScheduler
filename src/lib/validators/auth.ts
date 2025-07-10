@@ -98,7 +98,6 @@ export const UpdateFacultySchema = z.object({
     department: z.string().min(1, { message: 'Please select a department.' }),
     weeklyMaxHours: z.coerce.number().min(0, { message: "Weekly max hours can't be negative." }),
     weeklyOffDays: z.array(z.string()).optional(),
-    isTwoFactorEnabled: z.boolean().optional(),
     password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
     confirmPassword: z.string().optional().or(z.literal('')),
 }).refine(data => {
