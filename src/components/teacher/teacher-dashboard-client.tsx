@@ -28,6 +28,9 @@ import { UpcomingClasses, type UpcomingClass } from './upcoming-classes';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ConductStatusDialog } from './conduct-status-dialog';
+import { ReleaseRoomDialog } from './release-room-dialog';
+import { releaseRoom } from '@/lib/requests';
+import { useToast } from '@/hooks/use-toast';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -99,6 +102,9 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   const [todaysClasses, setTodaysClasses] = React.useState<UpcomingClass[]>([]);
   const [isConductDialogOpen, setIsConductDialogOpen] = React.useState(false);
   const [dialogContent, setDialogContent] = React.useState<{ title: string; classes: UpcomingClass[] }>({ title: '', classes: [] });
+  const [releaseDialogOpen, setReleaseDialogOpen] = React.useState(false);
+  const [classToRelease, setClassToRelease] = React.useState<UpcomingClass | null>(null);
+  const { toast } = useToast();
 
   const searchParams = useSearchParams();
   const parsedFullSchedule = React.useMemo(() => parseCompleteSchedule(schedule), [schedule]);
@@ -156,12 +162,54 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   }, [parsedFullSchedule, faculty.abbreviation]);
 
   const handleStatusChange = (key: string, newStatus: 'conducted' | 'not-conducted') => {
+    if (newStatus === 'conducted') {
+        setTodaysClasses(prevClasses => 
+            prevClasses.map(c => 
+                c.key === key ? { ...c, status: newStatus } : c
+            )
+        );
+    } else {
+        const classToHandle = todaysClasses.find(c => c.key === key);
+        if (classToHandle) {
+            setClassToRelease(classToHandle);
+            setReleaseDialogOpen(true);
+        }
+    }
+  };
+  
+  const handleReleaseDialogAction = async (shouldRelease: boolean) => {
+    if (!classToRelease) return;
+
+    if (shouldRelease) {
+        const [startTime, endTime] = classToRelease.time.split('-');
+        const result = await releaseRoom(adminEmail, {
+            facultyEmail: faculty.email,
+            facultyName: faculty.name,
+            roomName: classToRelease.room,
+            date: format(new Date(), 'PPP'),
+            startTime: startTime.trim(),
+            endTime: endTime.trim(),
+            reason: `Class Canceled / Room Released: ${classToRelease.subject}`,
+        });
+        
+        if (result.success) {
+            toast({ title: 'Room Released', description: `Room ${classToRelease.room} is now available.` });
+        } else {
+            toast({ variant: 'destructive', title: 'Failed to Release Room', description: result.message });
+        }
+    }
+    
+    // Update the class status regardless of the release action
     setTodaysClasses(prevClasses => 
         prevClasses.map(c => 
-            c.key === key ? { ...c, status: newStatus } : c
+            c.key === classToRelease.key ? { ...c, status: 'not-conducted' } : c
         )
     );
+
+    setReleaseDialogOpen(false);
+    setClassToRelease(null);
   };
+
 
   const conductedClasses = todaysClasses.filter(c => c.status === 'conducted');
   const notConductedClasses = todaysClasses.filter(c => c.status === 'not-conducted');
@@ -365,7 +413,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                                     </CardHeader>
                                     <CardContent className="overflow-x-auto p-0 md:p-6">
                                         {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
-                                            <div key={sectionIndex}>
+                                            <div key={sectionIndex} className="mb-6 last:mb-0">
                                                 <h3 className="text-lg font-semibold mb-2 px-6 md:px-0">{sectionSchedule.sectionName}</h3>
                                                 <div className="overflow-x-auto rounded-md border">
                                                     <Table>
@@ -427,6 +475,14 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
             title={dialogContent.title}
             classes={dialogContent.classes}
         />
+        {classToRelease && (
+            <ReleaseRoomDialog
+                open={releaseDialogOpen}
+                onOpenChange={setReleaseDialogOpen}
+                classDetails={classToRelease}
+                onConfirm={handleReleaseDialogAction}
+            />
+        )}
      </>
   );
 }
