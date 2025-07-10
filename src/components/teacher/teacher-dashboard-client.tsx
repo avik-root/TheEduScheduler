@@ -27,6 +27,7 @@ import {
 import { UpcomingClasses, type UpcomingClass } from './upcoming-classes';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ConductStatusDialog } from './conduct-status-dialog';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -96,6 +97,9 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   const [show2FAPrompt, setShow2FAPrompt] = React.useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
   const [todaysClasses, setTodaysClasses] = React.useState<UpcomingClass[]>([]);
+  const [isConductDialogOpen, setIsConductDialogOpen] = React.useState(false);
+  const [dialogContent, setDialogContent] = React.useState<{ title: string; classes: UpcomingClass[] }>({ title: '', classes: [] });
+
   const searchParams = useSearchParams();
   const parsedFullSchedule = React.useMemo(() => parseCompleteSchedule(schedule), [schedule]);
 
@@ -159,8 +163,19 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     );
   };
 
-  const conductedCount = todaysClasses.filter(c => c.status === 'conducted').length;
-  const notConductedCount = todaysClasses.filter(c => c.status === 'not-conducted').length;
+  const conductedClasses = todaysClasses.filter(c => c.status === 'conducted');
+  const notConductedClasses = todaysClasses.filter(c => c.status === 'not-conducted');
+  
+  const handleShowConducted = () => {
+      setDialogContent({ title: 'Conducted Classes', classes: conductedClasses });
+      setIsConductDialogOpen(true);
+  };
+
+  const handleShowNotConducted = () => {
+      setDialogContent({ title: 'Not Conducted Classes', classes: notConductedClasses });
+      setIsConductDialogOpen(true);
+  };
+
 
   const displayedSchedule = React.useMemo(() => {
     if (!parsedFullSchedule) return null;
@@ -300,14 +315,18 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     </CardHeader>
                     <CardContent className="pt-2">
                         <div className="flex flex-wrap items-center gap-4">
-                            <div className="flex items-center gap-2 text-green-600">
-                                <ClipboardCheck className="h-5 w-5" />
-                                <span className="font-semibold">Conducted: {conductedCount}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-red-600">
-                                <ClipboardX className="h-5 w-5" />
-                                <span className="font-semibold">Not Conducted: {notConductedCount}</span>
-                            </div>
+                             <Button variant="ghost" className="p-0 h-auto font-normal" onClick={handleShowConducted} disabled={conductedClasses.length === 0}>
+                                <div className="flex items-center gap-2 text-green-600">
+                                    <ClipboardCheck className="h-5 w-5" />
+                                    <span className="font-semibold">Conducted: {conductedClasses.length}</span>
+                                </div>
+                            </Button>
+                            <Button variant="ghost" className="p-0 h-auto font-normal" onClick={handleShowNotConducted} disabled={notConductedClasses.length === 0}>
+                                <div className="flex items-center gap-2 text-red-600">
+                                    <ClipboardX className="h-5 w-5" />
+                                    <span className="font-semibold">Not Conducted: {notConductedClasses.length}</span>
+                                </div>
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -344,7 +363,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                                     <CardHeader>
                                         <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-0 md:p-6">
+                                    <CardContent className="overflow-x-auto p-0 md:p-6">
                                         {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
                                             <div key={sectionIndex}>
                                                 <h3 className="text-lg font-semibold mb-2 px-6 md:px-0">{sectionSchedule.sectionName}</h3>
@@ -402,6 +421,12 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                 />
             </div>
         </div>
+        <ConductStatusDialog
+            open={isConductDialogOpen}
+            onOpenChange={setIsConductDialogOpen}
+            title={dialogContent.title}
+            classes={dialogContent.classes}
+        />
      </>
   );
 }
