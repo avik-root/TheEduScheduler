@@ -12,6 +12,7 @@ import { getPublishedSchedule } from '@/lib/schedule';
 import { getFacultyRoomRequests } from '@/lib/requests';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { AppLogo } from '@/components/common/app-logo';
+import { ThemeToggle } from '@/components/common/theme-toggle';
 
 export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
   const facultyEmail = searchParams.email;
@@ -36,6 +37,7 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
          <AppLogo linkTo={`/teacher/dashboard?email=${facultyEmail}&adminEmail=${adminEmail}`} />
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="text-right">
                 <p className="font-medium text-foreground">{faculty.name}</p>
                 <p className="text-xs text-muted-foreground">{admin?.name || 'Institution'}</p>

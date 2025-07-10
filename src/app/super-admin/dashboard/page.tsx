@@ -20,6 +20,7 @@ import { EditSuperAdminDialog } from '@/components/super-admin/edit-super-admin-
 import { AppLogo } from '@/components/common/app-logo';
 import { getLogo } from '@/lib/logo';
 import { EditLogoDialog } from '@/components/super-admin/logo/edit-logo-dialog';
+import { ThemeToggle } from '@/components/common/theme-toggle';
 
 
 export default async function SuperAdminDashboardPage() {
@@ -32,6 +33,7 @@ export default async function SuperAdminDashboardPage() {
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:px-6">
         <AppLogo linkTo="/super-admin/dashboard" />
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
             Super Admin
           </span>

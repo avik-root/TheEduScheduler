@@ -15,6 +15,7 @@ import { getDepartments } from '@/lib/departments';
 import { getFaculty } from '@/lib/faculty';
 import { getSubjects } from '@/lib/subjects';
 import { getPublishedSchedule } from '@/lib/schedule';
+import { ThemeToggle } from '@/components/common/theme-toggle';
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -35,6 +36,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
          <AppLogo linkTo={`/admin/dashboard?email=${adminEmail}`} />
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
               {admin?.name || 'Admin'}
             </span>
