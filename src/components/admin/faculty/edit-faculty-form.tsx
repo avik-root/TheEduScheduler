@@ -67,6 +67,9 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
       weeklyOffDays: faculty.weeklyOffDays ?? [],
       password: '',
       confirmPassword: '',
+      isTwoFactorEnabled: faculty.isTwoFactorEnabled,
+      twoFactorAttempts: faculty.twoFactorAttempts,
+      isLocked: faculty.isLocked,
     },
   });
   

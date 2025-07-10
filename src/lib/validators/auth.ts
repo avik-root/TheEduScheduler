@@ -77,6 +77,7 @@ export const FacultySchema = z.object({
   twoFactorPin: z.string().optional(),
   twoFactorAttempts: z.number().optional(),
   isLocked: z.boolean().optional(),
+  twoFactorDisabledByAdmin: z.boolean().optional(),
 });
 
 export const CreateFacultyFormSchema = z.object({
@@ -100,6 +101,9 @@ export const UpdateFacultySchema = z.object({
     weeklyOffDays: z.array(z.string()).optional(),
     password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
     confirmPassword: z.string().optional().or(z.literal('')),
+    isTwoFactorEnabled: z.boolean().optional(),
+    twoFactorAttempts: z.number().optional(),
+    isLocked: z.boolean().optional(),
 }).refine(data => {
     if (data.password && !data.confirmPassword) {
         return false;

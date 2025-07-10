@@ -249,7 +249,7 @@ export async function deleteMultipleFaculty(adminEmail: string, emails: string[]
 }
 
 
-export async function loginFaculty(credentials: LoginData): Promise<{ success: boolean; message: string; adminEmail?: string; requiresTwoFactor?: boolean; }> {
+export async function loginFaculty(credentials: LoginData): Promise<{ success: boolean; message: string; adminEmail?: string; requiresTwoFactor?: boolean; show2FADisabledAlert?: boolean; }> {
     const adminEmails = await getAdminEmails();
 
     for (const adminEmail of adminEmails) {
@@ -268,13 +268,19 @@ export async function loginFaculty(credentials: LoginData): Promise<{ success: b
             if (passwordMatch) {
                 // Reset attempt counter on successful password login
                 facultyList[facultyIndex].twoFactorAttempts = 0;
+                
+                const show2FADisabledAlert = facultyList[facultyIndex].twoFactorDisabledByAdmin === true;
+                if (show2FADisabledAlert) {
+                    facultyList[facultyIndex].twoFactorDisabledByAdmin = false; // Reset the flag
+                }
+
                 await writeFacultyFile(adminEmail, facultyList);
 
                 const forwarded = headers().get('x-forwarded-for');
                 const ip = forwarded ? forwarded.split(/, /)[0] : headers().get('x-real-ip');
                 await addFacultyLog(adminEmail, faculty.name, faculty.email, 'login', ip ?? undefined);
 
-                return { success: true, message: 'Login successful!', adminEmail, requiresTwoFactor: faculty.isTwoFactorEnabled };
+                return { success: true, message: 'Login successful!', adminEmail, requiresTwoFactor: faculty.isTwoFactorEnabled, show2FADisabledAlert };
             }
         }
     }
@@ -384,6 +390,7 @@ export async function disableFaculty2FA(adminEmail: string, facultyEmail: string
     faculty.isLocked = false;
     faculty.twoFactorAttempts = 0;
     faculty.twoFactorPin = undefined;
+    faculty.twoFactorDisabledByAdmin = true; // Set the flag
     
     facultyList[facultyIndex] = faculty;
     

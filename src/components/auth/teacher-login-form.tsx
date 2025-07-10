@@ -33,6 +33,7 @@ interface LoginResult {
     message: string;
     adminEmail?: string;
     requiresTwoFactor?: boolean;
+    show2FADisabledAlert?: boolean;
 }
 
 export function TeacherLoginForm() {
@@ -70,7 +71,11 @@ export function TeacherLoginForm() {
         setStep('twoFactor');
       } else {
          toast({ title: "Login Successful", description: "Welcome back! Redirecting..." });
-         router.push(`/teacher/dashboard?email=${encodeURIComponent(data.email)}&adminEmail=${encodeURIComponent(result.adminEmail!)}`);
+         let redirectUrl = `/teacher/dashboard?email=${encodeURIComponent(data.email)}&adminEmail=${encodeURIComponent(result.adminEmail!)}`;
+         if (result.show2FADisabledAlert) {
+            redirectUrl += '&show2FADisabled=true';
+         }
+         router.push(redirectUrl);
       }
     } else {
         if (result.message.includes('locked')) {
