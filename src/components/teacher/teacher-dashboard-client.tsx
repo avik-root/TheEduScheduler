@@ -31,6 +31,7 @@ import { ConductStatusDialog } from './conduct-status-dialog';
 import { ReleaseRoomDialog } from './release-room-dialog';
 import { releaseRoom } from '@/lib/requests';
 import { useToast } from '@/hooks/use-toast';
+import { getConductLogForDay, setConductStatus, type ConductLogEntry } from '@/lib/conduct';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -121,53 +122,63 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   }, [searchParams]);
 
   React.useEffect(() => {
-    if (!parsedFullSchedule || !faculty.abbreviation) {
-        setTodaysClasses([]);
-        return;
-    }
+    const fetchTodaysClasses = async () => {
+        if (!parsedFullSchedule || !faculty.abbreviation) {
+            setTodaysClasses([]);
+            return;
+        }
 
-    const today = format(new Date(), 'EEEE');
-    const facultyAbbr = `(${faculty.abbreviation})`;
-    const classes: UpcomingClass[] = [];
+        const today = new Date();
+        const todayStr = format(today, 'EEEE');
+        const facultyAbbr = `(${faculty.abbreviation})`;
+        const classes: UpcomingClass[] = [];
+        
+        const conductLog = await getConductLogForDay(adminEmail, today);
 
-    parsedFullSchedule.forEach(scheduleItem => {
-        scheduleItem.sections.forEach(section => {
-            const dayRow = section.rows.find(row => row[0].toLowerCase() === today.toLowerCase());
+        parsedFullSchedule.forEach(scheduleItem => {
+            scheduleItem.sections.forEach(section => {
+                const dayRow = section.rows.find(row => row[0].toLowerCase() === todayStr.toLowerCase());
 
-            if (dayRow) {
-                dayRow.forEach((cell, index) => {
-                    if (index > 0 && cell.includes(facultyAbbr) && cell !== '-') {
-                        const timeSlot = section.header[index];
-                        const roomMatch = cell.match(/in ([\w\s-]+)$/);
-                        const subject = cell.replace(facultyAbbr, '').replace(/in [\w\s-]+$/, '').trim();
-                        const key = `${scheduleItem.programYearTitle}-${section.sectionName}-${timeSlot}`;
-                        
-                        classes.push({
-                            time: timeSlot,
-                            subject: subject,
-                            programYear: scheduleItem.programYearTitle,
-                            section: section.sectionName,
-                            room: roomMatch ? roomMatch[1] : 'N/A',
-                            key: key,
-                            status: 'pending'
-                        });
-                    }
-                });
-            }
+                if (dayRow) {
+                    dayRow.forEach((cell, index) => {
+                        if (index > 0 && cell.includes(facultyAbbr) && cell !== '-') {
+                            const timeSlot = section.header[index];
+                            const roomMatch = cell.match(/in ([\w\s-]+)$/);
+                            const subject = cell.replace(facultyAbbr, '').replace(/in [\w\s-]+$/, '').trim();
+                            const key = `${scheduleItem.programYearTitle}-${section.sectionName}-${todayStr}-${timeSlot}`;
+                            
+                            const logEntry = conductLog.find(log => log.classKey === key && log.facultyEmail === faculty.email);
+                            
+                            classes.push({
+                                time: timeSlot,
+                                subject: subject,
+                                programYear: scheduleItem.programYearTitle,
+                                section: section.sectionName,
+                                room: roomMatch ? roomMatch[1] : 'N/A',
+                                key: key,
+                                status: logEntry ? logEntry.status : 'pending'
+                            });
+                        }
+                    });
+                }
+            });
         });
-    });
 
-    classes.sort((a, b) => a.time.localeCompare(b.time));
-    setTodaysClasses(classes);
-  }, [parsedFullSchedule, faculty.abbreviation]);
+        classes.sort((a, b) => a.time.localeCompare(b.time));
+        setTodaysClasses(classes);
+    };
 
-  const handleStatusChange = (key: string, newStatus: 'conducted' | 'not-conducted') => {
+    fetchTodaysClasses();
+  }, [parsedFullSchedule, faculty.abbreviation, faculty.email, adminEmail]);
+
+  const handleStatusChange = async (key: string, newStatus: 'conducted' | 'not-conducted') => {
     if (newStatus === 'conducted') {
         setTodaysClasses(prevClasses => 
             prevClasses.map(c => 
                 c.key === key ? { ...c, status: newStatus } : c
             )
         );
+        await setConductStatus(adminEmail, { classKey: key, facultyEmail: faculty.email, date: new Date(), status: newStatus });
     } else {
         const classToHandle = todaysClasses.find(c => c.key === key);
         if (classToHandle) {
@@ -179,6 +190,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   
   const handleReleaseDialogAction = async (shouldRelease: boolean) => {
     if (!classToRelease) return;
+    const newStatus = 'not-conducted';
 
     if (shouldRelease) {
         const [startTime, endTime] = classToRelease.time.split('-');
@@ -199,12 +211,13 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
         }
     }
     
-    // Update the class status regardless of the release action
+    // Update the class status in state and persist it
     setTodaysClasses(prevClasses => 
         prevClasses.map(c => 
-            c.key === classToRelease.key ? { ...c, status: 'not-conducted' } : c
+            c.key === classToRelease.key ? { ...c, status: newStatus } : c
         )
     );
+    await setConductStatus(adminEmail, { classKey: classToRelease.key, facultyEmail: faculty.email, date: new Date(), status: newStatus });
 
     setReleaseDialogOpen(false);
     setClassToRelease(null);
