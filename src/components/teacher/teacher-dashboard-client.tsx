@@ -3,9 +3,8 @@
 
 import * as React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { User, Clock, CalendarOff, Settings, ShieldAlert, CalendarCheck, ShieldCheck } from 'lucide-react';
+import { User, Clock, CalendarOff, Settings, ShieldAlert, CalendarCheck, ShieldCheck, ClipboardCheck, ClipboardX } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Faculty } from '@/lib/faculty';
 import type { Admin } from '@/lib/admin';
 import type { Room } from '@/lib/buildings';
@@ -25,7 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { UpcomingClasses } from './upcoming-classes';
+import { UpcomingClasses, type UpcomingClass } from './upcoming-classes';
+import { format } from 'date-fns';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -96,13 +96,13 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   const [show2FADisabledAlert, setShow2FADisabledAlert] = React.useState(false);
   const [show2FAPrompt, setShow2FAPrompt] = React.useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
+  const [todaysClasses, setTodaysClasses] = React.useState<UpcomingClass[]>([]);
   const searchParams = useSearchParams();
   const parsedFullSchedule = React.useMemo(() => parseCompleteSchedule(schedule), [schedule]);
 
   React.useEffect(() => {
     if (searchParams.get('show2FADisabled') === 'true') {
         setShow2FADisabledAlert(true);
-        // Clean the URL to prevent the dialog from reappearing on refresh
         window.history.replaceState(null, '', window.location.pathname + window.location.search.replace(/&?show2FADisabled=true/, ''));
     }
     if (searchParams.get('prompt2FA') === 'true') {
@@ -111,6 +111,55 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     }
   }, [searchParams]);
 
+  React.useEffect(() => {
+    if (!parsedFullSchedule || !faculty.abbreviation) {
+        setTodaysClasses([]);
+        return;
+    }
+
+    const today = format(new Date(), 'EEEE');
+    const facultyAbbr = `(${faculty.abbreviation})`;
+    const classes: UpcomingClass[] = [];
+
+    parsedFullSchedule.sections.forEach(section => {
+        const dayRow = section.rows.find(row => row[0].toLowerCase() === today.toLowerCase());
+
+        if (dayRow) {
+            dayRow.forEach((cell, index) => {
+                if (index > 0 && cell.includes(facultyAbbr) && cell !== '-') {
+                    const timeSlot = section.header[index];
+                    const roomMatch = cell.match(/in ([\w\s-]+)$/);
+                    const subject = cell.replace(facultyAbbr, '').replace(/in [\w\s-]+$/, '').trim();
+                    const key = `${parsedFullSchedule.programYearTitle}-${section.sectionName}-${timeSlot}`;
+                    
+                    classes.push({
+                        time: timeSlot,
+                        subject: subject,
+                        programYear: parsedFullSchedule.programYearTitle,
+                        section: section.sectionName,
+                        room: roomMatch ? roomMatch[1] : 'N/A',
+                        key: key,
+                        status: 'pending'
+                    });
+                }
+            });
+        }
+    });
+    classes.sort((a, b) => a.time.localeCompare(b.time));
+    setTodaysClasses(classes);
+  }, [parsedFullSchedule, faculty.abbreviation]);
+
+  const handleStatusChange = (key: string, newStatus: 'conducted' | 'not-conducted') => {
+    setTodaysClasses(prevClasses => 
+        prevClasses.map(c => 
+            c.key === key ? { ...c, status: newStatus } : c
+        )
+    );
+  };
+
+  const conductedCount = todaysClasses.filter(c => c.status === 'conducted').length;
+  const notConductedCount = todaysClasses.filter(c => c.status === 'not-conducted').length;
+
   const displayedSchedule = React.useMemo(() => {
     if (!parsedFullSchedule) return null;
     
@@ -118,16 +167,14 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
         const facultyAbbr = `(${faculty.abbreviation})`;
 
         const facultySchedules = parsedFullSchedule.sections.map(section => {
-            // For each row (day), map over its cells and replace non-faculty classes with '-'
             const newRows = section.rows.map(row => {
-                const dayName = row[0]; // Keep the day name
+                const dayName = row[0];
                 const classCells = row.slice(1);
                 const filteredCells = classCells.map(cell => 
                     cell.includes(facultyAbbr) ? cell : '-'
                 );
                 return [dayName, ...filteredCells];
             })
-            // Then, filter out days where the faculty has no classes at all
             .filter(row => row.slice(1).some(cell => cell !== '-'));
 
             return {
@@ -135,7 +182,6 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                 rows: newRows,
             };
         })
-        // Finally, filter out entire sections where the faculty has no classes
         .filter(section => section.rows.length > 0);
         
         return { ...parsedFullSchedule, sections: facultySchedules };
@@ -198,7 +244,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     Welcome back, {faculty.name}. View your schedule and manage your availability.
                 </p>
             </div>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 <Card className="lg:col-span-1">
                     <CardHeader>
                         <CardTitle>My Profile</CardTitle>
@@ -238,6 +284,24 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                         </div>
                     </CardContent>
                 </Card>
+                 <Card className="lg:col-span-1">
+                    <CardHeader>
+                        <CardTitle>Classes Conduct</CardTitle>
+                        <CardDescription>Summary of your classes for today.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 text-green-600">
+                                <ClipboardCheck className="h-5 w-5" />
+                                <span className="font-semibold">Conducted: {conductedCount}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-red-600">
+                                <ClipboardX className="h-5 w-5" />
+                                <span className="font-semibold">Not Conducted: {notConductedCount}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
                 <Card className="lg:col-span-1">
                     <CardHeader>
                         <CardTitle>Security Settings</CardTitle>
@@ -250,13 +314,13 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                 </Card>
             </div>
             <div className="pt-8 grid gap-6">
-                 <UpcomingClasses schedule={parsedFullSchedule} facultyAbbreviation={faculty.abbreviation} />
+                 <UpcomingClasses classes={todaysClasses} onStatusChange={handleStatusChange} />
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between gap-4">
                             <div className="grid gap-1">
                                 <CardTitle className="flex items-center gap-2"><CalendarCheck /> {showMyScheduleOnly ? 'My Weekly Schedule' : 'Full Weekly Schedule'}</CardTitle>
-                                <CardDescription>{displayedSchedule?.programYearTitle || 'A schedule has not been published yet.'}</CardDescription>
+                                <CardDescription>{parsedFullSchedule?.programYearTitle || 'A schedule has not been published yet.'}</CardDescription>
                             </div>
                             <Button variant="outline" size="sm" onClick={() => setShowMyScheduleOnly(!showMyScheduleOnly)}>
                                 {showMyScheduleOnly ? 'Show Full Schedule' : 'Show My Schedule'}
