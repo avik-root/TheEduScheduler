@@ -48,10 +48,8 @@ interface ParsedSchedule {
     sections: SectionSchedule[];
 }
 
-function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
-    if (!markdown || markdown.trim() === '') {
-        return null;
-    }
+function parseCompleteSchedule(markdown: string): ParsedSchedule[] | null {
+    if (!markdown || markdown.trim() === '') return null;
 
     const scheduleParts = ('\n' + markdown.trim()).split(/\n## /).filter(s => s.trim() !== '');
 
@@ -89,7 +87,7 @@ function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
         }
         
         return { programYearTitle, sections: parsedSections };
-    }).filter(s => s.sections.length > 0)[0] || null;
+    }).filter(s => s.sections.length > 0);
 }
 
 export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, schedule, initialRequests }: TeacherDashboardClientProps) {
@@ -122,30 +120,33 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     const facultyAbbr = `(${faculty.abbreviation})`;
     const classes: UpcomingClass[] = [];
 
-    parsedFullSchedule.sections.forEach(section => {
-        const dayRow = section.rows.find(row => row[0].toLowerCase() === today.toLowerCase());
+    parsedFullSchedule.forEach(scheduleItem => {
+        scheduleItem.sections.forEach(section => {
+            const dayRow = section.rows.find(row => row[0].toLowerCase() === today.toLowerCase());
 
-        if (dayRow) {
-            dayRow.forEach((cell, index) => {
-                if (index > 0 && cell.includes(facultyAbbr) && cell !== '-') {
-                    const timeSlot = section.header[index];
-                    const roomMatch = cell.match(/in ([\w\s-]+)$/);
-                    const subject = cell.replace(facultyAbbr, '').replace(/in [\w\s-]+$/, '').trim();
-                    const key = `${parsedFullSchedule.programYearTitle}-${section.sectionName}-${timeSlot}`;
-                    
-                    classes.push({
-                        time: timeSlot,
-                        subject: subject,
-                        programYear: parsedFullSchedule.programYearTitle,
-                        section: section.sectionName,
-                        room: roomMatch ? roomMatch[1] : 'N/A',
-                        key: key,
-                        status: 'pending'
-                    });
-                }
-            });
-        }
+            if (dayRow) {
+                dayRow.forEach((cell, index) => {
+                    if (index > 0 && cell.includes(facultyAbbr) && cell !== '-') {
+                        const timeSlot = section.header[index];
+                        const roomMatch = cell.match(/in ([\w\s-]+)$/);
+                        const subject = cell.replace(facultyAbbr, '').replace(/in [\w\s-]+$/, '').trim();
+                        const key = `${scheduleItem.programYearTitle}-${section.sectionName}-${timeSlot}`;
+                        
+                        classes.push({
+                            time: timeSlot,
+                            subject: subject,
+                            programYear: scheduleItem.programYearTitle,
+                            section: section.sectionName,
+                            room: roomMatch ? roomMatch[1] : 'N/A',
+                            key: key,
+                            status: 'pending'
+                        });
+                    }
+                });
+            }
+        });
     });
+
     classes.sort((a, b) => a.time.localeCompare(b.time));
     setTodaysClasses(classes);
   }, [parsedFullSchedule, faculty.abbreviation]);
@@ -166,26 +167,33 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     
     if (showMyScheduleOnly && faculty.abbreviation) {
         const facultyAbbr = `(${faculty.abbreviation})`;
+        const combinedSchedules: ParsedSchedule[] = [];
 
-        const facultySchedules = parsedFullSchedule.sections.map(section => {
-            const newRows = section.rows.map(row => {
-                const dayName = row[0];
-                const classCells = row.slice(1);
-                const filteredCells = classCells.map(cell => 
-                    cell.includes(facultyAbbr) ? cell : '-'
-                );
-                return [dayName, ...filteredCells];
+        parsedFullSchedule.forEach(scheduleItem => {
+            const facultySections = scheduleItem.sections.map(section => {
+                const newRows = section.rows.map(row => {
+                    const dayName = row[0];
+                    const classCells = row.slice(1);
+                    const filteredCells = classCells.map(cell => 
+                        cell.includes(facultyAbbr) ? cell : '-'
+                    );
+                    return [dayName, ...filteredCells];
+                })
+                .filter(row => row.slice(1).some(cell => cell !== '-'));
+
+                return {
+                    ...section,
+                    rows: newRows,
+                };
             })
-            .filter(row => row.slice(1).some(cell => cell !== '-'));
-
-            return {
-                ...section,
-                rows: newRows,
-            };
-        })
-        .filter(section => section.rows.length > 0);
+            .filter(section => section.rows.length > 0);
+            
+            if (facultySections.length > 0) {
+                combinedSchedules.push({ ...scheduleItem, sections: facultySections });
+            }
+        });
         
-        return { ...parsedFullSchedule, sections: facultySchedules };
+        return combinedSchedules;
     } else {
         return parsedFullSchedule;
     }
@@ -290,8 +298,8 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                         <CardTitle>Classes Conduct</CardTitle>
                         <CardDescription>Summary of your classes for today.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center gap-4">
+                    <CardContent className="pt-2">
+                        <div className="flex flex-wrap items-center gap-4">
                             <div className="flex items-center gap-2 text-green-600">
                                 <ClipboardCheck className="h-5 w-5" />
                                 <span className="font-semibold">Conducted: {conductedCount}</span>
@@ -321,42 +329,49 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                         <div className="flex items-center justify-between gap-4">
                             <div className="grid gap-1">
                                 <CardTitle className="flex items-center gap-2"><CalendarCheck /> {showMyScheduleOnly ? 'My Weekly Schedule' : 'Full Weekly Schedule'}</CardTitle>
-                                <CardDescription>{parsedFullSchedule?.programYearTitle || 'A schedule has not been published yet.'}</CardDescription>
+                                <CardDescription>{parsedFullSchedule?.length > 0 ? 'Your comprehensive weekly timetable.' : 'A schedule has not been published yet.'}</CardDescription>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => setShowMyScheduleOnly(!showMyScheduleOnly)}>
+                            <Button variant="outline" size="sm" onClick={() => setShowMyScheduleOnly(!showMyScheduleOnly)} disabled={!parsedFullSchedule}>
                                 {showMyScheduleOnly ? 'Show Full Schedule' : 'Show My Schedule'}
                             </Button>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {displayedSchedule && displayedSchedule.sections.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-6">
-                                {displayedSchedule.sections.map((sectionSchedule, sectionIndex) => (
-                                    <Card key={sectionIndex}>
-                                        <CardHeader>
-                                            <CardTitle>{sectionSchedule.sectionName}</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="overflow-x-auto p-0">
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        {sectionSchedule.header.map((head, index) => (
-                                                            <TableHead key={index}>{head}</TableHead>
-                                                        ))}
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {sectionSchedule.rows.map((row, rowIndex) => (
-                                                        <TableRow key={rowIndex}>
-                                                            {row.map((cell, cellIndex) => (
-                                                                <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
+                        {displayedSchedule && displayedSchedule.length > 0 ? (
+                            <div className="space-y-8">
+                                {displayedSchedule.map((scheduleItem, scheduleIndex) => (
+                                <Card key={scheduleIndex}>
+                                    <CardHeader>
+                                        <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6 p-0 md:p-6">
+                                        {scheduleItem.sections.map((sectionSchedule, sectionIndex) => (
+                                            <div key={sectionIndex}>
+                                                <h3 className="text-lg font-semibold mb-2 px-6 md:px-0">{sectionSchedule.sectionName}</h3>
+                                                <div className="overflow-x-auto rounded-md border">
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow>
+                                                                {sectionSchedule.header.map((head, index) => (
+                                                                    <TableHead key={index}>{head}</TableHead>
+                                                                ))}
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {sectionSchedule.rows.map((row, rowIndex) => (
+                                                                <TableRow key={rowIndex}>
+                                                                    {row.map((cell, cellIndex) => (
+                                                                        <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
+                                                                    ))}
+                                                                </TableRow>
                                                             ))}
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </CardContent>
-                                    </Card>
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
                                 ))}
                             </div>
                         ) : (
