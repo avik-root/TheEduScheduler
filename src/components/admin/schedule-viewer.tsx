@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, Save } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, Save, FilePenLine } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
@@ -12,10 +13,20 @@ import { DeleteSingleScheduleDialog } from './delete-single-schedule-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { publishSchedule } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import type { Subject } from '@/lib/subjects';
+import type { Faculty } from '@/lib/faculty';
+import type { Room } from '@/lib/buildings';
+
 
 interface ScheduleViewerProps {
   schedule: string;
   adminEmail: string;
+  allSubjects: Subject[];
+  allFaculty: Faculty[];
+  allRooms: Room[];
 }
 
 interface SectionSchedule {
@@ -27,6 +38,19 @@ interface SectionSchedule {
 interface ParsedSchedule {
     programYearTitle: string;
     sections: SectionSchedule[];
+}
+
+interface EditingCell {
+    scheduleIndex: number;
+    sectionIndex: number;
+    rowIndex: number;
+    cellIndex: number;
+}
+
+interface PopoverState {
+    subject: string;
+    faculty: string;
+    room: string;
 }
 
 function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
@@ -78,19 +102,80 @@ function schedulesToMarkdown(schedules: ParsedSchedule[]): string {
     }).join('\n');
 }
 
-export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
+export function ScheduleViewer({ schedule, adminEmail, allSubjects, allFaculty, allRooms }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const { toast } = useToast();
   const [parsedSchedules, setParsedSchedules] = React.useState(() => parseMultipleSchedules(schedule));
   const [isDirty, setIsDirty] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
-  const [editingCell, setEditingCell] = React.useState<{scheduleIndex: number, sectionIndex: number, rowIndex: number, cellIndex: number} | null>(null);
+  const [editingCell, setEditingCell] = React.useState<EditingCell | null>(null);
+  const [popoverState, setPopoverState] = React.useState<PopoverState>({ subject: '', faculty: '', room: ''});
   const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
 
   React.useEffect(() => {
     setParsedSchedules(parseMultipleSchedules(schedule));
     setIsDirty(false);
   }, [schedule]);
+  
+   const availablePopoverFaculty = React.useMemo(() => {
+    if (!popoverState.subject) return allFaculty;
+    const selectedSubject = allSubjects.find(s => s.name === popoverState.subject);
+    if (!selectedSubject || !selectedSubject.facultyEmails) return allFaculty;
+    return allFaculty.filter(f => selectedSubject.facultyEmails?.includes(f.email));
+  }, [popoverState.subject, allSubjects, allFaculty]);
+
+
+  const handleCellClick = (cellData: EditingCell, cellContent: string) => {
+    setEditingCell(cellData);
+    if (cellContent === '-' || cellContent.trim() === '') {
+        setPopoverState({ subject: '', faculty: '', room: '' });
+    } else {
+        const subjectMatch = cellContent.match(/^(.*?)\s*\(/);
+        const facultyMatch = cellContent.match(/\((.*?)\)/);
+        const roomMatch = cellContent.match(/in\s+(.*)$/);
+        setPopoverState({
+            subject: subjectMatch ? subjectMatch[1].trim() : '',
+            faculty: facultyMatch ? facultyMatch[1].trim() : '',
+            room: roomMatch ? roomMatch[1].trim() : '',
+        });
+    }
+  };
+
+  const handlePopoverSave = () => {
+    if (!editingCell) return;
+    const { subject, faculty, room } = popoverState;
+    
+    let newCellContent = '-';
+    if (subject && faculty && room) {
+        newCellContent = `${subject} (${faculty}) in ${room}`;
+    } else if (subject && faculty) {
+        newCellContent = `${subject} (${faculty})`;
+    } else if (subject) {
+        newCellContent = subject;
+    }
+
+    setParsedSchedules(prev => {
+        if (!prev) return null;
+        const newSchedules = JSON.parse(JSON.stringify(prev));
+        newSchedules[editingCell.scheduleIndex].sections[editingCell.sectionIndex].rows[editingCell.rowIndex][editingCell.cellIndex] = newCellContent;
+        return newSchedules;
+    });
+    
+    setIsDirty(true);
+    setEditingCell(null);
+  };
+  
+  const handleClearCell = () => {
+    if (!editingCell) return;
+     setParsedSchedules(prev => {
+        if (!prev) return null;
+        const newSchedules = JSON.parse(JSON.stringify(prev));
+        newSchedules[editingCell.scheduleIndex].sections[editingCell.sectionIndex].rows[editingCell.rowIndex][editingCell.cellIndex] = '-';
+        return newSchedules;
+    });
+    setIsDirty(true);
+    setEditingCell(null);
+  }
 
   const filteredSchedules = React.useMemo(() => {
     if (!parsedSchedules) return [];
@@ -114,16 +199,6 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
         return null;
     }).filter((s): s is ParsedSchedule => s !== null);
   }, [parsedSchedules, searchQuery]);
-
-  const handleCellChange = (scheduleIndex: number, sectionIndex: number, rowIndex: number, cellIndex: number, value: string) => {
-    setParsedSchedules(prev => {
-        if (!prev) return null;
-        const newSchedules = JSON.parse(JSON.stringify(prev));
-        newSchedules[scheduleIndex].sections[sectionIndex].rows[rowIndex][cellIndex] = value;
-        return newSchedules;
-    });
-    setIsDirty(true);
-  };
 
   const handleSaveAndPublish = async () => {
     if (!parsedSchedules) return;
@@ -168,8 +243,8 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
             </div>
             <div className="flex items-center gap-2">
                 <Button onClick={handleSaveAndPublish} disabled={!isDirty || isSaving}>
-                    <Save className="mr-2 h-4 w-4" />
                     {isSaving ? "Saving..." : "Save & Publish Changes"}
+                    <Save className="ml-2 h-4 w-4" />
                 </Button>
                  <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
             </div>
@@ -224,37 +299,64 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                                         {sectionSchedule.rows.map((row, rowIndex) => (
                                                             <TableRow key={rowIndex}>
                                                                 {row.map((cell, cellIndex) => {
-                                                                    const isEditing = editingCell?.scheduleIndex === scheduleIndex &&
-                                                                                      editingCell?.sectionIndex === sectionIndex &&
-                                                                                      editingCell?.rowIndex === rowIndex &&
-                                                                                      editingCell?.cellIndex === cellIndex;
+                                                                    const cellIdentifier = {scheduleIndex, sectionIndex, rowIndex, cellIndex};
+                                                                    const isEditing = JSON.stringify(editingCell) === JSON.stringify(cellIdentifier);
                                                                     return (
                                                                         <TableCell 
                                                                             key={cellIndex} 
-                                                                            className={cn("whitespace-nowrap cursor-pointer hover:bg-muted/50", cellIndex === 0 && "font-medium")}
+                                                                            className={cn("whitespace-nowrap", cellIndex === 0 ? "font-medium" : "cursor-pointer hover:bg-muted/50")}
                                                                             onClick={() => {
-                                                                                if (cellIndex > 0) { // Don't edit Day column
-                                                                                    setEditingCell({scheduleIndex, sectionIndex, rowIndex, cellIndex});
+                                                                                if (cellIndex > 0) {
+                                                                                    handleCellClick(cellIdentifier, cell);
                                                                                 }
                                                                             }}
                                                                         >
-                                                                            {isEditing ? (
-                                                                                <Input
-                                                                                    autoFocus
-                                                                                    defaultValue={cell}
-                                                                                    onBlur={(e) => {
-                                                                                        handleCellChange(scheduleIndex, sectionIndex, rowIndex, cellIndex, e.target.value);
-                                                                                        setEditingCell(null);
-                                                                                    }}
-                                                                                    onKeyDown={(e) => {
-                                                                                        if (e.key === 'Enter') {
-                                                                                            handleCellChange(scheduleIndex, sectionIndex, rowIndex, cellIndex, e.currentTarget.value);
-                                                                                            setEditingCell(null);
-                                                                                        } else if (e.key === 'Escape') {
-                                                                                            setEditingCell(null);
-                                                                                        }
-                                                                                    }}
-                                                                                />
+                                                                            {cellIndex > 0 ? (
+                                                                                <Popover open={isEditing} onOpenChange={(isOpen) => !isOpen && setEditingCell(null)}>
+                                                                                    <PopoverTrigger asChild>
+                                                                                        <div className={cn("w-full h-full flex items-center", isDirty ? "bg-yellow-100/50 dark:bg-yellow-900/50" : "")}>
+                                                                                            {cell}
+                                                                                        </div>
+                                                                                    </PopoverTrigger>
+                                                                                    <PopoverContent className="w-80">
+                                                                                        <div className="grid gap-4">
+                                                                                            <div className="space-y-2">
+                                                                                                <h4 className="font-medium leading-none">Edit Class Slot</h4>
+                                                                                                <p className="text-sm text-muted-foreground">
+                                                                                                    Modify the details for this time slot.
+                                                                                                </p>
+                                                                                            </div>
+                                                                                            <div className="grid gap-2">
+                                                                                                <Label>Subject</Label>
+                                                                                                <Select value={popoverState.subject} onValueChange={(value) => setPopoverState({...popoverState, subject: value, faculty: ''})}>
+                                                                                                    <SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger>
+                                                                                                    <SelectContent>{allSubjects.map(s => <SelectItem key={s.id} value={s.name}>{s.name} ({s.code})</SelectItem>)}</SelectContent>
+                                                                                                </Select>
+                                                                                            </div>
+                                                                                             <div className="grid gap-2">
+                                                                                                <Label>Faculty</Label>
+                                                                                                <Select value={popoverState.faculty} onValueChange={(value) => setPopoverState({...popoverState, faculty: value})} disabled={!popoverState.subject}>
+                                                                                                    <SelectTrigger><SelectValue placeholder="Select Faculty" /></SelectTrigger>
+                                                                                                    <SelectContent>
+                                                                                                        <SelectItem value="NF">NF (No Faculty)</SelectItem>
+                                                                                                        {availablePopoverFaculty.map(f => <SelectItem key={f.email} value={f.abbreviation}>{f.name} ({f.abbreviation})</SelectItem>)}
+                                                                                                    </SelectContent>
+                                                                                                </Select>
+                                                                                            </div>
+                                                                                             <div className="grid gap-2">
+                                                                                                <Label>Room</Label>
+                                                                                                <Select value={popoverState.room} onValueChange={(value) => setPopoverState({...popoverState, room: value})}>
+                                                                                                    <SelectTrigger><SelectValue placeholder="Select Room" /></SelectTrigger>
+                                                                                                    <SelectContent>{allRooms.map(r => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}</SelectContent>
+                                                                                                </Select>
+                                                                                            </div>
+                                                                                            <div className='flex justify-between gap-2 mt-2'>
+                                                                                                <Button variant="destructive" size="sm" onClick={handleClearCell}>Clear Slot</Button>
+                                                                                                <Button size="sm" onClick={handlePopoverSave}>Save Slot</Button>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </PopoverContent>
+                                                                                </Popover>
                                                                             ) : (
                                                                                 cell
                                                                             )}
