@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { UpcomingClasses, type UpcomingClass } from './upcoming-classes';
 import { format } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
