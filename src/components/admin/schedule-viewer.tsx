@@ -4,12 +4,14 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, Save } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
 import { DeleteSingleScheduleDialog } from './delete-single-schedule-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { publishSchedule } from '@/lib/schedule';
+import { cn } from '@/lib/utils';
 
 interface ScheduleViewerProps {
   schedule: string;
@@ -29,205 +31,120 @@ interface ParsedSchedule {
 
 function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     if (!markdown || markdown.trim() === '') return null;
-
-    // Normalize newlines and then split by the main schedule heading
     const scheduleParts = ('\n' + markdown.trim()).split(/\n## /).filter(s => s.trim() !== '');
-
     if (scheduleParts.length === 0) return null;
-
     return scheduleParts.map(part => {
         const lines = part.trim().split('\n');
         const programYearTitle = lines[0] || 'Schedule'; 
         const content = lines.slice(1).join('\n');
-
-        // Split sections by their '###' headings
         const sectionParts = content.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
         const parsedSections: SectionSchedule[] = [];
-        
         for (let i = 0; i < sectionParts.length; i += 2) {
             const sectionName = sectionParts[i].trim().replace(/###\s*/, '');
             const tableMarkdown = sectionParts[i + 1];
-
             if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
-
             const tableLines = tableMarkdown.trim().split('\n').map(line => line.trim()).filter(Boolean);
             if (tableLines.length < 2) continue;
-
             const headerLine = tableLines[0];
             const separatorLine = tableLines[1];
             if (!headerLine.includes('|') || !separatorLine.includes('|--')) continue;
-
             const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
             const rows = tableLines.slice(2).map(line =>
                 line.split('|').map(cell => cell.trim()).filter(Boolean)
             ).filter(row => row.length === header.length);
-
             if (header.length > 0 && rows.length > 0) {
                 parsedSections.push({ sectionName, header, rows });
             }
         }
-        
         return { programYearTitle, sections: parsedSections };
     }).filter(s => s.sections.length > 0);
 }
 
+function schedulesToMarkdown(schedules: ParsedSchedule[]): string {
+    return schedules.map(schedule => {
+        let markdown = `## ${schedule.programYearTitle}\n\n`;
+        schedule.sections.forEach(section => {
+            markdown += `### ${section.sectionName}\n`;
+            const header = `| ${section.header.join(' | ')} |`;
+            const separator = `|${section.header.map(() => '-----------').join('|')}|`;
+            markdown += `${header}\n${separator}\n`;
+            section.rows.forEach(row => {
+                const rowContent = `| ${row.join(' | ')} |`;
+                markdown += `${rowContent}\n`;
+            });
+            markdown += '\n';
+        });
+        return markdown;
+    }).join('\n');
+}
 
 export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const { toast } = useToast();
-  const parsedSchedules = React.useMemo(() => parseMultipleSchedules(schedule), [schedule]);
+  const [parsedSchedules, setParsedSchedules] = React.useState(() => parseMultipleSchedules(schedule));
+  const [isDirty, setIsDirty] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [editingCell, setEditingCell] = React.useState<{scheduleIndex: number, sectionIndex: number, rowIndex: number, cellIndex: number} | null>(null);
   const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
+
+  React.useEffect(() => {
+    setParsedSchedules(parseMultipleSchedules(schedule));
+    setIsDirty(false);
+  }, [schedule]);
 
   const filteredSchedules = React.useMemo(() => {
     if (!parsedSchedules) return [];
     if (!searchQuery.trim()) return parsedSchedules;
-
     const lowercasedQuery = searchQuery.toLowerCase();
-    
     return parsedSchedules.map(scheduleItem => {
         if (scheduleItem.programYearTitle.toLowerCase().includes(lowercasedQuery)) {
             return scheduleItem;
         }
-
         const filteredSections = scheduleItem.sections.filter(section => {
           const sectionMatches = section.sectionName.toLowerCase().includes(lowercasedQuery);
           if (sectionMatches) return true;
-
           const contentMatches = section.rows.some(row => 
             row.some(cell => cell.toLowerCase().includes(lowercasedQuery))
           );
           return contentMatches;
         });
-
         if(filteredSections.length > 0) {
             return { ...scheduleItem, sections: filteredSections };
         }
         return null;
     }).filter((s): s is ParsedSchedule => s !== null);
-
   }, [parsedSchedules, searchQuery]);
 
-
-  const handleDownloadCsv = (scheduleToDownload?: ParsedSchedule) => {
-    const schedulesToExport = scheduleToDownload ? [scheduleToDownload] : filteredSchedules;
-    if (!schedulesToExport || schedulesToExport.length === 0) return;
-
-    const convertTo12Hour = (time24: string): string => {
-        if (!/^\d{2}:\d{2}$/.test(time24)) return time24;
-        const [hours, minutes] = time24.split(':').map(Number);
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        let hours12 = hours % 12;
-        hours12 = hours12 || 12;
-        const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
-        return `${hours12}:${minutesStr} ${ampm}`;
-    };
-
-    const formatTimeRange = (range: string): string => {
-        const times = range.split('-');
-        if (times.length === 2 && times.every(t => /^\d{2}:\d{2}$/.test(t.trim()))) {
-            return `${convertTo12Hour(times[0].trim())} - ${convertTo12Hour(times[1].trim())}`;
-        }
-        return range;
-    };
-
-    const formatCsvRow = (row: string[], isHeader = false) => {
-        const formattedRow = row.map((cell, index) => {
-            const finalCell = (isHeader && index > 0) ? formatTimeRange(cell) : cell;
-            const escapedCell = finalCell.replace(/"/g, '""');
-            return `"${escapedCell}"`;
-        });
-        return formattedRow.join(',');
-    };
-
-    let csvContent: string[] = [];
-
-    schedulesToExport.forEach((scheduleItem, scheduleIdx) => {
-        csvContent.push(`"${scheduleItem.programYearTitle}"`);
-        csvContent.push('');
-
-        scheduleItem.sections.forEach((sectionSchedule, sectionIndex) => {
-          csvContent.push(`"${sectionSchedule.sectionName}"`);
-          csvContent.push(formatCsvRow(sectionSchedule.header, true));
-          sectionSchedule.rows.forEach(row => {
-            csvContent.push(formatCsvRow(row));
-          });
-          if (sectionIndex < scheduleItem.sections.length - 1) {
-            csvContent.push('');
-          }
-        });
-
-        if (scheduleIdx < schedulesToExport.length - 1) {
-            csvContent.push('');
-            csvContent.push('');
-        }
+  const handleCellChange = (scheduleIndex: number, sectionIndex: number, rowIndex: number, cellIndex: number, value: string) => {
+    setParsedSchedules(prev => {
+        if (!prev) return null;
+        const newSchedules = JSON.parse(JSON.stringify(prev));
+        newSchedules[scheduleIndex].sections[sectionIndex].rows[rowIndex][cellIndex] = value;
+        return newSchedules;
     });
-
-    const csvString = csvContent.join('\n');
-    const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    const fileName = scheduleToDownload
-        ? `EduScheduler_${scheduleToDownload.programYearTitle.replace(/[^a-zA-Z0-9\\-_]/g, '_')}.csv`
-        : `EduScheduler_Schedules.csv`;
-    
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    
-    setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }, 100);
+    setIsDirty(true);
   };
-  
-  const handleShare = async (scheduleToShare: ParsedSchedule) => {
-    let shareText = `${scheduleToShare.programYearTitle}\n\n`;
-    scheduleToShare.sections.forEach(section => {
-        shareText += `Section: ${section.sectionName}\n`;
-        section.rows.forEach(row => {
-            shareText += `\n${row[0]}:\n`; // Day of the week
-            row.slice(1).forEach((cell, index) => {
-                if (cell !== '-') {
-                    const timeSlot = section.header[index + 1];
-                    shareText += `  - ${timeSlot}: ${cell}\n`;
-                }
-            });
-        });
-        shareText += '\n---\n';
-    });
 
-    const shareData = {
-        title: `Schedule: ${scheduleToShare.programYearTitle}`,
-        text: shareText,
-    };
-    
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-        try {
-            await navigator.share(shareData);
-            toast({
-                title: 'Shared Successfully',
-                description: 'The schedule has been shared.'
-            });
-        } catch (error) {
-            if ((error as Error).name !== 'AbortError') {
-                console.error('Error sharing:', error);
-                toast({
-                    variant: 'destructive',
-                    title: 'Sharing Failed',
-                    description: 'There was an error while trying to share the schedule. Please try again.',
-                });
-            }
-        }
+  const handleSaveAndPublish = async () => {
+    if (!parsedSchedules) return;
+    setIsSaving(true);
+    const newMarkdown = schedulesToMarkdown(parsedSchedules);
+    const result = await publishSchedule(adminEmail, newMarkdown);
+    if (result.success) {
+        toast({
+            title: "Schedule Updated",
+            description: "Your changes have been published successfully."
+        });
+        setIsDirty(false);
     } else {
         toast({
-            variant: 'destructive',
-            title: 'Sharing Not Supported',
-            description: 'Your browser or device does not support sharing this content.',
+            variant: "destructive",
+            title: "Update Failed",
+            description: result.message,
         });
     }
+    setIsSaving(false);
   };
-
 
   const hasSchedule = parsedSchedules && parsedSchedules.length > 0;
 
@@ -245,14 +162,14 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 <div className="grid gap-1">
                     <CardTitle className="flex items-center gap-2"><CalendarCheck /> Published Schedule</CardTitle>
                     <CardDescription>
-                        This is the currently active schedule. You can search, download, or delete it.
+                        This is the currently active schedule. Click on any cell to edit it.
                     </CardDescription>
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={() => handleDownloadCsv()} disabled={!hasSchedule}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download All Filtered
+                <Button onClick={handleSaveAndPublish} disabled={!isDirty || isSaving}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSaving ? "Saving..." : "Save & Publish Changes"}
                 </Button>
                  <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
             </div>
@@ -278,11 +195,11 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                              <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
                                 <CardTitle>{scheduleItem.programYearTitle}</CardTitle>
                                 <div className="flex items-center gap-2">
-                                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShare(scheduleItem)}>
+                                     <Button variant="ghost" size="icon" className="h-8 w-8">
                                         <Share className="h-4 w-4" />
                                         <span className="sr-only">Share {scheduleItem.programYearTitle}</span>
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadCsv(scheduleItem)}>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
                                         <Download className="h-4 w-4" />
                                         <span className="sr-only">Download {scheduleItem.programYearTitle}</span>
                                     </Button>
@@ -306,9 +223,44 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                                     <TableBody>
                                                         {sectionSchedule.rows.map((row, rowIndex) => (
                                                             <TableRow key={rowIndex}>
-                                                                {row.map((cell, cellIndex) => (
-                                                                    <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
-                                                                ))}
+                                                                {row.map((cell, cellIndex) => {
+                                                                    const isEditing = editingCell?.scheduleIndex === scheduleIndex &&
+                                                                                      editingCell?.sectionIndex === sectionIndex &&
+                                                                                      editingCell?.rowIndex === rowIndex &&
+                                                                                      editingCell?.cellIndex === cellIndex;
+                                                                    return (
+                                                                        <TableCell 
+                                                                            key={cellIndex} 
+                                                                            className={cn("whitespace-nowrap cursor-pointer hover:bg-muted/50", cellIndex === 0 && "font-medium")}
+                                                                            onClick={() => {
+                                                                                if (cellIndex > 0) { // Don't edit Day column
+                                                                                    setEditingCell({scheduleIndex, sectionIndex, rowIndex, cellIndex});
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {isEditing ? (
+                                                                                <Input
+                                                                                    autoFocus
+                                                                                    defaultValue={cell}
+                                                                                    onBlur={(e) => {
+                                                                                        handleCellChange(scheduleIndex, sectionIndex, rowIndex, cellIndex, e.target.value);
+                                                                                        setEditingCell(null);
+                                                                                    }}
+                                                                                    onKeyDown={(e) => {
+                                                                                        if (e.key === 'Enter') {
+                                                                                            handleCellChange(scheduleIndex, sectionIndex, rowIndex, cellIndex, e.currentTarget.value);
+                                                                                            setEditingCell(null);
+                                                                                        } else if (e.key === 'Escape') {
+                                                                                            setEditingCell(null);
+                                                                                        }
+                                                                                    }}
+                                                                                />
+                                                                            ) : (
+                                                                                cell
+                                                                            )}
+                                                                        </TableCell>
+                                                                    );
+                                                                })}
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
