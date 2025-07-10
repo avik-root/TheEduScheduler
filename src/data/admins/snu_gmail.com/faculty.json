@@ -21,7 +21,8 @@
     ],
     "twoFactorAttempts": 0,
     "isTwoFactorEnabled": true,
-    "twoFactorPin": "$2a$10$kuQPYm9bg/prizjfHzhUVOcIlkKdPch.c9n35nd8Kt7vmrZwu3imq"
+    "twoFactorPin": "$2a$10$kuQPYm9bg/prizjfHzhUVOcIlkKdPch.c9n35nd8Kt7vmrZwu3imq",
+    "isLocked": false
   },
   {
     "name": "Rishika Roy",

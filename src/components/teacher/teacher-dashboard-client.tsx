@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { UpcomingClasses } from './upcoming-classes';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -95,6 +96,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   const [show2FAPrompt, setShow2FAPrompt] = React.useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
   const searchParams = useSearchParams();
+  const parsedFullSchedule = React.useMemo(() => parseCompleteSchedule(schedule), [schedule]);
 
   React.useEffect(() => {
     if (searchParams.get('show2FADisabled') === 'true') {
@@ -109,15 +111,12 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   }, [searchParams]);
 
   const displayedSchedule = React.useMemo(() => {
-    if (!schedule) return null;
+    if (!parsedFullSchedule) return null;
     
-    const parsedData = parseCompleteSchedule(schedule);
-    if (!parsedData) return null;
-
     if (showMyScheduleOnly && faculty.abbreviation) {
         const facultyAbbr = `(${faculty.abbreviation})`;
 
-        const facultySchedules = parsedData.sections.map(section => {
+        const facultySchedules = parsedFullSchedule.sections.map(section => {
             // For each row (day), map over its cells and replace non-faculty classes with '-'
             const newRows = section.rows.map(row => {
                 const dayName = row[0]; // Keep the day name
@@ -138,11 +137,11 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
         // Finally, filter out entire sections where the faculty has no classes
         .filter(section => section.rows.length > 0);
         
-        return { ...parsedData, sections: facultySchedules };
+        return { ...parsedFullSchedule, sections: facultySchedules };
     } else {
-        return parsedData;
+        return parsedFullSchedule;
     }
-  }, [schedule, faculty.abbreviation, showMyScheduleOnly]);
+  }, [parsedFullSchedule, faculty.abbreviation, showMyScheduleOnly]);
 
   return (
      <>
@@ -250,6 +249,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                 </Card>
             </div>
             <div className="pt-8 grid gap-6">
+                 <UpcomingClasses schedule={parsedFullSchedule} facultyAbbreviation={faculty.abbreviation} />
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between gap-4">
