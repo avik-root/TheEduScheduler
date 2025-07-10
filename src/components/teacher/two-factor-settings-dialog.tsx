@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -15,7 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { Loader2, ShieldCheck, Eye, EyeOff, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Faculty } from '@/lib/faculty';
 import { setTwoFactor } from '@/lib/faculty';
@@ -35,7 +36,6 @@ const TwoFactorSettingsSchema = z.object({
     message: "A 6-digit PIN is required to enable 2FA.",
     path: ["pin"],
 }).refine(data => {
-    // If disabling 2FA, password is required. Otherwise, it's not.
     if (!data.isEnabled && !data.currentPassword) {
         return false;
     }
@@ -56,6 +56,8 @@ interface TwoFactorSettingsDialogProps {
 export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettingsDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showPin, setShowPin] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -141,17 +143,28 @@ export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettin
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>New 6-Digit PIN</FormLabel>
-                            <FormControl>
-                                <Input 
-                                    type="text" 
-                                    placeholder="••••••" 
-                                    {...field} 
-                                    maxLength={6} 
-                                    pattern="\d{6}"
-                                    autoComplete="off"
-                                    className="text-center tracking-[1.5em]"
-                                />
-                            </FormControl>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <FormControl>
+                                    <Input 
+                                        type={showPin ? 'text' : 'password'}
+                                        placeholder="••••••" 
+                                        {...field} 
+                                        maxLength={6} 
+                                        pattern="\d{6}"
+                                        autoComplete="off"
+                                        className="pl-10 pr-10"
+                                    />
+                                </FormControl>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPin(!showPin)}
+                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                                >
+                                    <span className="sr-only">{showPin ? 'Hide PIN' : 'Show PIN'}</span>
+                                    {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                             <FormMessage />
                             </FormItem>
                         )}
@@ -164,9 +177,20 @@ export function TwoFactorSettingsDialog({ faculty, adminEmail }: TwoFactorSettin
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Current Password {isEnabled ? '(Optional)' : '(Required to disable)'}</FormLabel>
-                        <FormControl>
-                            <Input type="password" {...field} placeholder="Enter password to confirm" />
-                        </FormControl>
+                        <div className="relative">
+                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                           <FormControl>
+                                <Input type={showPassword ? 'text' : 'password'} {...field} placeholder="Enter password to confirm" className="pl-10 pr-10" />
+                           </FormControl>
+                           <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                            >
+                                <span className="sr-only">{showPassword ? 'Hide Password' : 'Show Password'}</span>
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                           </button>
+                        </div>
                         <FormMessage />
                         </FormItem>
                     )}

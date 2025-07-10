@@ -40,6 +40,7 @@ export function TeacherLoginForm() {
   const [loginResult, setLoginResult] = React.useState<LoginResult | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showPin, setShowPin] = React.useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -172,14 +173,23 @@ export function TeacherLoginForm() {
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <FormControl>
                         <Input 
-                            type="text" 
+                            type={showPin ? 'text' : 'password'} 
                             placeholder="••••••" 
                             {...field} 
                             maxLength={6} 
                             pattern="\d{6}"
-                            className="pl-10 text-center tracking-[1.5em]"
+                            className="pl-10 pr-10"
+                            autoComplete="one-time-code"
                         />
                     </FormControl>
+                     <button
+                        type="button"
+                        onClick={() => setShowPin(!showPin)}
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                        >
+                        <span className="sr-only">{showPin ? 'Hide PIN' : 'Show PIN'}</span>
+                        {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                   <FormMessage />
                 </FormItem>
