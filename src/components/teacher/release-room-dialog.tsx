@@ -34,13 +34,13 @@ export function ReleaseRoomDialog({ open, onOpenChange, classDetails, onConfirm 
             <BellRing className="h-5 w-5" />
             Confirm Class Cancellation
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            You are marking the following class as 'Not Conducted':
-            <div className="my-2 rounded-md border bg-muted p-2 text-sm text-foreground">
+          <div className="text-sm text-muted-foreground">
+            <p>You are marking the following class as 'Not Conducted':</p>
+            <div className="my-2 rounded-md border bg-muted p-3 text-sm text-foreground">
               <strong>{classDetails.subject}</strong> at {classDetails.time} in {classDetails.room}
             </div>
-            Would you like to release the room for this time slot, making it available for other faculty to request?
-          </AlertDialogDescription>
+            <p>Would you like to release the room for this time slot, making it available for other faculty to request?</p>
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => onConfirm(false)}>
