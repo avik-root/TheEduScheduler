@@ -1,5 +1,37 @@
 [
   {
+    "id": "1752163146511-djcblrl",
+    "facultyName": "Shiva Seth Alam",
+    "facultyEmail": "shiva.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:59:06.511Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752163123603-5gihwcv",
+    "facultyName": "Trishita Gautam",
+    "facultyEmail": "trishita.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:58:43.603Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752163093162-i3qpphn",
+    "facultyName": "Trishita Gautam",
+    "facultyEmail": "trishita.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:58:13.162Z",
+    "type": "login",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": "1752163075469-8jb8xm9",
+    "facultyName": "Rituparna Sarka",
+    "facultyEmail": "rituporna.c3a@themintfire.com",
+    "timestamp": "2025-07-10T15:57:55.470Z",
+    "type": "logout",
+    "ipAddress": "127.0.0.1"
+  },
+  {
     "id": "1752162610954-egiru02",
     "facultyName": "Rituparna Sarka",
     "facultyEmail": "rituporna.c3a@themintfire.com",

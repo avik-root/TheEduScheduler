@@ -86,7 +86,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "twoFactorAttempts": 0
   },
   {
     "name": "Mehakdeep Kaur",

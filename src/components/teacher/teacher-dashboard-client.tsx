@@ -171,7 +171,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                         Enhance Your Account Security
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                        Enable Two-Factor Authentication (2FA) for an extra layer of protection. It's quick, easy, and keeps your account safe.
+                        Enable Two-Factor Authentication (2FA) for an extra layer of protection. It's quick, easy, and keeps your account safe. This is a security reminder from MintFire.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
