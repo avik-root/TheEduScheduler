@@ -34,7 +34,7 @@ export function ReleaseRoomDialog({ open, onOpenChange, classDetails, onConfirm 
             <BellRing className="h-5 w-5" />
             Confirm Class Cancellation
           </AlertDialogTitle>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground pt-2">
             <p>You are marking the following class as 'Not Conducted':</p>
             <div className="my-2 rounded-md border bg-muted p-3 text-sm text-foreground">
               <strong>{classDetails.subject}</strong> at {classDetails.time} in {classDetails.room}
@@ -43,9 +43,10 @@ export function ReleaseRoomDialog({ open, onOpenChange, classDetails, onConfirm 
           </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onConfirm(false)}>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <Button variant="secondary" onClick={() => onConfirm(false)}>
             Just Cancel Class
-          </AlertDialogCancel>
+          </Button>
           <AlertDialogAction onClick={() => onConfirm(true)}>
             Release Room & Cancel
           </AlertDialogAction>
