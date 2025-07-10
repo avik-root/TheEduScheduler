@@ -12,9 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '../ui/button';
-import { type UpcomingClass } from './upcoming-classes';
 import { BellRing } from 'lucide-react';
+import type { UpcomingClass } from './upcoming-classes';
+import { Button } from '../ui/button';
 
 interface ReleaseRoomDialogProps {
   open: boolean;
