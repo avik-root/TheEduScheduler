@@ -64,9 +64,9 @@ function parseCompleteSchedule(markdown: string): ParsedSchedule | null {
         const sectionParts = content.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
         const parsedSections: SectionSchedule[] = [];
 
-        for (let i = 0; i < sectionsMarkdown.length; i += 2) {
-            const sectionName = sectionsMarkdown[i].trim().replace(/###\s*/, '');
-            const tableMarkdown = sectionsMarkdown[i + 1];
+        for (let i = 0; i < sectionParts.length; i += 2) {
+            const sectionName = sectionParts[i].trim().replace(/###\s*/, '');
+            const tableMarkdown = sectionParts[i + 1];
 
             if (!tableMarkdown || !tableMarkdown.includes('|')) continue;
 
