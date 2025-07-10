@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, User, Mail, Lock, Eye, EyeOff, Building, Clock, Type, ShieldOff } from 'lucide-react';
+import { Loader2, User, Mail, Lock, Eye, EyeOff, Building, Clock, Type, ShieldOff, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -382,24 +382,26 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
             )}
         </div>
 
-        {faculty.isTwoFactorEnabled && (
-            <div className="space-y-4">
-                 <Separator />
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                        <FormLabel>Two-Factor Authentication</FormLabel>
-                        <FormDescription>
-                            2FA is currently enabled for this user.
-                        </FormDescription>
-                    </div>
+        <div className="space-y-4">
+            <Separator />
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                    <FormLabel>Two-Factor Authentication</FormLabel>
+                    <FormDescription>
+                        {faculty.isTwoFactorEnabled 
+                            ? "2FA is currently enabled for this user."
+                            : "2FA is currently disabled for this user."}
+                    </FormDescription>
+                </div>
+                {faculty.isTwoFactorEnabled && (
                     <DisableFaculty2FADialog 
                         faculty={faculty}
                         adminEmail={adminEmail}
                         onSuccess={() => onSuccess?.()}
                     />
-                </FormItem>
-            </div>
-        )}
+                )}
+            </FormItem>
+        </div>
 
         <Button type="submit" className="w-full" disabled={isLoading || isCheckingAbbreviation}>
           {(isLoading || isCheckingAbbreviation) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
