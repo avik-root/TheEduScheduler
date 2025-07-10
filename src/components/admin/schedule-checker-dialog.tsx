@@ -118,6 +118,11 @@ export function ScheduleCheckerDialog({ schedules }: ScheduleCheckerDialogProps)
                             </div>
                         </div>
                     </ScrollArea>
+                    <div className="pt-4 flex justify-end">
+                       <Button disabled>
+                            Apply Fixes (Coming Soon)
+                        </Button>
+                    </div>
                 </div>
             )}
             
@@ -126,5 +131,3 @@ export function ScheduleCheckerDialog({ schedules }: ScheduleCheckerDialogProps)
     </Dialog>
   );
 }
-
-    
