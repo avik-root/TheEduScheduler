@@ -49,7 +49,7 @@ const GenerateScheduleInputSchema = z.object({
     timeSettings: z.object({
         startTime: z.string(),
         endTime: z.string(),
-        breakTime: z.string().describe('The time slot for the daily break (e.g., "13:00 - 14:00").'),
+        breakTime: z.string().describe('The time slot for the daily break (e.g., "13:00-14:00").'),
         classDuration: z.number().describe("The duration of a single class period in minutes."),
     }),
     activeDays: z.array(z.string()),
@@ -146,8 +146,11 @@ const prompt = ai.definePrompt({
 **--- OUTPUT FORMATTING ---**
 1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
 2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. This is not optional. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
-3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the **{{timeSettings.classDuration}}-minute time slots**. You must calculate these time slots yourself based on the daily start/end times. For example, if start time is "09:00" and duration is 50 minutes, the first time slot column is "09:00-09:50". The rows will represent each active day of the week.
-4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101".
+3.  **Table Structure**: 
+    - The first column of each table must be \`Day\`. 
+    - The subsequent columns must be the **{{timeSettings.classDuration}}-minute time slots**, calculated based on the daily start/end times. 
+    - **IMPORTANT**: You MUST include a column in the header for the main break slot (e.g., a column header "15:00-15:30"). All cells under this break column must contain only the word "Break".
+4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101". For empty slots, use '-'.
 
 Generate the complete, conflict-free, and optimized weekly schedule now for all specified sections.
 `,
