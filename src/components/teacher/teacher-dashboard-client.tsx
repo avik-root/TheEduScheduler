@@ -123,7 +123,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     }
     
     if (faculty.passwordLastChanged) {
-        const days = differenceInDays(new Date(), new Date(faculty.passwordLastChanged));
+        const days = Math.abs(differenceInDays(new Date(), new Date(faculty.passwordLastChanged)));
         setPasswordDaysOld(days);
     }
   }, [searchParams, faculty.passwordLastChanged]);
@@ -535,3 +535,5 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
      </>
   );
 }
+
+    
