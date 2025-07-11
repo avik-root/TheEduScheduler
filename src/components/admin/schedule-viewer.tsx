@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, Wand, FilePenLine, X, Loader2, Upload, Check } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, FilePenLine, X, Loader2, Upload, Check } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
@@ -283,14 +283,17 @@ export function ScheduleViewer({ initialSchedule, adminEmail, departments, facul
     scheduleToShare.sections.forEach(section => {
         shareText += `Section: ${section.sectionName}\n`;
         section.rows.forEach(row => {
-            shareText += `\n${row[0]}:\n`; // Day of the week
-            row.slice(1).forEach((cell, index) => {
-                const cellText = cellToMarkdown(cell);
-                if (cellText !== '-') {
-                    const timeSlot = section.header[index + 1];
-                    shareText += `  - ${timeSlot}: ${cellText}\n`;
-                }
-            });
+            const dayCell = row[0];
+            if (typeof dayCell === 'string') {
+                shareText += `\n${dayCell}:\n`; // Day of the week
+                 row.slice(1).forEach((cell, index) => {
+                    const cellText = cellToMarkdown(cell);
+                    if (cellText !== '-') {
+                        const timeSlot = section.header[index + 1];
+                        shareText += `  - ${timeSlot}: ${cellText}\n`;
+                    }
+                });
+            }
         });
         shareText += '\n---\n';
     });
