@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -13,6 +14,7 @@ import { setSuperAdminTwoFactor } from '@/lib/super-admin';
 import { Switch } from '@/components/ui/switch';
 import { useRouter } from 'next/navigation';
 import { SuperAdmin2FASchema } from '@/lib/validators/auth';
+import { Button } from '@/components/ui/button';
 
 type FormData = z.infer<typeof SuperAdmin2FASchema>;
 
@@ -119,7 +121,7 @@ export function TwoFactorSettingsForm({ superAdmin, onSuccess }: TwoFactorSettin
                             className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
                         >
                             <span className="sr-only">{showPin ? 'Hide PIN' : 'Show PIN'}</span>
-                            {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4" />}
                         </button>
                     </div>
                     <FormMessage />
