@@ -8,6 +8,8 @@ import bcrypt from 'bcryptjs';
 import { LoginSchema, SignupSchema, UpdateAdminSchema, Admin2FASchema } from '@/lib/validators/auth';
 
 const adminFilePath = path.join(process.cwd(), 'src', 'data', 'admin.json');
+const securityKeysFilePath = path.join(process.cwd(), 'src', 'data', 'security-keys.json');
+
 
 export type Admin = z.infer<typeof SignupSchema> & {
     isTwoFactorEnabled?: boolean;
@@ -36,6 +38,16 @@ async function readAdminsFile(): Promise<Admin[]> {
 async function writeAdminsFile(admins: Admin[]): Promise<void> {
     await fs.mkdir(path.dirname(adminFilePath), { recursive: true });
     await fs.writeFile(adminFilePath, JSON.stringify(admins, null, 2));
+}
+
+async function getAdminSecurityKey(): Promise<string | null> {
+    try {
+        const fileContent = await fs.readFile(securityKeysFilePath, 'utf-8');
+        const data = JSON.parse(fileContent);
+        return data.adminUnlockKey || null;
+    } catch (error) {
+        return null;
+    }
 }
 
 export async function getAdmins(): Promise<Admin[]> {
@@ -248,5 +260,29 @@ export async function setAdminTwoFactor(data: Admin2FAData): Promise<{ success: 
         return { success: true, message: '2FA settings updated successfully.' };
     } catch (error) {
         return { success: false, message: 'Failed to update 2FA settings.' };
+    }
+}
+
+export async function unlockAdminAccount(email: string, key: string): Promise<{ success: boolean; message: string }> {
+    const securityKey = await getAdminSecurityKey();
+    if (!securityKey || securityKey !== key) {
+        return { success: false, message: 'The provided security key is incorrect.' };
+    }
+
+    const admins = await readAdminsFile();
+    const adminIndex = admins.findIndex(f => f.email === email);
+
+    if (adminIndex === -1) {
+        return { success: false, message: 'Admin account not found.' };
+    }
+
+    admins[adminIndex].isLocked = false;
+    admins[adminIndex].twoFactorAttempts = 0;
+    
+    try {
+        await writeAdminsFile(admins);
+        return { success: true, message: 'Account unlocked successfully.' };
+    } catch (error) {
+        return { success: false, message: 'Failed to unlock account.' };
     }
 }
