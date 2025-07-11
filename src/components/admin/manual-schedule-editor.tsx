@@ -1,8 +1,9 @@
+
 'use client';
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { type GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 import { publishSchedule } from '@/lib/schedule';
@@ -272,7 +273,8 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                                 });
                                 setScheduleGrid(newGrid);
                             }
-                            toast({ title: "Fixes Applied", description: "The AI's suggestions have been applied." });
+                            toast({ title: "Fixes Applied", description: "The AI's suggestions have been applied to the schedule. Remember to Save & Publish.",
+                            });
                         }}
                     />
                  </div>
