@@ -62,7 +62,7 @@ export function DeleteProgramDialog({ departmentId, program, variant = "icon", o
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         {variant === "icon" ? (
-          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+          <Button variant="destructive-ghost" size="icon">
             <Trash2 className="h-5 w-5" />
             <span className="sr-only">Delete Program</span>
           </Button>

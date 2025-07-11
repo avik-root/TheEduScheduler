@@ -74,7 +74,7 @@ export function DeleteAdminDialog({ admin }: DeleteAdminDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+        <Button variant="destructive-ghost" size="icon">
           <Trash2 className="h-5 w-5" />
           <span className="sr-only">Delete Admin</span>
         </Button>
