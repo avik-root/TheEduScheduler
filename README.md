@@ -76,7 +76,6 @@ An intelligent, scalable, and modular university scheduling system designed to e
 
 ### 🛠 Dev Environment
 - VS Code  
-- Firebase Studio  
 - npm / yarn  
 
 ---
