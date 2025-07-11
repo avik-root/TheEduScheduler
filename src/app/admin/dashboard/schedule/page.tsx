@@ -7,6 +7,10 @@ import { getAdminByEmail, getFirstAdminEmail } from '@/lib/admin';
 import { getPublishedSchedule } from '@/lib/schedule';
 import { AppLogo } from '@/components/common/app-logo';
 import { ScheduleViewer } from '@/components/admin/schedule-viewer';
+import { getDepartments } from '@/lib/departments';
+import { getFaculty } from '@/lib/faculty';
+import { getSubjects } from '@/lib/subjects';
+import { getAllRooms } from '@/lib/buildings';
 
 export default async function SchedulePage({ searchParams }: { searchParams: { email?: string } }) {
   const loggedInAdminEmail = searchParams.email;
@@ -22,6 +26,10 @@ export default async function SchedulePage({ searchParams }: { searchParams: { e
   }
 
   const publishedSchedule = await getPublishedSchedule(primaryAdminEmail);
+  const departments = await getDepartments(primaryAdminEmail);
+  const faculty = await getFaculty(primaryAdminEmail);
+  const subjects = await getSubjects(primaryAdminEmail);
+  const allRooms = await getAllRooms(primaryAdminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -42,8 +50,12 @@ export default async function SchedulePage({ searchParams }: { searchParams: { e
       <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <div className="mx-auto grid w-full max-w-6xl gap-6 pt-8">
             <ScheduleViewer 
-                schedule={publishedSchedule} 
+                initialSchedule={publishedSchedule} 
                 adminEmail={primaryAdminEmail}
+                departments={departments}
+                faculty={faculty}
+                subjects={subjects}
+                allRooms={allRooms}
             />
         </div>
       </main>

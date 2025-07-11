@@ -22,18 +22,15 @@ import {
 } from '@/components/ui/card';
 
 import type { Admin } from '@/lib/admin';
-import type { Room } from '@/lib/buildings';
 import type { GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 import { AiScheduleGenerator } from '@/components/admin/ai-schedule-generator';
 import { RoomAvailabilityChecker } from '@/components/admin/room-availability-checker';
 import { RoomRequests } from './room-requests';
 import type { RoomRequest } from '@/lib/requests';
-import type { Department } from '@/lib/departments';
-import type { Faculty } from '@/lib/faculty';
-import type { Subject } from '@/lib/subjects';
 import { TwoFactorSettingsDialog } from './two-factor-settings-dialog';
 import { differenceInDays } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import type { Department, Faculty, Subject, Room } from '@/lib/types';
 
 
 interface DashboardClientProps {
