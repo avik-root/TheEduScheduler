@@ -537,5 +537,3 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
      </>
   );
 }
-
-    
