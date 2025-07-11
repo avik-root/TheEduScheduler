@@ -66,7 +66,12 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
     const [breakEnd, setBreakEnd] = React.useState('15:30');
     const [classDuration, setClassDuration] = React.useState(50);
     const [breakDuration, setBreakDuration] = React.useState(10);
+    
+    const [popoverOpenStates, setPopoverOpenStates] = React.useState<Record<string, boolean>>({});
 
+    const setPopoverOpen = (key: string, open: boolean) => {
+        setPopoverOpenStates(prev => ({ ...prev, [key]: open }));
+    }
 
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
@@ -271,36 +276,37 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                                                     <TableCell className="font-medium">{day}</TableCell>
                                                     {timeSlots.map(time => {
                                                         const isBreak = time.includes(breakStart);
+                                                        const popoverKey = `${section.id}-${day}-${time}`;
+                                                        const cellValue = scheduleGrid[section.name]?.[`${day}-${time}`];
+                                                        
                                                         return (
-                                                        <TableCell key={time} className={cn(isBreak && "bg-muted")}>
+                                                        <TableCell key={time} className={cn("p-1", isBreak && "bg-muted")}>
                                                             {!isBreak ? (
-                                                                 <Popover>
+                                                                 <Popover open={popoverOpenStates[popoverKey]} onOpenChange={(open) => setPopoverOpen(popoverKey, open)}>
                                                                     <PopoverTrigger asChild>
                                                                         <Button variant="ghost" className="h-auto p-1 text-xs w-full justify-start text-left min-h-10">
-                                                                            {scheduleGrid[section.name]?.[`${day}-${time}`] ? (
+                                                                            {cellValue ? (
                                                                                 <div>
-                                                                                    <p className="font-semibold">{scheduleGrid[section.name][`${day}-${time}`].subject}</p>
-                                                                                    <p>{scheduleGrid[section.name][`${day}-${time}`].faculty}</p>
-                                                                                    <p className="text-muted-foreground">{scheduleGrid[section.name][`${day}-${time}`].room}</p>
+                                                                                    <p className="font-semibold">{cellValue.subject}</p>
+                                                                                    <p>{cellValue.faculty}</p>
+                                                                                    <p className="text-muted-foreground">{cellValue.room}</p>
                                                                                 </div>
                                                                             ) : <span className="text-muted-foreground">Empty</span>}
                                                                         </Button>
                                                                     </PopoverTrigger>
                                                                     <PopoverContent className="w-64 p-2 space-y-2">
                                                                         <h4 className="font-medium text-sm">{day}, {time}</h4>
-                                                                        <Select onValueChange={(val) => updateCell(section.name, day, time, { subject: val })} defaultValue={scheduleGrid[section.name]?.[`${day}-${time}`]?.subject}>
-                                                                            <SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger>
-                                                                            <SelectContent>{yearSubjects.map(s => <SelectItem key={s.id} value={s.code}>{s.name}</SelectItem>)}</SelectContent>
-                                                                        </Select>
-                                                                        <Select onValueChange={(val) => updateCell(section.name, day, time, { faculty: val })} defaultValue={scheduleGrid[section.name]?.[`${day}-${time}`]?.faculty}>
-                                                                            <SelectTrigger><SelectValue placeholder="Select Faculty" /></SelectTrigger>
-                                                                            <SelectContent>{faculty.map(f => <SelectItem key={f.email} value={f.abbreviation}>{f.name} ({f.abbreviation})</SelectItem>)}</SelectContent>
-                                                                        </Select>
-                                                                        <Select onValueChange={(val) => updateCell(section.name, day, time, { room: val })} defaultValue={scheduleGrid[section.name]?.[`${day}-${time}`]?.room}>
-                                                                            <SelectTrigger><SelectValue placeholder="Select Room" /></SelectTrigger>
-                                                                            <SelectContent>{allRooms.map(r => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}</SelectContent>
-                                                                        </Select>
-                                                                        <Button variant="destructive" size="sm" className="w-full" onClick={() => updateCell(section.name, day, time, null)}>
+                                                                        
+                                                                        {/* Subject Selector */}
+                                                                        <Command><CommandInput placeholder="Search subject..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{yearSubjects.map(s => <CommandItem key={s.id} onSelect={() => { updateCell(section.name, day, time, { subject: s.code }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.subject === s.code ? "opacity-100" : "opacity-0")} />{s.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+                                                                        
+                                                                        {/* Faculty Selector */}
+                                                                        <Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{faculty.map(f => <CommandItem key={f.email} onSelect={() => { updateCell(section.name, day, time, { faculty: f.abbreviation }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.faculty === f.abbreviation ? "opacity-100" : "opacity-0")} />{f.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+
+                                                                        {/* Room Selector */}
+                                                                        <Command><CommandInput placeholder="Search room..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{allRooms.map(r => <CommandItem key={r.id} onSelect={() => { updateCell(section.name, day, time, { room: r.name }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.room === r.name ? "opacity-100" : "opacity-0")} />{r.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+
+                                                                        <Button variant="destructive" size="sm" className="w-full" onClick={() => {updateCell(section.name, day, time, null); setPopoverOpen(popoverKey, false);}}>
                                                                             <X className="mr-2 h-4 w-4"/> Clear Cell
                                                                         </Button>
                                                                     </PopoverContent>
@@ -363,3 +369,5 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         </CardContent>
     );
 }
+
+    
