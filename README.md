@@ -14,7 +14,6 @@
 <p align="center">
   <img src="https://img.shields.io/github/repo-size/avik-root/TheEduScheduler?color=blue&style=for-the-badge" />
   <img src="https://img.shields.io/github/stars/avik-root/TheEduScheduler?style=for-the-badge&logo=github" />
-  <img src="https://img.shields.io/github/license/avik-root/TheEduScheduler?style=for-the-badge&color=green" />
   <img src="https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js" />
   <img src="https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
 </p>
