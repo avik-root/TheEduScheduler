@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Clock } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Clock, Wand, BrainCircuit, Pencil } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -27,6 +27,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Switch } from '@/components/ui/switch';
+import { ManualScheduleEditor } from './manual-schedule-editor';
 
 const assignmentSchema = z.object({
   sectionId: z.string(),
@@ -84,6 +86,7 @@ const allWeekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sa
 export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule, adminEmail, departments, faculty, subjects }: AiScheduleGeneratorProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPublishing, setIsPublishing] = React.useState(false);
+  const [mode, setMode] = React.useState<'ai' | 'manual'>('ai');
   const { toast } = useToast();
   
   const [availablePrograms, setAvailablePrograms] = React.useState<Program[]>([]);
@@ -322,189 +325,216 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
 
   return (
     <div className="grid gap-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Card>
-                <CardHeader>
-                  <CardTitle>AI Schedule Generator</CardTitle>
-                   <CardDescription>
-                    A step-by-step guide to generating an optimal, conflict-free schedule.
-                  </CardDescription>
-                </CardHeader>
-                <Accordion type="multiple" defaultValue={['step-1']} className="w-full">
-                  {/* Step 1: Academic Target */}
-                  <AccordionItem value="step-1">
-                    <AccordionTrigger className="text-lg font-semibold px-6">Step 1: Academic Target</AccordionTrigger>
-                    <AccordionContent className="px-6 pt-4 space-y-4">
-                        <p className="text-sm text-muted-foreground">Select the department, program, and year to generate a schedule for.</p>
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            <FormField control={form.control} name="departmentId" render={({ field }) => (
-                                <FormItem><FormLabel>Department</FormLabel><Select onValueChange={handleDepartmentChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger></FormControl><SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                            )}/>
-                            <FormField control={form.control} name="programId" render={({ field }) => (
-                                <FormItem><FormLabel>Program</FormLabel><Select onValueChange={handleProgramChange} value={field.value} disabled={!getValues('departmentId')}><FormControl><SelectTrigger><SelectValue placeholder="Select Program" /></SelectTrigger></FormControl><SelectContent>{availablePrograms.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                            )}/>
-                            <FormField control={form.control} name="yearId" render={({ field }) => (
-                                <FormItem><FormLabel>Year</FormLabel><Select onValueChange={handleYearChange} value={field.value} disabled={!getValues('programId')}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent>{availableYears.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                            )}/>
-                        </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                  
-                  {/* Step 2: Subject Configuration */}
-                   <AccordionItem value="step-2">
-                    <AccordionTrigger className="text-lg font-semibold px-6">Step 2: Subject & Faculty Configuration</AccordionTrigger>
-                    <AccordionContent className="px-6 pt-4 space-y-4">
-                        <p className="text-sm text-muted-foreground">For each subject, define potential faculty and then assign them to specific sections.</p>
-                         {subjectConfigFields.length > 0 ? (
-                            <div className="space-y-4 pt-2">
-                                {subjectConfigFields.map((item, index) => {
-                                    const availableFacultyForSubject = faculty.filter(f => item.potentialFaculty.includes(f.email));
-                                    return (
-                                        <Card key={item.id} className="p-4 bg-muted/50">
-                                            <div className="flex justify-between items-start">
-                                                <div className="grid gap-1">
-                                                    <h4 className="font-semibold">{item.name} ({item.code})</h4>
-                                                    <p className="text-xs text-muted-foreground">{item.type} &bull; T:{item.theoryCredits || 0}, L:{item.labCredits || 0}</p>
-                                                </div>
-                                                <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-center space-x-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Priority</label></FormItem>
-                                                 )} />
-                                            </div>
-                                            <Separator className="my-4" />
-                                            <div className="grid gap-6 md:grid-cols-2">
-                                                <Controller control={control} name={`subjectConfigs.${index}.potentialFaculty`} render={({ field }) => (
-                                                    <FormItem className="flex flex-col"><FormLabel>Available Faculty for this Subject</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty..."}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{faculty.filter(f => f.department === departments.find(d => d.id === getValues('departmentId'))?.name).map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+       <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+             <div className="grid gap-1.5">
+                <CardTitle>{mode === 'ai' ? 'AI Schedule Generator' : 'Manual Schedule Editor'}</CardTitle>
+                <CardDescription>
+                    {mode === 'ai' 
+                        ? "A step-by-step guide to generating an optimal, conflict-free schedule."
+                        : "Directly edit the schedule in Markdown format. Use the AI checker to validate."
+                    }
+                </CardDescription>
+             </div>
+             <div className="flex items-center space-x-2">
+                <BrainCircuit className="h-5 w-5" />
+                <Switch 
+                    checked={mode === 'manual'} 
+                    onCheckedChange={(checked) => setMode(checked ? 'manual' : 'ai')} 
+                    aria-label="Toggle between AI and Manual modes"
+                />
+                <Pencil className="h-5 w-5" />
+             </div>
+          </div>
+        </CardHeader>
+        {mode === 'ai' ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <Accordion type="multiple" defaultValue={['step-1']} className="w-full">
+                {/* Step 1: Academic Target */}
+                <AccordionItem value="step-1">
+                  <AccordionTrigger className="text-lg font-semibold px-6">Step 1: Academic Target</AccordionTrigger>
+                  <AccordionContent className="px-6 pt-4 space-y-4">
+                      <p className="text-sm text-muted-foreground">Select the department, program, and year to generate a schedule for.</p>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                          <FormField control={form.control} name="departmentId" render={({ field }) => (
+                              <FormItem><FormLabel>Department</FormLabel><Select onValueChange={handleDepartmentChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger></FormControl><SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                          )}/>
+                          <FormField control={form.control} name="programId" render={({ field }) => (
+                              <FormItem><FormLabel>Program</FormLabel><Select onValueChange={handleProgramChange} value={field.value} disabled={!getValues('departmentId')}><FormControl><SelectTrigger><SelectValue placeholder="Select Program" /></SelectTrigger></FormControl><SelectContent>{availablePrograms.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                          )}/>
+                          <FormField control={form.control} name="yearId" render={({ field }) => (
+                              <FormItem><FormLabel>Year</FormLabel><Select onValueChange={handleYearChange} value={field.value} disabled={!getValues('programId')}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent>{availableYears.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                          )}/>
+                      </div>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                {/* Step 2: Subject Configuration */}
+                  <AccordionItem value="step-2">
+                  <AccordionTrigger className="text-lg font-semibold px-6">Step 2: Subject & Faculty Configuration</AccordionTrigger>
+                  <AccordionContent className="px-6 pt-4 space-y-4">
+                      <p className="text-sm text-muted-foreground">For each subject, define potential faculty and then assign them to specific sections.</p>
+                        {subjectConfigFields.length > 0 ? (
+                          <div className="space-y-4 pt-2">
+                              {subjectConfigFields.map((item, index) => {
+                                  const availableFacultyForSubject = faculty.filter(f => item.potentialFaculty.includes(f.email));
+                                  return (
+                                      <Card key={item.id} className="p-4 bg-muted/50">
+                                          <div className="flex justify-between items-start">
+                                              <div className="grid gap-1">
+                                                  <h4 className="font-semibold">{item.name} ({item.code})</h4>
+                                                  <p className="text-xs text-muted-foreground">{item.type} &bull; T:{item.theoryCredits || 0}, L:{item.labCredits || 0}</p>
+                                              </div>
+                                              <FormField control={control} name={`subjectConfigs.${index}.isPriority`} render={({ field }) => (
+                                                  <FormItem className="flex flex-row items-center space-x-2"><Checkbox checked={field.value} onCheckedChange={field.onChange} id={`priority-${index}`} /><label htmlFor={`priority-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Priority</label></FormItem>
                                                 )} />
-                                                <div className="space-y-2">
-                                                    <FormLabel>Section Assignments</FormLabel>
-                                                    <div className="rounded-md border">
-                                                        <Table>
-                                                            <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead className="flex items-center justify-between"><span><User className="h-4 w-4 inline-block mr-2" /> Assigned Faculty</span><Button type="button" variant="link" size="sm" className="p-0 h-auto" disabled={!item.potentialFaculty?.length} onClick={() => handleAutoAssign(index)}>Auto-Assign</Button></TableHead></TableRow></TableHeader>
-                                                            <TableBody>
-                                                                {item.assignments.map((assignment, assignmentIndex) => (
-                                                                    <TableRow key={assignment.sectionId}>
-                                                                        <TableCell className="font-medium">{assignment.sectionName}</TableCell>
-                                                                        <TableCell>
-                                                                            <FormField control={control} name={`subjectConfigs.${index}.assignments.${assignmentIndex}.facultyEmail`} render={({ field }) => (
-                                                                                <FormItem><Select onValueChange={field.onChange} value={field.value || undefined}><FormControl><SelectTrigger><SelectValue placeholder="Not Assigned" /></SelectTrigger></FormControl><SelectContent><SelectItem value="--NF--">NF (No Faculty)</SelectItem>{availableFacultyForSubject.map(fac => <SelectItem key={fac.email} value={fac.email}>{fac.name} ({fac.abbreviation})</SelectItem>)}</SelectContent></Select></FormItem>
-                                                                            )}/>
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                ))}
-                                                            </TableBody>
-                                                        </Table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    )
-                                })}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground pt-2">Select a year to configure subjects.</p>
-                        )}
-                    </AccordionContent>
-                  </AccordionItem>
-                  
-                  {/* Step 3: Resources & Time */}
-                  <AccordionItem value="step-3">
-                    <AccordionTrigger className="text-lg font-semibold px-6">Step 3: Resources & Time Constraints</AccordionTrigger>
-                    <AccordionContent className="px-6 pt-4 space-y-6">
-                       <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <FormLabel>Available Rooms & Labs</FormLabel>
-                                <div className="flex items-center gap-2">
-                                    <Button type="button" variant="link" size="sm" className="p-0 h-auto" onClick={() => {
-                                        setValue('availableRooms', theoryRooms.map(r => r.name), { shouldValidate: true });
-                                        setValue('availableLabs', labRooms.map(r => r.name), { shouldValidate: true });
+                                          </div>
+                                          <Separator className="my-4" />
+                                          <div className="grid gap-6 md:grid-cols-2">
+                                              <Controller control={control} name={`subjectConfigs.${index}.potentialFaculty`} render={({ field }) => (
+                                                  <FormItem className="flex flex-col"><FormLabel>Available Faculty for this Subject</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", !field.value?.length && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(email => (<Badge key={email} variant="secondary">{faculty.find(f => f.email === email)?.name || 'NF'}</Badge>)) : "Select Faculty..."}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No faculty found.</CommandEmpty><CommandGroup>{faculty.filter(f => f.department === departments.find(d => d.id === getValues('departmentId'))?.name).map(f => <CommandItem key={f.email} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(f.email) ? selected.filter(email => email !== f.email) : [...selected, f.email]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(f.email) ? "opacity-100" : "opacity-0")}/>{f.name} ({f.abbreviation})</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                              )} />
+                                              <div className="space-y-2">
+                                                  <FormLabel>Section Assignments</FormLabel>
+                                                  <div className="rounded-md border">
+                                                      <Table>
+                                                          <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead className="flex items-center justify-between"><span><User className="h-4 w-4 inline-block mr-2" /> Assigned Faculty</span><Button type="button" variant="link" size="sm" className="p-0 h-auto" disabled={!item.potentialFaculty?.length} onClick={() => handleAutoAssign(index)}>Auto-Assign</Button></TableHead></TableRow></TableHeader>
+                                                          <TableBody>
+                                                              {item.assignments.map((assignment, assignmentIndex) => (
+                                                                  <TableRow key={assignment.sectionId}>
+                                                                      <TableCell className="font-medium">{assignment.sectionName}</TableCell>
+                                                                      <TableCell>
+                                                                          <FormField control={control} name={`subjectConfigs.${index}.assignments.${assignmentIndex}.facultyEmail`} render={({ field }) => (
+                                                                              <FormItem><Select onValueChange={field.onChange} value={field.value || undefined}><FormControl><SelectTrigger><SelectValue placeholder="Not Assigned" /></SelectTrigger></FormControl><SelectContent><SelectItem value="--NF--">NF (No Faculty)</SelectItem>{availableFacultyForSubject.map(fac => <SelectItem key={fac.email} value={fac.email}>{fac.name} ({fac.abbreviation})</SelectItem>)}</SelectContent></Select></FormItem>
+                                                                          )}/>
+                                                                      </TableCell>
+                                                                  </TableRow>
+                                                              ))}
+                                                          </TableBody>
+                                                      </Table>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </Card>
+                                  )
+                              })}
+                          </div>
+                      ) : (
+                          <p className="text-sm text-muted-foreground pt-2">Select a year to configure subjects.</p>
+                      )}
+                  </AccordionContent>
+                </AccordionItem>
+                
+                {/* Step 3: Resources & Time */}
+                <AccordionItem value="step-3">
+                  <AccordionTrigger className="text-lg font-semibold px-6">Step 3: Resources & Time Constraints</AccordionTrigger>
+                  <AccordionContent className="px-6 pt-4 space-y-6">
+                      <div>
+                          <div className="flex items-center justify-between mb-2">
+                              <FormLabel>Available Rooms & Labs</FormLabel>
+                              <div className="flex items-center gap-2">
+                                  <Button type="button" variant="link" size="sm" className="p-0 h-auto" onClick={() => {
+                                      setValue('availableRooms', theoryRooms.map(r => r.name), { shouldValidate: true });
+                                      setValue('availableLabs', labRooms.map(r => r.name), { shouldValidate: true });
+                                  }}>
+                                      Auto-select Required
+                                  </Button>
+                                  <Separator orientation="vertical" className="h-4" />
+                                    <Button type="button" variant="link" size="sm" className="p-0 h-auto text-destructive" onClick={() => {
+                                        setValue('availableRooms', [], { shouldValidate: true });
+                                        setValue('availableLabs', [], { shouldValidate: true });
                                     }}>
-                                        Auto-select Required
-                                    </Button>
-                                    <Separator orientation="vertical" className="h-4" />
-                                     <Button type="button" variant="link" size="sm" className="p-0 h-auto text-destructive" onClick={() => {
-                                         setValue('availableRooms', [], { shouldValidate: true });
-                                         setValue('availableLabs', [], { shouldValidate: true });
-                                     }}>
-                                        Clear All
-                                    </Button>
-                                </div>
-                            </div>
-                            <FormDescription className="pb-2 text-sm text-muted-foreground">Select all rooms and labs available for this schedule, or use the auto-select option.</FormDescription>
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pt-2">
-                               <FormField control={form.control} name="availableRooms" render={({ field }) => (
-                                  <FormItem className="flex flex-col"><FormLabel className="text-sm">Classrooms</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{theoryRooms.map(room => <CommandItem key={room.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(room.name) ? selected.filter(r => r !== room.name) : [...selected, room.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(room.name) ? "opacity-100" : "opacity-0")}/>{room.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
-                               )} />
-                               <FormField control={form.control} name="availableLabs" render={({ field }) => (
-                                  <FormItem className="flex flex-col"><FormLabel className="text-sm">Labs</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(labName => (<Badge key={labName} variant="secondary">{labName}</Badge>)) : "Select Labs"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search labs..." /><CommandList><CommandEmpty>No labs found.</CommandEmpty><CommandGroup>{labRooms.map(lab => <CommandItem key={lab.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(lab.name) ? selected.filter(r => r !== lab.name) : [...selected, lab.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(lab.name) ? "opacity-100" : "opacity-0")}/>{lab.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
-                               )} />
-                            </div>
-                        </div>
-                        <Separator />
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                           <div>
-                               <FormLabel>Daily Timings</FormLabel>
-                               <div className="grid grid-cols-2 gap-2 mt-2">
-                                   <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                                   <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                               </div>
-                           </div>
-                           <div>
-                               <FormLabel>Break Slot</FormLabel>
-                                <div className="grid grid-cols-2 gap-2 mt-2">
-                                   <FormField control={form.control} name="breakStart" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                                   <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                               </div>
-                           </div>
-                           <div>
-                                <FormField
-                                control={form.control}
-                                name="classDuration"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Class Duration (minutes)</FormLabel>
-                                    <div className="relative mt-2">
-                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <FormControl>
-                                        <Input type="number" step="5" {...field} className="pl-10" />
-                                        </FormControl>
-                                    </div>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-                            </div>
-                        </div>
-                         <FormField control={form.control} name="activeDays" render={({ field }) => (
-                            <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
-                        )} />
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-                <div className="px-6 pb-6 flex flex-col gap-4">
-                    {insufficientRooms && (
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Insufficient Rooms Warning</AlertTitle>
-                        <AlertDescription>
-                          You have selected {watchedSectionIds.length} sections but only {watchedRooms.length} classrooms. The AI will attempt to generate a schedule, but more rooms may be required to avoid conflicts.
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                    <div className="flex items-center gap-2">
-                        <Button type="submit" className="w-fit" disabled={isLoading}>
-                          {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Sparkles className="mr-2 h-4 w-4" /> )}
-                          Generate Schedule
-                        </Button>
-                        <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
-                            {isPublishing ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Upload className="mr-2 h-4 w-4" /> )}
-                            Publish Schedule
-                        </Button>
-                    </div>
-                </div>
-            </Card>
-        </form>
-      </Form>
+                                      Clear All
+                                  </Button>
+                              </div>
+                          </div>
+                          <FormDescription className="pb-2 text-sm text-muted-foreground">Select all rooms and labs available for this schedule, or use the auto-select option.</FormDescription>
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pt-2">
+                              <FormField control={form.control} name="availableRooms" render={({ field }) => (
+                                <FormItem className="flex flex-col"><FormLabel className="text-sm">Classrooms</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{theoryRooms.map(room => <CommandItem key={room.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(room.name) ? selected.filter(r => r !== room.name) : [...selected, room.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(room.name) ? "opacity-100" : "opacity-0")}/>{room.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                              )} />
+                              <FormField control={form.control} name="availableLabs" render={({ field }) => (
+                                <FormItem className="flex flex-col"><FormLabel className="text-sm">Labs</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(labName => (<Badge key={labName} variant="secondary">{labName}</Badge>)) : "Select Labs"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search labs..." /><CommandList><CommandEmpty>No labs found.</CommandEmpty><CommandGroup>{labRooms.map(lab => <CommandItem key={lab.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(lab.name) ? selected.filter(r => r !== lab.name) : [...selected, lab.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(lab.name) ? "opacity-100" : "opacity-0")}/>{lab.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                              )} />
+                          </div>
+                      </div>
+                      <Separator />
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                          <div>
+                              <FormLabel>Daily Timings</FormLabel>
+                              <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                  <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                              </div>
+                          </div>
+                          <div>
+                              <FormLabel>Break Slot</FormLabel>
+                              <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <FormField control={form.control} name="breakStart" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                  <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                              </div>
+                          </div>
+                          <div>
+                              <FormField
+                              control={form.control}
+                              name="classDuration"
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel>Class Duration (minutes)</FormLabel>
+                                  <div className="relative mt-2">
+                                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <FormControl>
+                                      <Input type="number" step="5" {...field} className="pl-10" />
+                                      </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                              />
+                          </div>
+                      </div>
+                        <FormField control={form.control} name="activeDays" render={({ field }) => (
+                          <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
+                      )} />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+              <div className="px-6 pb-6 flex flex-col gap-4">
+                  {insufficientRooms && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Insufficient Rooms Warning</AlertTitle>
+                      <AlertDescription>
+                        You have selected {watchedSectionIds.length} sections but only {watchedRooms.length} classrooms. The AI will attempt to generate a schedule, but more rooms may be required to avoid conflicts.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="flex items-center gap-2">
+                      <Button type="submit" className="w-fit" disabled={isLoading}>
+                        {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Sparkles className="mr-2 h-4 w-4" /> )}
+                        Generate Schedule
+                      </Button>
+                      <Button type="button" variant="outline" onClick={handlePublish} disabled={!generatedSchedule || isLoading || isPublishing}>
+                          {isPublishing ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Upload className="mr-2 h-4 w-4" /> )}
+                          Publish Schedule
+                      </Button>
+                  </div>
+              </div>
+          </form>
+        </Form>
+        ) : (
+          <ManualScheduleEditor 
+            generatedSchedule={generatedSchedule}
+            setGeneratedSchedule={setGeneratedSchedule}
+            adminEmail={adminEmail}
+            subjects={subjects}
+            faculty={faculty}
+            departments={departments}
+          />
+        )}
+      </Card>
     </div>
   );
 }
