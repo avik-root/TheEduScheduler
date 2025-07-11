@@ -10,6 +10,7 @@ import {
   BookOpen,
   CalendarCheck,
   ClipboardList,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   Card,
@@ -28,6 +29,7 @@ import type { RoomRequest } from '@/lib/requests';
 import type { Department } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
 import type { Subject } from '@/lib/subjects';
+import { TwoFactorSettingsDialog } from './two-factor-settings-dialog';
 
 interface DashboardClientProps {
     admin: Admin | null;
@@ -51,7 +53,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                     Welcome, {admin?.name}. Manage your institution's resources from here.
                 </p>
             </div>
-             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               <Link href={`/admin/dashboard/faculty?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -118,6 +120,19 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                       </CardContent>
                   </Card>
               </Link>
+                {admin && (
+                    <Card className="h-full flex flex-col">
+                         <CardHeader className="flex-grow pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg font-semibold">Security</CardTitle>
+                                <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <TwoFactorSettingsDialog admin={admin} />
+                        </CardContent>
+                    </Card>
+                )}
           </div>
             <div className="grid gap-6 pt-8">
                 <RoomRequests initialRequests={roomRequests} adminEmail={adminEmail} />

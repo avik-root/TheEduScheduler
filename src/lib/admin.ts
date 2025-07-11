@@ -1,16 +1,23 @@
+
 'use server';
 
 import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { LoginSchema, SignupSchema, UpdateAdminSchema } from '@/lib/validators/auth';
+import { LoginSchema, SignupSchema, UpdateAdminSchema, Admin2FASchema } from '@/lib/validators/auth';
 
 const adminFilePath = path.join(process.cwd(), 'src', 'data', 'admin.json');
 
-export type Admin = z.infer<typeof SignupSchema>;
+export type Admin = z.infer<typeof SignupSchema> & {
+    isTwoFactorEnabled?: boolean;
+    twoFactorPin?: string;
+    twoFactorAttempts?: number;
+    isLocked?: boolean;
+};
 type UpdateAdminData = z.infer<typeof UpdateAdminSchema>;
 type LoginData = z.infer<typeof LoginSchema>;
+type Admin2FAData = z.infer<typeof Admin2FASchema>;
 
 async function readAdminsFile(): Promise<Admin[]> {
     try {
@@ -60,7 +67,13 @@ export async function createAdmin(data: Admin): Promise<{ success: boolean; mess
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const newAdmin = { ...data, password: hashedPassword };
+    const newAdmin = { 
+        ...data, 
+        password: hashedPassword,
+        isTwoFactorEnabled: false,
+        twoFactorAttempts: 0,
+        isLocked: false
+    };
 
     admins.push(newAdmin);
 
@@ -134,24 +147,106 @@ export async function deleteAdmin(email: string, password: string): Promise<{ su
     }
 }
 
-export async function loginAdmin(credentials: LoginData): Promise<{ success: boolean; message: string }> {
+export async function loginAdmin(credentials: LoginData): Promise<{ success: boolean; message: string; requiresTwoFactor?: boolean; isLocked?: boolean; }> {
     const admins = await readAdminsFile();
 
     if (admins.length === 0) {
         return { success: false, message: 'No admin accounts exist.' };
     }
 
-    const admin = admins.find(a => a.email === credentials.email);
-
-    if (!admin) {
-        return { success: false, message: 'Invalid email or password.' };
+    const adminIndex = admins.findIndex(a => a.email === credentials.email);
+    if (adminIndex === -1) {
+         return { success: false, message: 'Invalid email or password.' };
+    }
+    
+    const admin = admins[adminIndex];
+    
+    if (admin.isLocked) {
+        return { success: false, message: 'Account is locked.', isLocked: true };
     }
 
     const passwordMatch = await bcrypt.compare(credentials.password, admin.password);
 
     if (passwordMatch) {
-        return { success: true, message: 'Login successful!' };
+        admins[adminIndex].twoFactorAttempts = 0;
+        await writeAdminsFile(admins);
+
+        if (admin.isTwoFactorEnabled) {
+            return { success: true, message: '2FA required.', requiresTwoFactor: true };
+        }
+        return { success: true, message: 'Login successful!', requiresTwoFactor: false };
+    }
+    
+    admins[adminIndex].twoFactorAttempts = (admins[adminIndex].twoFactorAttempts || 0) + 1;
+    if (admins[adminIndex].twoFactorAttempts >= 5) {
+        admins[adminIndex].isLocked = true;
+    }
+    await writeAdminsFile(admins);
+    
+    const remaining = 5 - (admins[adminIndex].twoFactorAttempts || 0);
+    return { success: false, message: `Invalid email or password. ${remaining} attempt(s) remaining.`, isLocked: admins[adminIndex].isLocked };
+}
+
+
+export async function verifyAdminTwoFactor(email: string, pin: string): Promise<{ success: boolean; message: string; isLocked?: boolean }> {
+    const admins = await readAdminsFile();
+    const adminIndex = admins.findIndex(a => a.email === email);
+    if (adminIndex === -1) {
+        return { success: false, message: 'Admin not found.' };
+    }
+    
+    const admin = admins[adminIndex];
+
+    if (admin.isLocked) {
+        return { success: false, message: 'Account is locked.', isLocked: true };
     }
 
-    return { success: false, message: 'Invalid email or password.' };
+    const pinMatch = await bcrypt.compare(pin, admin.twoFactorPin || '');
+    if (pinMatch) {
+        admins[adminIndex].twoFactorAttempts = 0;
+        await writeAdminsFile(admins);
+        return { success: true, message: 'Verification successful.' };
+    }
+
+    admins[adminIndex].twoFactorAttempts = (admins[adminIndex].twoFactorAttempts || 0) + 1;
+    if (admins[adminIndex].twoFactorAttempts >= 5) {
+        admins[adminIndex].isLocked = true;
+    }
+    await writeAdminsFile(admins);
+    
+    const remaining = 5 - (admins[adminIndex].twoFactorAttempts || 0);
+    return { success: false, message: `Incorrect PIN. You have ${remaining} attempt(s) remaining.`, isLocked: admins[adminIndex].isLocked };
+}
+
+export async function setAdminTwoFactor(data: Admin2FAData): Promise<{ success: boolean; message: string }> {
+    const { email, isEnabled, pin, currentPassword } = data;
+    const admins = await readAdminsFile();
+    const adminIndex = admins.findIndex(a => a.email === email);
+
+    if (adminIndex === -1) {
+        return { success: false, message: 'Admin account not found.' };
+    }
+    
+    const admin = admins[adminIndex];
+    
+    const passwordMatch = await bcrypt.compare(currentPassword, admin.password);
+    if (!passwordMatch) {
+        return { success: false, message: 'Incorrect password. Settings not saved.' };
+    }
+
+    admin.isTwoFactorEnabled = isEnabled;
+    if (isEnabled && pin) {
+        admin.twoFactorPin = await bcrypt.hash(pin, 10);
+    } else if (!isEnabled) {
+        admin.twoFactorPin = undefined;
+    }
+
+    admins[adminIndex] = admin;
+
+    try {
+        await writeAdminsFile(admins);
+        return { success: true, message: '2FA settings updated successfully.' };
+    } catch (error) {
+        return { success: false, message: 'Failed to update 2FA settings.' };
+    }
 }
