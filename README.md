@@ -107,7 +107,7 @@ An intelligent, scalable, and modular university scheduling system designed to e
 ![Avik Samanta Avatar](https://avatars.githubusercontent.com/u/180390314?s=400&u=93ed5b951067274f51137cb38197dbd1a010bc3c&v=4/u/85779970?v=4&s=50)
 
 ### 👨‍🚀 Avik Samanta  
-**Founder & CEO of MintFire**  
+**Founder & Security Analyst at MintFire**  
 [![GitHub](https://img.shields.io/badge/GitHub-avik--root-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/avik-root)
 [![Email](https://img.shields.io/badge/Email-avik-0078D4?style=for-the-badge&logo=gmail&logoColor=white)](mailto:aviksamantaofficial@gmail.com)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-avik--samanta--root-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/avik-samanta-root/)
@@ -117,7 +117,7 @@ An intelligent, scalable, and modular university scheduling system designed to e
 
 
 ### 👩‍🚀 Anusha Gupta  
-**Co-Founder & AI Architect at MintFire**  
+**Founder & AI Architect at MintFire**  
 [![GitHub](https://img.shields.io/badge/GitHub-anushagupta11-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/anushagupta11)
 [![Email](https://img.shields.io/badge/Email-anusha-0078D4?style=for-the-badge&logo=gmail&logoColor=white)](mailto:anusha73gupta@gmail.com)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-anusha--gupta--ofc-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/anusha-gupta-ofc/)
