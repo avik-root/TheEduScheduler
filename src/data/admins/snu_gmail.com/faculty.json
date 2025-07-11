@@ -7,7 +7,7 @@
     "weeklyMaxHours": 24,
     "weeklyOffDays": [],
     "abbreviation": "BP",
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Rohit Roy Choudhury ",
@@ -24,7 +24,7 @@
     "isTwoFactorEnabled": true,
     "twoFactorPin": "$2a$10$kuQPYm9bg/prizjfHzhUVOcIlkKdPch.c9n35nd8Kt7vmrZwu3imq",
     "isLocked": false,
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Rishika Roy",
@@ -37,7 +37,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Trishita Gautam",
@@ -51,7 +51,7 @@
       "Saturday"
     ],
     "twoFactorAttempts": 0,
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Atreyee Mukherjee",
@@ -64,7 +64,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Rituparna Sarka",
@@ -81,7 +81,7 @@
     "twoFactorAttempts": 0,
     "isLocked": false,
     "twoFactorDisabledByAdmin": false,
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Shiva Seth Alam",
@@ -95,7 +95,7 @@
       "Saturday"
     ],
     "twoFactorAttempts": 0,
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Mehakdeep Kaur",
@@ -108,7 +108,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Meghna Ray",
@@ -121,7 +121,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Anirban Mitra",
@@ -134,7 +134,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Saikat Maity",
@@ -147,7 +147,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Mousumi Bhattacharyya",
@@ -160,7 +160,7 @@
       "Saturday",
       "Sunday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Swarup Kr Ghosh",
@@ -173,7 +173,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Sadip Midya",
@@ -186,7 +186,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Soma Datta",
@@ -199,7 +199,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Souvik Pal",
@@ -212,7 +212,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Asmita Roy",
@@ -225,7 +225,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Indranil Sarkar",
@@ -238,7 +238,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Ankita Dhar",
@@ -251,7 +251,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Alamgir Sardar",
@@ -264,7 +264,7 @@
       "Saturday",
       "Sunday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Rana Majumdar ",
@@ -277,7 +277,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Pratik Bhattacharjee",
@@ -290,7 +290,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arkaprava Bhaduri Mandal",
@@ -303,7 +303,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Soma Hazra",
@@ -316,7 +316,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Basudev Saha",
@@ -329,7 +329,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Aritra Ghosh",
@@ -342,7 +342,7 @@
       "Saturday",
       "Sunday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Parthasarathi De",
@@ -355,7 +355,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Soumi Dutta",
@@ -368,7 +368,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Abhishek Bhattacharya",
@@ -381,7 +381,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Subhra Halder",
@@ -394,7 +394,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Biswaroop Maiti",
@@ -407,7 +407,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Pritam Goswami",
@@ -420,7 +420,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arkaprava Das",
@@ -433,7 +433,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Sourajit Maity",
@@ -446,7 +446,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Debasmita Bhoumik",
@@ -459,7 +459,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Aritra Sinha",
@@ -472,7 +472,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arijit Joardar",
@@ -485,7 +485,7 @@
       "Saturday",
       "Sunday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Kritanta Saha",
@@ -498,7 +498,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Raina Paul",
@@ -511,7 +511,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Sayani Mondal",
@@ -524,7 +524,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Bhabani Prasad Sinha",
@@ -537,7 +537,7 @@
       "Saturday",
       "Sunday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Atal Chowdhury",
@@ -550,7 +550,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Debasis Majumder",
@@ -563,7 +563,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arijit Pal",
@@ -576,7 +576,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Ditu Barai",
@@ -589,7 +589,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Santlal Prajapati",
@@ -602,7 +602,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Bidyut Saha",
@@ -615,6 +615,7 @@
       "Sunday",
       "Saturday"
     ],
-    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   }
 ]
+    
