@@ -12,8 +12,8 @@
     "email": "snu.cse@themintfire.com",
     "password": "$2a$10$Wv8708Hxpb1FLTf7bNsYM..YddGJkZKHAFO4W7ZucNn3cHFw0nXpe",
     "isTwoFactorEnabled": true,
-    "twoFactorAttempts": 5,
-    "isLocked": true,
+    "twoFactorAttempts": 0,
+    "isLocked": false,
     "twoFactorPin": "$2a$10$aP.zDNCmdFcd9rFl.g21ReSY0eViZGjN0BHg4KDKTZNdsaJ2nUgR."
   }
 ]
