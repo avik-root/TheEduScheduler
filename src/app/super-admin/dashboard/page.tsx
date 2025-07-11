@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { LogOut, School, Shield, UserCog, BookUser, Palette, ShieldCheck } from 'lucide-react';
+import { LogOut, School, Shield, UserCog, BookUser, Palette, ShieldCheck, Lock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,7 @@ import { getLogo } from '@/lib/logo';
 import { EditLogoDialog } from '@/components/super-admin/logo/edit-logo-dialog';
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { TwoFactorSettingsDialog } from '@/components/super-admin/two-factor-settings-dialog';
+import { UnlockAdminDialog } from '@/components/super-admin/unlock-admin-dialog';
 
 
 export default async function SuperAdminDashboardPage() {
@@ -63,20 +64,29 @@ export default async function SuperAdminDashboardPage() {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {admins.map((admin: Admin) => (
-              <Card key={admin.email}>
+              <Card key={admin.email} className={admin.isLocked ? "border-destructive ring-2 ring-destructive/50" : ""}>
                 <CardHeader className="flex flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="rounded-full bg-primary/10 p-3">
                       <UserCog className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">{admin.name}</CardTitle>
+                      <CardTitle className="text-xl flex items-center gap-2">
+                        {admin.isLocked && <Lock className="h-5 w-5 text-destructive" />}
+                        {admin.name}
+                      </CardTitle>
                       <CardDescription>{admin.email}</CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <EditAdminDialog admin={admin} />
-                    <DeleteAdminDialog admin={admin} />
+                    {admin.isLocked ? (
+                      <UnlockAdminDialog admin={admin} />
+                    ) : (
+                      <>
+                        <EditAdminDialog admin={admin} />
+                        <DeleteAdminDialog admin={admin} />
+                      </>
+                    )}
                   </div>
                 </CardHeader>
               </Card>
