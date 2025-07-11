@@ -532,6 +532,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             subjects={subjects}
             faculty={faculty}
             departments={departments}
+            allRooms={allRooms}
           />
         )}
       </Card>
