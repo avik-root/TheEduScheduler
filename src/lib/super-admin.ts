@@ -40,11 +40,11 @@ async function readSuperAdminFile(): Promise<SuperAdmin | null> {
     }
 }
 
-async function getSecurityKey(): Promise<string | null> {
+async function getSuperAdminSecurityKey(): Promise<string | null> {
     try {
         const fileContent = await fs.readFile(securityKeysFilePath, 'utf-8');
         const data = JSON.parse(fileContent);
-        return data.disableKey || null;
+        return data.superAdminUnlockKey || null;
     } catch (error) {
         return null;
     }
@@ -207,7 +207,7 @@ export async function updateSuperAdmin(data: UpdateSuperAdminData): Promise<{ su
 }
 
 export async function unlockSuperAdminAccountWithKey(data: UnlockKeyData): Promise<{ success: boolean; message: string }> {
-    const securityKey = await getSecurityKey();
+    const securityKey = await getSuperAdminSecurityKey();
     if (!securityKey || securityKey !== data.key) {
         return { success: false, message: 'The provided security key is incorrect.' };
     }

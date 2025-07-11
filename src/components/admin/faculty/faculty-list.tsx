@@ -126,7 +126,7 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                             </p>
                         ) : (
                             <p className="text-sm text-muted-foreground">
-                                Click &apos;Create New Faculty&apos; to get started.
+                                Click 'Create New Faculty' to get started.
                             </p>
                         )}
                     </div>

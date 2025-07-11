@@ -91,6 +91,18 @@ export async function getFacultyByEmail(adminEmail: string, email: string): Prom
     return faculty || null;
 }
 
+export async function findAdminForFaculty(facultyEmail: string): Promise<string | null> {
+    const adminEmails = await getAdminEmails();
+    for (const adminEmail of adminEmails) {
+        const facultyList = await readFacultyFile(adminEmail);
+        if (facultyList.some(f => f.email === facultyEmail)) {
+            return adminEmail;
+        }
+    }
+    return null;
+}
+
+
 export async function createFaculty(adminEmail: string, data: Faculty): Promise<{ success: boolean; message: string }> {
     const isTaken = await isFacultyEmailTaken(data.email);
     if (isTaken) {
@@ -386,49 +398,15 @@ export async function setTwoFactor(data: TwoFactorSettingsData): Promise<{ succe
     }
 }
 
-async function getSecurityKey(): Promise<string | null> {
+async function getFacultySecurityKey(): Promise<string | null> {
     try {
         const fileContent = await fs.readFile(securityKeysFilePath, 'utf-8');
         const data = JSON.parse(fileContent);
-        return data.disableKey || null;
+        return data.facultyUnlockKey || null;
     } catch (error) {
         return null;
     }
 }
-
-export async function disableFaculty2FA(adminEmail: string, facultyEmail: string, disableKey: string): Promise<{ success: boolean; message: string }> {
-    const securityKey = await getSecurityKey();
-    if (!securityKey) {
-        return { success: false, message: 'Security key is not configured.' };
-    }
-    if (securityKey !== disableKey) {
-        return { success: false, message: 'The provided security key is incorrect.' };
-    }
-    
-    const facultyList = await readFacultyFile(adminEmail);
-    const facultyIndex = facultyList.findIndex(f => f.email === facultyEmail);
-
-    if (facultyIndex === -1) {
-        return { success: false, message: 'Faculty member not found.' };
-    }
-
-    const faculty = facultyList[facultyIndex];
-    faculty.isTwoFactorEnabled = false;
-    faculty.isLocked = false;
-    faculty.twoFactorAttempts = 0;
-    faculty.twoFactorPin = undefined;
-    faculty.twoFactorDisabledByAdmin = true; // Set the flag
-    
-    facultyList[facultyIndex] = faculty;
-    
-    try {
-        await writeFacultyFile(adminEmail, facultyList);
-        return { success: true, message: '2FA has been disabled and the account is unlocked.' };
-    } catch (error) {
-        return { success: false, message: 'Failed to update faculty account.' };
-    }
-}
-
 
 export async function changeFacultyPassword(data: ChangePasswordData): Promise<{ success: boolean; message: string }> {
     const { adminEmail, email, currentPassword, password: newPassword } = data;
@@ -466,7 +444,12 @@ export async function changeFacultyPassword(data: ChangePasswordData): Promise<{
     }
 }
 
-export async function unlockFacultyAccount(adminEmail: string, facultyEmail: string): Promise<{ success: boolean; message: string }> {
+export async function unlockFacultyAccount(adminEmail: string, facultyEmail: string, key: string): Promise<{ success: boolean; message: string }> {
+    const securityKey = await getFacultySecurityKey();
+    if (!securityKey || securityKey !== key) {
+        return { success: false, message: 'The provided security key is incorrect.' };
+    }
+
     if (!adminEmail) return { success: false, message: 'Admin not identified.' };
     const facultyList = await readFacultyFile(adminEmail);
     const facultyIndex = facultyList.findIndex(f => f.email === facultyEmail);

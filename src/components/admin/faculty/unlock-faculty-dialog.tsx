@@ -19,6 +19,8 @@ import { useRouter } from 'next/navigation';
 
 import { unlockFacultyAccount, type Faculty } from '@/lib/faculty';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface UnlockFacultyDialogProps {
   faculty: Faculty;
@@ -28,12 +30,28 @@ interface UnlockFacultyDialogProps {
 export function UnlockFacultyDialog({ faculty, adminEmail }: UnlockFacultyDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [securityKey, setSecurityKey] = React.useState('');
   const { toast } = useToast();
   const router = useRouter();
 
+  React.useEffect(() => {
+    if (!open) {
+        setSecurityKey('');
+    }
+  }, [open]);
+
   async function handleUnlock() {
+    if (!securityKey) {
+        toast({
+            variant: 'destructive',
+            title: 'Key Required',
+            description: 'Please enter the faculty security key to unlock the account.'
+        });
+        return;
+    }
+
     setIsLoading(true);
-    const result = await unlockFacultyAccount(adminEmail, faculty.email);
+    const result = await unlockFacultyAccount(adminEmail, faculty.email, securityKey);
 
     if (result.success) {
       toast({
@@ -48,8 +66,8 @@ export function UnlockFacultyDialog({ faculty, adminEmail }: UnlockFacultyDialog
         title: 'Unlock Failed',
         description: result.message,
       });
-      setIsLoading(false);
     }
+    setIsLoading(false);
   }
 
   return (
@@ -62,11 +80,23 @@ export function UnlockFacultyDialog({ faculty, adminEmail }: UnlockFacultyDialog
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure you want to unlock this account?</AlertDialogTitle>
+          <AlertDialogTitle>Unlock Faculty Account</AlertDialogTitle>
           <AlertDialogDescription>
-            This will reset the faculty member&apos;s 2FA attempts and allow them to try logging in again.
+            To unlock the account for <span className="font-semibold text-foreground">{faculty.name}</span>, please enter the faculty security key. This will reset their 2FA attempts and allow them to log in again.
           </AlertDialogDescription>
         </AlertDialogHeader>
+         <div className="space-y-2 pt-2">
+            <Label htmlFor={`unlock-key-${faculty.email}`}>
+                Security Key
+            </Label>
+            <Input
+              id={`unlock-key-${faculty.email}`}
+              type='password'
+              placeholder="Enter faculty security key"
+              value={securityKey}
+              onChange={(e) => setSecurityKey(e.target.value)}
+            />
+        </div>
         <AlertDialogFooter className="pt-4">
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
