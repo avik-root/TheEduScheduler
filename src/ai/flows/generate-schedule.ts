@@ -99,7 +99,7 @@ const prompt = ai.definePrompt({
 - Daily Timings: From {{timeSettings.startTime}} to {{timeSettings.endTime}}
 - Break Slot: {{timeSettings.breakTime}}. Do not schedule anything during this time.
 - Active Weekdays: {{#each activeDays}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-- **Class Duration**: Each standard class period is **{{timeSettings.classDuration}} minutes**.
+- **Class Duration**: Each standard class period is **{{timeSettings.classDuration}} minutes**. Time slots must be contiguous (back-to-back) with no gaps, except for the main break. For example, if class duration is 50 minutes, the slots would be 09:00-09:50, 09:50-10:40, etc.
 
 **Available Resources:**
 - Rooms: {{#if availableRooms}}{{#each availableRooms}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
@@ -148,7 +148,7 @@ const prompt = ai.definePrompt({
 2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. This is not optional. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
 3.  **Table Structure**: 
     - The first column of each table must be \`Day\`. 
-    - The subsequent columns must be the **{{timeSettings.classDuration}}-minute time slots**, calculated based on the daily start/end times. 
+    - The subsequent columns must be the **{{timeSettings.classDuration}}-minute time slots**, calculated based on the daily start/end times. The slots MUST be contiguous (back-to-back) with NO GAPS between them, except for the specified main break.
     - **IMPORTANT**: You MUST include a column in the header for the main break slot (e.g., a column header "15:00-15:30"). All cells under this break column must contain only the word "Break".
 4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101". For empty slots, use '-'.
 
