@@ -1,3 +1,4 @@
+
 [
   {
     "name": "BP",
@@ -6,7 +7,8 @@
     "department": "CSE",
     "weeklyMaxHours": 24,
     "weeklyOffDays": [],
-    "abbreviation": "BP"
+    "abbreviation": "BP",
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Rohit Roy Choudhury ",
@@ -22,7 +24,8 @@
     "twoFactorAttempts": 0,
     "isTwoFactorEnabled": true,
     "twoFactorPin": "$2a$10$kuQPYm9bg/prizjfHzhUVOcIlkKdPch.c9n35nd8Kt7vmrZwu3imq",
-    "isLocked": false
+    "isLocked": false,
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Rishika Roy",
@@ -34,7 +37,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Trishita Gautam",
@@ -47,7 +51,8 @@
       "Sunday",
       "Saturday"
     ],
-    "twoFactorAttempts": 0
+    "twoFactorAttempts": 0,
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Atreyee Mukherjee",
@@ -59,7 +64,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Rituparna Sarka",
@@ -75,7 +81,8 @@
     "isTwoFactorEnabled": false,
     "twoFactorAttempts": 0,
     "isLocked": false,
-    "twoFactorDisabledByAdmin": false
+    "twoFactorDisabledByAdmin": false,
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Shiva Seth Alam",
@@ -88,7 +95,8 @@
       "Sunday",
       "Saturday"
     ],
-    "twoFactorAttempts": 0
+    "twoFactorAttempts": 0,
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Mehakdeep Kaur",
@@ -100,7 +108,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Meghna Ray",
@@ -112,7 +121,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Anirban Mitra",
@@ -124,7 +134,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Saikat Maity",
@@ -136,7 +147,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Mousumi Bhattacharyya",
@@ -148,7 +160,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Swarup Kr Ghosh",
@@ -160,7 +173,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Sadip Midya",
@@ -172,7 +186,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Soma Datta",
@@ -184,7 +199,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Souvik Pal",
@@ -196,7 +212,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Asmita Roy",
@@ -208,7 +225,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Indranil Sarkar",
@@ -220,7 +238,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Ankita Dhar",
@@ -232,7 +251,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Alamgir Sardar",
@@ -244,7 +264,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Rana Majumdar ",
@@ -256,7 +277,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Pratik Bhattacharjee",
@@ -268,7 +290,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Arkaprava Bhaduri Mandal",
@@ -280,7 +303,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Soma Hazra",
@@ -292,7 +316,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Basudev Saha",
@@ -304,7 +329,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Aritra Ghosh",
@@ -316,7 +342,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Parthasarathi De",
@@ -328,7 +355,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Soumi Dutta",
@@ -340,7 +368,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Abhishek Bhattacharya",
@@ -352,7 +381,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Subhra Halder",
@@ -364,7 +394,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Biswaroop Maiti",
@@ -376,7 +407,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Pritam Goswami",
@@ -388,7 +420,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Arkaprava Das",
@@ -400,7 +433,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Sourajit Maity",
@@ -412,7 +446,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Debasmita Bhoumik",
@@ -424,7 +459,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Aritra Sinha",
@@ -436,7 +472,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Arijit Joardar",
@@ -448,7 +485,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Kritanta Saha",
@@ -460,7 +498,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Raina Paul",
@@ -472,7 +511,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Sayani Mondal",
@@ -484,7 +524,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Bhabani Prasad Sinha",
@@ -496,7 +537,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Atal Chowdhury",
@@ -508,7 +550,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Dr. Debasis Majumder",
@@ -520,7 +563,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Arijit Pal",
@@ -532,7 +576,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Ditu Barai",
@@ -544,7 +589,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Santlal Prajapati",
@@ -556,7 +602,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   },
   {
     "name": "Bidyut Saha",
@@ -568,6 +615,7 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-11T12:00:00.000Z"
   }
 ]
