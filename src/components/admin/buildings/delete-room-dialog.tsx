@@ -56,7 +56,7 @@ export function DeleteRoomDialog({ buildingId, floorId, roomId, adminEmail }: De
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+        <Button variant="destructive-ghost" size="icon">
           <Trash2 className="h-4 w-4" />
           <span className="sr-only">Delete Room</span>
         </Button>

@@ -1,4 +1,3 @@
-
 [
   {
     "name": "SNU",
@@ -9,5 +8,10 @@
     "name": "TINT",
     "email": "tint@gmail.com",
     "password": "$2b$10$vclR9.BlnP31YTcWKn7Oz.qjq.SemXTldpO9crcQE6cLmjBq6eN0."
+  },
+  {
+    "name": "SNU",
+    "email": "snu.cse@themintfire.com",
+    "password": "$2a$10$Wv8708Hxpb1FLTf7bNsYM..YddGJkZKHAFO4W7ZucNn3cHFw0nXpe"
   }
 ]
