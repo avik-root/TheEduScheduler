@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Mail, Lock, Eye, EyeOff, ShieldAlert } from 'lucide-react';
+import { Loader2, Mail, Lock, Eye, EyeOff, ShieldAlert, KeyRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -17,15 +17,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { LoginSchema, TwoFactorSchema } from '@/lib/validators/auth';
+import { LoginSchema, TwoFactorSchema, UnlockKeySchema } from '@/lib/validators/auth';
 import { useToast } from "@/hooks/use-toast";
-import { loginSuperAdmin, verifySuperAdminTwoFactor } from '@/lib/super-admin';
+import { loginSuperAdmin, verifySuperAdminTwoFactor, unlockSuperAdminAccountWithKey } from '@/lib/super-admin';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 type LoginFormData = z.infer<typeof LoginSchema>;
 type TwoFactorFormData = z.infer<typeof TwoFactorSchema>;
+type UnlockKeyFormData = z.infer<typeof UnlockKeySchema>;
 
-type FormStep = 'credentials' | 'twoFactor' | 'locked';
+type FormStep = 'credentials' | 'twoFactor' | 'locked' | 'keyUnlock';
 
 export function LoginForm() {
   const [step, setStep] = React.useState<FormStep>('credentials');
@@ -49,6 +50,14 @@ export function LoginForm() {
         pin: '',
     }
   });
+  
+  const unlockKeyForm = useForm<UnlockKeyFormData>({
+    resolver: zodResolver(UnlockKeySchema),
+    defaultValues: {
+        key: '',
+    }
+  });
+
 
   async function onLoginSubmit(data: LoginFormData) {
     setIsLoading(true);
@@ -97,6 +106,19 @@ export function LoginForm() {
     }
     setIsLoading(false);
   }
+  
+  async function onUnlockSubmit(data: UnlockKeyFormData) {
+    setIsLoading(true);
+    const result = await unlockSuperAdminAccountWithKey(data);
+    if (result.success) {
+        toast({ title: 'Account Unlocked', description: result.message });
+        setStep('credentials');
+    } else {
+        unlockKeyForm.setError('key', { type: 'manual', message: result.message });
+    }
+    setIsLoading(false);
+  }
+
 
   return (
     <>
@@ -195,14 +217,55 @@ export function LoginForm() {
       )}
 
       {step === 'locked' && (
-        <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertTitle>Account Locked</AlertTitle>
-            <AlertDescription>
-              This account has been locked due to too many failed login attempts.
-            </AlertDescription>
-        </Alert>
+        <div className="space-y-4">
+            <Alert variant="destructive">
+                <ShieldAlert className="h-4 w-4" />
+                <AlertTitle>Account Locked</AlertTitle>
+                <AlertDescription>
+                  This account has been locked due to too many failed login attempts.
+                </AlertDescription>
+            </Alert>
+             <Button variant="link" className="p-0 h-auto" onClick={() => setStep('keyUnlock')}>
+                Unlock using security key
+            </Button>
+        </div>
       )}
+      
+      {step === 'keyUnlock' && (
+         <Form {...unlockKeyForm}>
+          <form onSubmit={unlockKeyForm.handleSubmit(onUnlockSubmit)} className="space-y-6">
+            <FormField
+              control={unlockKeyForm.control}
+              name="key"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>256-bit Security Key</FormLabel>
+                   <div className="relative">
+                     <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                        <Input 
+                            type="password"
+                            placeholder="Enter your security key" 
+                            {...field} 
+                            className="pl-10"
+                        />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Unlock Account
+            </Button>
+             <Button variant="link" className="p-0 h-auto" onClick={() => setStep('credentials')}>
+                Back to login
+            </Button>
+          </form>
+        </Form>
+      )}
+
     </>
   );
 }
