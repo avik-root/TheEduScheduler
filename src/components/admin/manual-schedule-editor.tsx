@@ -81,30 +81,27 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         const finalTime = parseTime(endTime, 'HH:mm', new Date());
         const brkStart = parseTime(breakStart, 'HH:mm', new Date());
         const brkEnd = parseTime(breakEnd, 'HH:mm', new Date());
+        let breakAdded = false;
 
         while (currentTime < finalTime) {
-            const slotStart = currentTime;
-            const slotEnd = addMinutes(slotStart, classDuration);
-
-            if (slotStart.getTime() === brkStart.getTime()) {
+            // Check if it's time for the main break
+            if (!breakAdded && currentTime >= brkStart && currentTime < brkEnd) {
                 slots.push(`${format(brkStart, 'HH:mm')}-${format(brkEnd, 'HH:mm')}`);
                 currentTime = brkEnd;
+                breakAdded = true;
                 continue;
             }
 
+            const slotStart = currentTime;
+            const slotEnd = addMinutes(slotStart, classDuration);
+
             if (slotEnd > finalTime) break;
-            
+
             slots.push(`${format(slotStart, 'HH:mm')}-${format(slotEnd, 'HH:mm')}`);
             
-            const nextTime = addMinutes(slotEnd, breakDuration);
-            if(nextTime.getTime() === brkStart.getTime()) {
-                 currentTime = brkStart;
-            } else {
-                currentTime = nextTime;
-            }
+            currentTime = addMinutes(slotEnd, breakDuration);
         }
         return slots;
-
     }, [startTime, endTime, breakStart, breakEnd, classDuration, breakDuration]);
 
     React.useEffect(() => {
@@ -167,6 +164,7 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         
         const program = availablePrograms.find(p => p.id === selectedProg);
         const year = availableYears.find(y => y.id === selectedYear);
+        const mainBreakSlot = `${breakStart}-${breakEnd}`;
 
         const schedules: ParsedSchedule[] = [{
             programYearTitle: `${program?.name || 'Program'} - ${year?.name || 'Year'}`,
@@ -178,8 +176,9 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                         return [
                             day,
                             ...timeSlots.map(time => {
+                                if (time === mainBreakSlot) return 'Break';
                                 const cell = gridData[`${day}-${time}`];
-                                if (!cell || !cell.subject || time.includes(breakStart)) return '-';
+                                if (!cell || !cell.subject) return '-';
                                 return `${cell.subject} (${cell.faculty || 'NF'}) in ${cell.room || 'N/A'}`;
                             })
                         ];
@@ -188,7 +187,7 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
             })
         }];
         return schedules;
-    }, [scheduleGrid, selectedProg, selectedYear, availablePrograms, availableYears, days, timeSlots, breakStart]);
+    }, [scheduleGrid, selectedProg, selectedYear, availablePrograms, availableYears, days, timeSlots, breakStart, breakEnd]);
 
 
     async function handlePublish() {
@@ -275,7 +274,7 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                                                 <TableRow key={day}>
                                                     <TableCell className="font-medium">{day}</TableCell>
                                                     {timeSlots.map(time => {
-                                                        const isBreak = time.includes(breakStart);
+                                                        const isBreak = time === `${breakStart}-${breakEnd}`;
                                                         const popoverKey = `${section.id}-${day}-${time}`;
                                                         const cellValue = scheduleGrid[section.name]?.[`${day}-${time}`];
                                                         
@@ -284,8 +283,8 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                                                             {!isBreak ? (
                                                                  <Popover open={popoverOpenStates[popoverKey]} onOpenChange={(open) => setPopoverOpen(popoverKey, open)}>
                                                                     <PopoverTrigger asChild>
-                                                                        <Button variant="ghost" className="h-auto p-1 text-xs w-full justify-start text-left min-h-10">
-                                                                            {cellValue ? (
+                                                                        <Button variant="ghost" className="h-auto p-1 text-xs w-full justify-start text-left min-h-[52px]">
+                                                                            {cellValue && cellValue.subject ? (
                                                                                 <div>
                                                                                     <p className="font-semibold">{cellValue.subject}</p>
                                                                                     <p>{cellValue.faculty}</p>
@@ -294,21 +293,25 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                                                                             ) : <span className="text-muted-foreground">Empty</span>}
                                                                         </Button>
                                                                     </PopoverTrigger>
-                                                                    <PopoverContent className="w-64 p-2 space-y-2">
-                                                                        <h4 className="font-medium text-sm">{day}, {time}</h4>
-                                                                        
-                                                                        {/* Subject Selector */}
-                                                                        <Command><CommandInput placeholder="Search subject..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{yearSubjects.map(s => <CommandItem key={s.id} onSelect={() => { updateCell(section.name, day, time, { subject: s.code }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.subject === s.code ? "opacity-100" : "opacity-0")} />{s.name}</CommandItem>)}</CommandGroup></CommandList></Command>
-                                                                        
-                                                                        {/* Faculty Selector */}
-                                                                        <Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{faculty.map(f => <CommandItem key={f.email} onSelect={() => { updateCell(section.name, day, time, { faculty: f.abbreviation }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.faculty === f.abbreviation ? "opacity-100" : "opacity-0")} />{f.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+                                                                    <PopoverContent className="w-64 p-0" align="start">
+                                                                        <div className="p-2 space-y-2">
+                                                                            <h4 className="font-medium text-sm">{day}, {time}</h4>
+                                                                            
+                                                                            {/* Subject Selector */}
+                                                                            <Command><CommandInput placeholder="Search subject..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{yearSubjects.map(s => <CommandItem key={s.id} onSelect={() => { updateCell(section.name, day, time, { subject: s.code }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.subject === s.code ? "opacity-100" : "opacity-0")} />{s.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+                                                                            
+                                                                            {/* Faculty Selector */}
+                                                                            <Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{faculty.map(f => <CommandItem key={f.email} onSelect={() => { updateCell(section.name, day, time, { faculty: f.abbreviation }); setPopoverOpen(popoverKey, false);}}><Check className={cn("mr-2 h-4 w-4", cellValue?.faculty === f.abbreviation ? "opacity-100" : "opacity-0")} />{f.name}</CommandItem>)}</CommandGroup></CommandList></Command>
 
-                                                                        {/* Room Selector */}
-                                                                        <Command><CommandInput placeholder="Search room..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{allRooms.map(r => <CommandItem key={r.id} onSelect={() => { updateCell(section.name, day, time, { room: r.name }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.room === r.name ? "opacity-100" : "opacity-0")} />{r.name}</CommandItem>)}</CommandGroup></CommandList></Command>
-
-                                                                        <Button variant="destructive" size="sm" className="w-full" onClick={() => {updateCell(section.name, day, time, null); setPopoverOpen(popoverKey, false);}}>
-                                                                            <X className="mr-2 h-4 w-4"/> Clear Cell
-                                                                        </Button>
+                                                                            {/* Room Selector */}
+                                                                            <Command><CommandInput placeholder="Search room..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{allRooms.map(r => <CommandItem key={r.id} onSelect={() => { updateCell(section.name, day, time, { room: r.name }); setPopoverOpen(popoverKey, false);}}><Check className={cn("mr-2 h-4 w-4", cellValue?.room === r.name ? "opacity-100" : "opacity-0")} />{r.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+                                                                        </div>
+                                                                        <Separator />
+                                                                        <div className="p-2">
+                                                                            <Button variant="destructive" size="sm" className="w-full" onClick={() => {updateCell(section.name, day, time, null); setPopoverOpen(popoverKey, false);}}>
+                                                                                <X className="mr-2 h-4 w-4"/> Clear Cell
+                                                                            </Button>
+                                                                        </div>
                                                                     </PopoverContent>
                                                                 </Popover>
                                                              ) : (
@@ -345,13 +348,13 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                                         const day = row[0];
                                         row.slice(1).forEach((cell, index) => {
                                             const time = sec.header[index + 1];
-                                            if (cell !== '-') {
+                                            if (cell !== '-' && !cell.toLowerCase().includes('break')) {
                                                 const match = cell.match(/(.+) \((.+)\) in (.+)/);
                                                 if(match) {
                                                      newGrid[sec.sectionName][`${day}-${time}`] = {
-                                                        subject: match[1],
-                                                        faculty: match[2],
-                                                        room: match[3]
+                                                        subject: match[1].trim(),
+                                                        faculty: match[2].trim(),
+                                                        room: match[3].trim()
                                                     };
                                                 }
                                             }
@@ -369,5 +372,3 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         </CardContent>
     );
 }
-
-    
