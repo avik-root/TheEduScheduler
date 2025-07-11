@@ -7,9 +7,6 @@ import { getAdminByEmail, getFirstAdminEmail } from '@/lib/admin';
 import { getPublishedSchedule } from '@/lib/schedule';
 import { AppLogo } from '@/components/common/app-logo';
 import { ScheduleViewer } from '@/components/admin/schedule-viewer';
-import { getSubjects } from '@/lib/subjects';
-import { getFaculty } from '@/lib/faculty';
-import { getAllRooms } from '@/lib/buildings';
 
 export default async function SchedulePage({ searchParams }: { searchParams: { email?: string } }) {
   const loggedInAdminEmail = searchParams.email;
@@ -25,9 +22,6 @@ export default async function SchedulePage({ searchParams }: { searchParams: { e
   }
 
   const publishedSchedule = await getPublishedSchedule(primaryAdminEmail);
-  const allSubjects = await getSubjects(primaryAdminEmail);
-  const allFaculty = await getFaculty(primaryAdminEmail);
-  const allRooms = await getAllRooms(primaryAdminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -50,10 +44,6 @@ export default async function SchedulePage({ searchParams }: { searchParams: { e
             <ScheduleViewer 
                 schedule={publishedSchedule} 
                 adminEmail={primaryAdminEmail}
-                loggedInAdminEmail={loggedInAdminEmail}
-                allSubjects={allSubjects}
-                allFaculty={allFaculty}
-                allRooms={allRooms}
             />
         </div>
       </main>

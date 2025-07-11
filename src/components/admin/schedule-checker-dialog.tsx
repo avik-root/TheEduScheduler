@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -22,7 +21,7 @@ import { ScrollArea } from '../ui/scroll-area';
 
 interface ScheduleCheckerDialogProps {
     schedules: ParsedSchedule[];
-    onApplyFixes: (newScheduleMarkdown: string) => void;
+    onApplyFixes?: (newScheduleMarkdown: string) => void;
 }
 
 export function ScheduleCheckerDialog({ schedules, onApplyFixes }: ScheduleCheckerDialogProps) {
@@ -66,7 +65,7 @@ export function ScheduleCheckerDialog({ schedules, onApplyFixes }: ScheduleCheck
   };
 
   const handleApply = () => {
-    if (result?.correctedSchedule) {
+    if (result?.correctedSchedule && onApplyFixes) {
         onApplyFixes(result.correctedSchedule);
         setOpen(false);
         toast({
@@ -82,7 +81,7 @@ export function ScheduleCheckerDialog({ schedules, onApplyFixes }: ScheduleCheck
       <DialogTrigger asChild>
         <Button variant="outline">
           <Wand className="mr-2 h-4 w-4" />
-          AI Schedule Checker
+          AI Analyser
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
@@ -131,12 +130,14 @@ export function ScheduleCheckerDialog({ schedules, onApplyFixes }: ScheduleCheck
                             </div>
                         </div>
                     </ScrollArea>
-                    <div className="pt-4 flex justify-end">
+                    {onApplyFixes && (
+                      <div className="pt-4 flex justify-end">
                        <Button onClick={handleApply} disabled={!result.correctedSchedule}>
                             <Sparkles className="mr-2 h-4 w-4" />
                             Apply Fixes
                         </Button>
-                    </div>
+                      </div>
+                    )}
                 </div>
             )}
             

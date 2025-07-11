@@ -1,16 +1,17 @@
-
 'use client';
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, Wand } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
 import { DeleteSingleScheduleDialog } from './delete-single-schedule-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ScheduleCheckerDialog } from './schedule-checker-dialog';
+
 
 interface ScheduleViewerProps {
   schedule: string;
@@ -87,6 +88,7 @@ export function schedulesToMarkdown(schedules: ParsedSchedule[]): string {
         return markdown;
     }).join('\n');
 }
+
 
 export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -266,6 +268,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 </div>
             </div>
             <div className="flex items-center gap-2">
+                <ScheduleCheckerDialog schedules={parsedSchedules || []} />
                 <Button onClick={() => handleDownloadCsv()} disabled={!hasSchedule}>
                     <Download className="mr-2 h-4 w-4" />
                     Download All Filtered
