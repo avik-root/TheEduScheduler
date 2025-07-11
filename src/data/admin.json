@@ -1,22 +1,21 @@
-
 [
   {
     "name": "SNU",
     "email": "snu@themintfire.com",
-    "password": "$2b$10$ZzujuPtKdqbO9W2IZKP5OO3phTh4Xd/pYWmYTk.NKIJyEsMUal5pu",
+    "password": "$2a$10$5JRbSl1cJt.C93yrsnXOGOKTYIzKGjzAS6PBdDZOZrn1iQ3kiaHDy",
     "isTwoFactorEnabled": false,
     "twoFactorAttempts": 0,
     "isLocked": false,
-    "passwordLastChanged": "2025-01-15T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-11T18:29:40.048Z"
   },
   {
     "name": "SNU CSE",
     "email": "snu.cse@themintfire.com",
-    "password": "$2a$10$Wv8708Hxpb1FLTf7bNsYM..YddGJkZKHAFO4W7ZucNn3cHFw0nXpe",
+    "password": "$2a$10$5j0tEbetu8ezbZzSFEnxFu0t0B1knZETpbULzj5DcAimHyme1Sktu",
     "isTwoFactorEnabled": true,
     "twoFactorAttempts": 0,
     "isLocked": false,
     "twoFactorPin": "$2a$10$aP.zDNCmdFcd9rFl.g21ReSY0eViZGjN0BHg4KDKTZNdsaJ2nUgR.",
-    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
+    "passwordLastChanged": "2025-07-11T18:29:50.803Z"
   }
 ]

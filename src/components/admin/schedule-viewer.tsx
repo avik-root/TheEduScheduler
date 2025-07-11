@@ -15,21 +15,20 @@ import { useToast } from '@/hooks/use-toast';
 interface ScheduleViewerProps {
   schedule: string;
   adminEmail: string;
-  loggedInAdminEmail: string;
 }
 
-interface SectionSchedule {
+export interface SectionSchedule {
   sectionName: string;
   header: string[];
   rows: string[][];
 }
 
-interface ParsedSchedule {
+export interface ParsedSchedule {
     programYearTitle: string;
     sections: SectionSchedule[];
 }
 
-function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
+export function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     if (!markdown || markdown.trim() === '') return null;
 
     // Normalize newlines and then split by the main schedule heading
@@ -73,12 +72,27 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     }).filter(s => s.sections.length > 0);
 }
 
+export function schedulesToMarkdown(schedules: ParsedSchedule[]): string {
+    return schedules.map(schedule => {
+        let markdown = `## ${schedule.programYearTitle}\n\n`;
+        schedule.sections.forEach(section => {
+            markdown += `### ${section.sectionName}\n`;
+            markdown += `| ${section.header.join(' | ')} |\n`;
+            markdown += `| ${section.header.map(() => '---').join(' | ')} |\n`;
+            section.rows.forEach(row => {
+                markdown += `| ${row.join(' | ')} |\n`;
+            });
+            markdown += '\n';
+        });
+        return markdown;
+    }).join('\n');
+}
 
-export function ScheduleViewer({ schedule, adminEmail, loggedInAdminEmail }: ScheduleViewerProps) {
+export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const { toast } = useToast();
   const parsedSchedules = React.useMemo(() => parseMultipleSchedules(schedule), [schedule]);
-  const dashboardPath = `/admin/dashboard?email=${loggedInAdminEmail}`;
+  const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
 
   const filteredSchedules = React.useMemo(() => {
     if (!parsedSchedules) return [];
