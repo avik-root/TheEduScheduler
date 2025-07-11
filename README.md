@@ -1,118 +1,115 @@
-![TheEduScheduler Logo](https://raw.githubusercontent.com/avik-root/TheEduScheduler/main/public/logo.png)
+<!-- Futuristic Banner -->
+<p align="center">
+  <img src="https://raw.githubusercontent.com/avik-root/TheEduScheduler/main/public/logo.png" width="160" alt="TheEduScheduler Logo" />
+</p>
 
-# ✨ TheEduScheduler by MintFire
+<h1 align="center">
+  ✨ <strong>TheEduScheduler</strong> by <span style="color:#7F5AF0;">MintFire</span> 🚀
+</h1>
 
-![GitHub repo size](https://img.shields.io/github/repo-size/avik-root/TheEduScheduler?color=blue)
-![GitHub stars](https://img.shields.io/github/stars/avik-root/TheEduScheduler?style=social)
-![GitHub license](https://img.shields.io/github/license/avik-root/TheEduScheduler)
-![Next.js](https://img.shields.io/badge/Next.js-000?logo=next.js)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?logo=tailwind-css&logoColor=white)
+<p align="center">
+  <em>AI-powered university class scheduling & resource management system.</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/repo-size/avik-root/TheEduScheduler?color=blue&style=for-the-badge" />
+  <img src="https://img.shields.io/github/stars/avik-root/TheEduScheduler?style=for-the-badge&logo=github" />
+  <img src="https://img.shields.io/github/license/avik-root/TheEduScheduler?style=for-the-badge&color=green" />
+  <img src="https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js" />
+  <img src="https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
+</p>
 
 ---
 
 ## 📚 Table of Contents
 
-1. [Project Title](#-project-title)  
-2. [Description](#-description)  
-3. [Features](#-features)  
-4. [Technologies Used](#-technologies-used)  
-5. [Installation](#-installation)  
-6. [Usage](#-usage)  
-7. [Contributing](#-contributing)   
-9. [Contact](#-contact)
+- [🚀 Project Title](#-project-title)  
+- [✨ Description](#-description)  
+- [🌟 Features](#-features)  
+- [💻 Technologies Used](#-technologies-used)  
+- [🧪 Usage](#-usage)  
+- [📬 Contact](#-contact)  
 
 ---
 
 ## 🚀 Project Title
 
-**TheEduScheduler by MintFire**
+### **TheEduScheduler by MintFire**
+
+An intelligent, scalable, and modular university scheduling system designed to eliminate timetable conflicts, automate planning, and simplify academic resource management.
 
 ---
 
 ## ✨ Description
 
-**TheEduScheduler** is a smart university scheduling and resource management platform developed by **MintFire**. It automates and streamlines the process of managing classrooms, faculties, subjects, and academic schedules in an intuitive and conflict-free way.
-
-The platform supports both administrators and faculty roles, and integrates AI (via Genkit) to generate intelligent class schedules while following institutional rules and constraints.
+**TheEduScheduler** is a powerful web application developed by **MintFire** to handle complex institutional scheduling logic. It leverages AI through **Genkit**, uses Firebase for secure authentication and data, and presents an intuitive, animated interface powered by **Next.js**, **TailwindCSS**, and **Shadcn/UI**.
 
 ---
 
 ## 🌟 Features
 
-- 🏢 **Building & Room Management**  
-- 🏫 **Department & Program Setup**  
-- 👨‍🏫 **Faculty & Subject Management**  
-- 🧠 **AI-Powered Smart Scheduling (Beta)**  
-- ⛔ **Conflict Detection Engine**  
-- 📏 **Schedule Rule Enforcement**  
-- 🔐 **Firebase Auth with Two-Factor Login**  
-- 🧾 **Class & Room Request System**  
-- 📊 **Timetable Visualization by Section/Faculty**  
-- 📝 **Action Logging for Auditing**
+| 🌟 Feature                   | 🧠 Description |
+|-----------------------------|----------------|
+| 🏢 Building & Room Management | Create, edit, organize physical spaces |
+| 👨‍🏫 Faculty Assignment        | Prevent scheduling overlaps & assign roles |
+| 📚 Subject Management        | Configure 2/3 credit theory & labs |
+| 📆 Smart Scheduler           | Create visual timetables by section/year |
+| 🤖 AI-Powered Scheduling     | Generate optimized routines with Genkit |
+| 🔐 Auth & Role System        | Firebase login with 2FA and access control |
+| 📝 Action Logs & Requests    | Room requests, audit trails, approvals |
+| 📊 Timetable Visualizer      | View schedules section-wise or faculty-wise |
 
 ---
 
 ## 💻 Technologies Used
 
 ### 🧩 Frontend
-- **Next.js** (React Framework)  
-- **TypeScript**  
-- **Tailwind CSS**  
+- **Next.js** (React)
+- **TypeScript**
+- **TailwindCSS**
 - **Shadcn/ui**
 
 ### 🔧 Backend
-- **Firebase Auth**  
-- **Firestore Database**  
-- **Firebase Hosting**  
-- **Genkit AI Scheduler**
+- **Firebase Auth & Firestore**
+- **Genkit (AI logic)**
+- **Firebase Hosting**
 
-### 🛠 Dev Tools
-- **VS Code**  
-- **Firebase Studio**  
-- **npm / yarn**
+### 🛠 Dev Environment
+- VS Code  
+- Firebase Studio  
+- npm / yarn  
 
 ---
-
 
 ## 🧪 Usage
 
-- 👑 **Admin Dashboard**  
-  - Add departments, rooms, faculties, subjects  
-  - Create and assign schedules  
-  - Review logs and handle teacher requests
+### 👑 Admin Panel
+- Add faculties, subjects, rooms, buildings
+- Generate and validate schedules
+- Review logs and request history
 
-- 👨‍🏫 **Faculty Dashboard**  
-  - View timetable and allocations  
-  - Raise room/class requests  
-  - Access student & lab sessions
+### 👨‍🏫 Faculty Panel
+- View assigned schedules
+- Request class/lab rooms
+- View grouped lab sessions
 
-- 🤖 **AI Scheduler**  
-  - Configure program-year-section  
-  - Click “Generate” to auto-build an optimized routine  
-  - Manually adjust and publish output  
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! 🙌
-
-1. Fork this repo  
-2. Create a branch: `git checkout -b feature/your-feature-name`  
-3. Make your changes  
-4. Commit: `git commit -m "Added new feature"`  
-5. Push: `git push origin feature/your-feature-name`  
-6. Open a Pull Request
+### 🤖 AI Scheduler (Beta)
+- Select section-year-program
+- Define rules (e.g., 3-credit = 1 double + 1 single)
+- Click “Generate” and auto-fill timetable
 
 ---
 
 ## 📬 Contact
 
-**Avik Samanta**  && **Anusha Gupta**
-Founder & CEO, MintFire  
-📧 aviksamantaofficial@gmail.com.com  
-🌐 [https://github.com/avik-root](https://github.com/avik-root)
-🌐 [https://github.com/anushagupta11](https://github.com/anushagupta11)
+| 👤 Name            | 🔗 GitHub                                      | 📧 Email                        |
+|-------------------|-----------------------------------------------|---------------------------------|
+| Avik Samanta      | [avik-root](https://github.com/avik-root)     | aviksamantaofficial@gmail.com  |
+| Anusha Gupta      | [anushagupta11](https://github.com/anushagupta11) | —                            |
+
 ---
 
-> ⚡ Built with ❤️ by MintFire Team
+<p align="center">
+  <strong>🚀 Built with futuristic tech by <span style="color:#7F5AF0;">MintFire</span></strong><br />
+  <img src="https://media.giphy.com/media/UQZ3VZyK1p8MEgIhBJ/giphy.gif" width="300" alt="MintFire Animation" />
+</p>
