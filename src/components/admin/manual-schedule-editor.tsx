@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -66,7 +67,6 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
     const [breakStart, setBreakStart] = React.useState('15:00');
     const [breakEnd, setBreakEnd] = React.useState('15:30');
     const [classDuration, setClassDuration] = React.useState(50);
-    const [breakDuration, setBreakDuration] = React.useState(10);
     
     const [popoverOpenStates, setPopoverOpenStates] = React.useState<Record<string, boolean>>({});
     const [timeSlots, setTimeSlots] = React.useState<string[]>([]);
@@ -86,22 +86,24 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         let breakAdded = false;
 
         while (currentTime < finalTime) {
-            if (currentTime >= brkStart && currentTime < brkEnd) {
+            const slotStart = currentTime;
+            const slotEnd = addMinutes(slotStart, classDuration);
+
+            // Check if current slot is within the main break time
+            if (slotStart < brkEnd && slotEnd > brkStart) {
                 if (!breakAdded) {
                     slots.push(`${format(brkStart, 'HH:mm')}-${format(brkEnd, 'HH:mm')}`);
                     breakAdded = true;
                 }
-                currentTime = addMinutes(brkEnd, 0); // Jump to the end of the break
-                continue; // Skip to next iteration
+                currentTime = brkEnd;
+                continue;
             }
-            
-            const slotEnd = addMinutes(currentTime, classDuration);
 
             if (slotEnd > finalTime) break;
             
-            slots.push(`${format(currentTime, 'HH:mm')}-${format(slotEnd, 'HH:mm')}`);
+            slots.push(`${format(slotStart, 'HH:mm')}-${format(slotEnd, 'HH:mm')}`);
             
-            currentTime = addMinutes(slotEnd, breakDuration);
+            currentTime = slotEnd;
         }
 
         setTimeSlots(slots);
@@ -255,16 +257,10 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Label>Durations (minutes)</Label>
-                                <div className="grid grid-cols-2 gap-2">
+                                <Label>Class Duration (minutes)</Label>
                                 <div className="relative">
                                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input type="number" step="5" value={classDuration} onChange={e => setClassDuration(Number(e.target.value))} className="pl-10" placeholder="Class" />
-                                </div>
-                                <div className="relative">
-                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input type="number" step="5" value={breakDuration} onChange={e => setBreakDuration(Number(e.target.value))} className="pl-10" placeholder="Break"/>
-                                </div>
                                 </div>
                             </div>
                         </div>
