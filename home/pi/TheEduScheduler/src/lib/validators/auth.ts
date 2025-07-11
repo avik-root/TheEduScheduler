@@ -10,6 +10,10 @@ export const TwoFactorSchema = z.object({
   pin: z.string().length(6, { message: 'PIN must be 6 digits.' }).regex(/^\d+$/, { message: 'PIN must only contain numbers.' }),
 });
 
+export const UnlockKeySchema = z.object({
+  key: z.string().min(1, { message: 'The security key is required.' }),
+});
+
 export const SignupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),

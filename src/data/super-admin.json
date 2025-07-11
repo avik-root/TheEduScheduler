@@ -2,8 +2,8 @@
   "name": "Anusha",
   "email": "ag@gmail.com",
   "password": "$2b$10$AGVCMSNArbVxW/FF5N/Qo.lpLZ7jRXtEiP/prpMzYdw1MCsR8tW0q",
-  "isTwoFactorEnabled": false,
-  "twoFactorPin": "",
+  "isTwoFactorEnabled": true,
+  "twoFactorPin": "$2a$10$2N7m/IbnXfQSs3f74oKW1udL2Hsd8TXCUHXYWT3/mHHvJ4JrHjWs2",
   "twoFactorAttempts": 0,
   "isLocked": false
 }

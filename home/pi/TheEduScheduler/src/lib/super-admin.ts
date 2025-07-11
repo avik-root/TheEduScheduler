@@ -4,9 +4,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { LoginSchema, SignupSchema, UpdateSuperAdminSchema, SuperAdmin2FASchema } from '@/lib/validators/auth';
+import { LoginSchema, SignupSchema, UpdateSuperAdminSchema, SuperAdmin2FASchema, UnlockKeySchema } from '@/lib/validators/auth';
 
 const superAdminFilePath = path.join(process.cwd(), 'src', 'data', 'super-admin.json');
+const securityKeysFilePath = path.join(process.cwd(), 'src', 'data', 'security-keys.json');
+
 
 type SuperAdmin = z.infer<typeof SignupSchema> & {
     isTwoFactorEnabled?: boolean;
@@ -17,6 +19,7 @@ type SuperAdmin = z.infer<typeof SignupSchema> & {
 type LoginData = z.infer<typeof LoginSchema>;
 type UpdateSuperAdminData = z.infer<typeof UpdateSuperAdminSchema>;
 type TwoFactorSettingsData = z.infer<typeof SuperAdmin2FASchema>;
+type UnlockKeyData = z.infer<typeof UnlockKeySchema>;
 
 
 async function readSuperAdminFile(): Promise<SuperAdmin | null> {
@@ -36,6 +39,17 @@ async function readSuperAdminFile(): Promise<SuperAdmin | null> {
         return null;
     }
 }
+
+async function getSecurityKey(): Promise<string | null> {
+    try {
+        const fileContent = await fs.readFile(securityKeysFilePath, 'utf-8');
+        const data = JSON.parse(fileContent);
+        return data.disableKey || null;
+    } catch (error) {
+        return null;
+    }
+}
+
 
 export async function getSuperAdmin(): Promise<SuperAdmin | null> {
     return await readSuperAdminFile();
@@ -86,6 +100,9 @@ export async function loginSuperAdmin(credentials: LoginData): Promise<{ success
     const passwordMatch = await bcrypt.compare(credentials.password, admin.password);
 
     if (admin.email === credentials.email && passwordMatch) {
+        admin.twoFactorAttempts = 0; // Reset on successful password login
+        await fs.writeFile(superAdminFilePath, JSON.stringify(admin, null, 2));
+
         if (admin.isTwoFactorEnabled) {
             return { success: true, message: '2FA required.', requiresTwoFactor: true };
         }
@@ -100,7 +117,7 @@ export async function loginSuperAdmin(credentials: LoginData): Promise<{ success
     await fs.writeFile(superAdminFilePath, JSON.stringify(admin, null, 2));
 
     const remaining = 5 - attempts;
-    return { success: false, message: 'Invalid email or password.', isLocked: admin.isLocked };
+    return { success: false, message: `Invalid email or password. ${remaining} attempt(s) remaining.`, isLocked: admin.isLocked };
 }
 
 
@@ -186,5 +203,27 @@ export async function updateSuperAdmin(data: UpdateSuperAdminData): Promise<{ su
     } catch (error) {
         console.error('Failed to update super admin:', error);
         return { success: false, message: 'An internal error occurred. Please try again.' };
+    }
+}
+
+export async function unlockSuperAdminAccountWithKey(data: UnlockKeyData): Promise<{ success: boolean; message: string }> {
+    const securityKey = await getSecurityKey();
+    if (!securityKey || securityKey !== data.key) {
+        return { success: false, message: 'The provided security key is incorrect.' };
+    }
+    
+    const admin = await readSuperAdminFile();
+    if (!admin) {
+        return { success: false, message: 'Super admin account not found.' };
+    }
+    
+    admin.isLocked = false;
+    admin.twoFactorAttempts = 0;
+    
+    try {
+        await fs.writeFile(superAdminFilePath, JSON.stringify(admin, null, 2));
+        return { success: true, message: 'Account has been unlocked successfully.' };
+    } catch (error) {
+        return { success: false, message: 'Failed to unlock the account.' };
     }
 }
