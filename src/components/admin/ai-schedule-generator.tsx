@@ -277,7 +277,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       timeSettings: {
         startTime: data.startTime,
         endTime: data.endTime,
-        breakTime: `${data.breakStart} - ${data.breakEnd}`,
+        breakTime: `${data.breakStart}-${data.breakEnd}`,
         classDuration: data.classDuration,
       },
       activeDays: data.activeDays,
