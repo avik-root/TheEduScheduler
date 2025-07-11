@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -32,7 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from '@/components/ui/separator';
-import { DisableFaculty2FADialog } from './disable-faculty-2fa-dialog';
 
 
 type FormData = z.infer<typeof UpdateFacultySchema>;
@@ -383,27 +381,6 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
                 Change Password
               </Button>
             )}
-        </div>
-
-        <div className="space-y-4">
-            <Separator />
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                <div className="space-y-0.5">
-                    <FormLabel>Two-Factor Authentication</FormLabel>
-                    <FormDescription>
-                        {faculty.isTwoFactorEnabled 
-                            ? "2FA is currently enabled for this user."
-                            : "2FA is currently disabled for this user."}
-                    </FormDescription>
-                </div>
-                {faculty.isTwoFactorEnabled && (
-                    <DisableFaculty2FADialog 
-                        faculty={faculty}
-                        adminEmail={adminEmail}
-                        onSuccess={() => onSuccess?.()}
-                    />
-                )}
-            </FormItem>
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading || isCheckingAbbreviation}>
