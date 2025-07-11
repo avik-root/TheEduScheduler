@@ -21,7 +21,7 @@ import type { Room } from '@/lib/buildings';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
-import { format, addMinutes, parse as parseTime, differenceInMinutes } from 'date-fns';
+import { format, addMinutes, parse as parseTime } from 'date-fns';
 
 
 interface ManualScheduleEditorProps {
@@ -86,27 +86,26 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         let breakAdded = false;
 
         while (currentTime < finalTime) {
-            const potentialSlotEnd = addMinutes(currentTime, classDuration);
-            // Check if current slot falls within the main break time
-            if (currentTime >= brkStart && currentTime < brkEnd || potentialSlotEnd > brkStart && currentTime < brkStart) {
+            if (currentTime >= brkStart && currentTime < brkEnd) {
                 if (!breakAdded) {
                     slots.push(`${format(brkStart, 'HH:mm')}-${format(brkEnd, 'HH:mm')}`);
                     breakAdded = true;
                 }
-                currentTime = addMinutes(brkEnd, breakDuration);
-                continue;
+                currentTime = addMinutes(brkEnd, 0); // Jump to the end of the break
+                continue; // Skip to next iteration
             }
+            
+            const slotEnd = addMinutes(currentTime, classDuration);
 
-            if (potentialSlotEnd > finalTime) break;
+            if (slotEnd > finalTime) break;
             
-            slots.push(`${format(currentTime, 'HH:mm')}-${format(potentialSlotEnd, 'HH:mm')}`);
+            slots.push(`${format(currentTime, 'HH:mm')}-${format(slotEnd, 'HH:mm')}`);
             
-            currentTime = addMinutes(potentialSlotEnd, breakDuration);
+            currentTime = addMinutes(slotEnd, breakDuration);
         }
 
         setTimeSlots(slots);
 
-        // Initialize grid for all sections of this year
         const year = availableYears.find(y => y.id === selectedYear);
         const newGrid: ScheduleGrid = {};
         (year?.sections || []).forEach(sec => {
@@ -123,10 +122,12 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
     }
 
     React.useEffect(() => {
-        const markdown = schedulesToMarkdown(parsedSchedulesForEditor);
-        setGeneratedSchedule({ schedule: markdown });
+        if (isGridGenerated) {
+            const markdown = schedulesToMarkdown(parsedSchedulesForEditor);
+            setGeneratedSchedule({ schedule: markdown });
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [scheduleGrid]);
+    }, [scheduleGrid, isGridGenerated]);
 
     const handleDeptChange = (deptId: string) => {
         setSelectedDept(deptId);
@@ -174,7 +175,7 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
     };
 
     const parsedSchedulesForEditor = React.useMemo(() => {
-        if (Object.keys(scheduleGrid).length === 0 || !selectedYear) return [];
+        if (Object.keys(scheduleGrid).length === 0 || !selectedYear || !isGridGenerated) return [];
         
         const program = availablePrograms.find(p => p.id === selectedProg);
         const year = availableYears.find(y => y.id === selectedYear);
@@ -201,7 +202,7 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
             })
         }];
         return schedules;
-    }, [scheduleGrid, selectedProg, selectedYear, availablePrograms, availableYears, days, timeSlots, breakStart, breakEnd]);
+    }, [scheduleGrid, selectedProg, selectedYear, availablePrograms, availableYears, days, timeSlots, breakStart, breakEnd, isGridGenerated]);
 
 
     async function handlePublish() {
@@ -392,5 +393,3 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         </CardContent>
     );
 }
-
-    

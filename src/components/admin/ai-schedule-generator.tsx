@@ -176,7 +176,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
   };
 
   const handleAutoAssign = (subjectIndex: number) => {
-    const subjectConfig = getValues(`subjectConfigs.${subjectIndex}`);
+    const subjectConfig = getValues(`subjectConfigs.${index}`);
     const potentialFaculty = subjectConfig.potentialFaculty;
     const assignments = subjectConfig.assignments;
 
@@ -194,7 +194,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         return { ...assignment, facultyEmail };
     });
 
-    setValue(`subjectConfigs.${subjectIndex}.assignments`, newAssignments, { shouldDirty: true, shouldValidate: true });
+    setValue(`subjectConfigs.${index}.assignments`, newAssignments, { shouldDirty: true, shouldValidate: true });
     toast({
         title: 'Faculty Auto-Assigned',
         description: `Faculty have been distributed among the sections for ${subjectConfig.name}.`
