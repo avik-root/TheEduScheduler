@@ -6,13 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { EditFacultyDialog } from '@/components/admin/faculty/edit-faculty-dialog';
 import { DeleteFacultyDialog } from '@/components/admin/faculty/delete-faculty-dialog';
-import { UserCog, Search, Network, CheckSquare } from 'lucide-react';
+import { UserCog, Search, Network, CheckSquare, Lock } from 'lucide-react';
 import type { Faculty } from '@/lib/faculty';
 import type { Department } from '@/lib/departments';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DeleteSelectedFacultyDialog } from './delete-selected-faculty-dialog';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { UnlockFacultyDialog } from './unlock-faculty-dialog';
 
 interface FacultyListProps {
     initialFaculty: Faculty[];
@@ -140,8 +141,8 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                             </div>
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {department.faculty.map((faculty: Faculty) => (
-                                    <Card key={faculty.email} className={cn("relative transition-all", selectionMode && selectedFacultyEmails.includes(faculty.email) ? 'border-primary ring-2 ring-primary' : '')}>
-                                         {selectionMode && (
+                                    <Card key={faculty.email} className={cn("relative transition-all", faculty.isLocked ? 'border-destructive ring-2 ring-destructive/50' : selectionMode && selectedFacultyEmails.includes(faculty.email) ? 'border-primary ring-2 ring-primary' : '')}>
+                                         {selectionMode && !faculty.isLocked && (
                                             <div className="absolute top-4 left-4 z-10">
                                                 <Checkbox
                                                     id={`select-${faculty.email}`}
@@ -158,13 +159,22 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                                                     <UserCog className="h-6 w-6 text-primary" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <CardTitle className="text-xl">{faculty.name} {faculty.abbreviation ? `(${faculty.abbreviation})` : ''}</CardTitle>
+                                                    <CardTitle className="text-xl flex items-center gap-2">
+                                                        {faculty.isLocked && <Lock className="h-5 w-5 text-destructive" />}
+                                                        {faculty.name} {faculty.abbreviation ? `(${faculty.abbreviation})` : ''}
+                                                    </CardTitle>
                                                     <CardDescription>{faculty.email}</CardDescription>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
-                                                <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                                {faculty.isLocked ? (
+                                                    <UnlockFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                                ) : (
+                                                    <>
+                                                        <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
+                                                        <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                                    </>
+                                                )}
                                             </div>
                                         </CardHeader>
                                         <CardContent className={cn(selectionMode ? 'pl-14' : '')}>
@@ -193,8 +203,8 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                             </div>
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {facultyWithoutDepartment.map((faculty: Faculty) => (
-                                   <Card key={faculty.email} className={cn("relative transition-all", selectionMode && selectedFacultyEmails.includes(faculty.email) ? 'border-primary ring-2 ring-primary' : '')}>
-                                        {selectionMode && (
+                                   <Card key={faculty.email} className={cn("relative transition-all", faculty.isLocked ? 'border-destructive ring-2 ring-destructive/50' : selectionMode && selectedFacultyEmails.includes(faculty.email) ? 'border-primary ring-2 ring-primary' : '')}>
+                                        {selectionMode && !faculty.isLocked && (
                                             <div className="absolute top-4 left-4 z-10">
                                                 <Checkbox
                                                     id={`select-${faculty.email}`}
@@ -211,13 +221,22 @@ export function FacultyList({ initialFaculty, departments, adminEmail }: Faculty
                                                     <UserCog className="h-6 w-6 text-primary" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <CardTitle className="text-xl">{faculty.name} {faculty.abbreviation ? `(${faculty.abbreviation})` : ''}</CardTitle>
+                                                     <CardTitle className="text-xl flex items-center gap-2">
+                                                        {faculty.isLocked && <Lock className="h-5 w-5 text-destructive" />}
+                                                        {faculty.name} {faculty.abbreviation ? `(${faculty.abbreviation})` : ''}
+                                                    </CardTitle>
                                                     <CardDescription>{faculty.email}</CardDescription>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
-                                                <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                                 {faculty.isLocked ? (
+                                                    <UnlockFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                                ) : (
+                                                    <>
+                                                        <EditFacultyDialog faculty={faculty} departments={departments} adminEmail={adminEmail} />
+                                                        <DeleteFacultyDialog faculty={faculty} adminEmail={adminEmail} />
+                                                    </>
+                                                )}
                                             </div>
                                         </CardHeader>
                                         <CardContent className={cn(selectionMode ? 'pl-14' : '')}>

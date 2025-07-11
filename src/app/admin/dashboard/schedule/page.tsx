@@ -7,6 +7,9 @@ import { getAdminByEmail } from '@/lib/admin';
 import { getPublishedSchedule } from '@/lib/schedule';
 import { AppLogo } from '@/components/common/app-logo';
 import { ScheduleViewer } from '@/components/admin/schedule-viewer';
+import { getSubjects } from '@/lib/subjects';
+import { getFaculty } from '@/lib/faculty';
+import { getAllRooms } from '@/lib/buildings';
 
 export default async function SchedulePage({ searchParams }: { searchParams: { email?: string } }) {
   const adminEmail = searchParams.email;
@@ -16,6 +19,9 @@ export default async function SchedulePage({ searchParams }: { searchParams: { e
   
   const admin = await getAdminByEmail(adminEmail);
   const publishedSchedule = await getPublishedSchedule(adminEmail);
+  const allSubjects = await getSubjects(adminEmail);
+  const allFaculty = await getFaculty(adminEmail);
+  const allRooms = await getAllRooms(adminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -35,7 +41,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: { e
       </header>
       <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <div className="mx-auto grid w-full max-w-6xl gap-6 pt-8">
-            <ScheduleViewer schedule={publishedSchedule} adminEmail={adminEmail} />
+            <ScheduleViewer 
+                schedule={publishedSchedule} 
+                adminEmail={adminEmail}
+                allSubjects={allSubjects}
+                allFaculty={allFaculty}
+                allRooms={allRooms}
+            />
         </div>
       </main>
        <footer className="mt-auto border-t bg-background px-4 py-4 md:px-6">

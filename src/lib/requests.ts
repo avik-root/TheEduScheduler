@@ -1,3 +1,4 @@
+
 'use server';
 
 import fs from 'fs/promises';
@@ -95,6 +96,24 @@ export async function updateRequestStatus(adminEmail: string, requestId: string,
         return { success: true, message: `Request has been ${status}.` };
     } catch (error) {
         console.error('Failed to update request status:', error);
+        return { success: false, message: 'An internal error occurred.' };
+    }
+}
+
+export async function releaseRoom(adminEmail: string, requestData: RoomRequestData): Promise<{ success: boolean; message: string }> {
+    const requests = await readRequestsFile(adminEmail);
+    const newRequest: RoomRequest = {
+        ...requestData,
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        status: 'approved',
+        requestedAt: new Date().toISOString(),
+    };
+    requests.push(newRequest);
+    try {
+        await writeRequestsFile(adminEmail, requests);
+        return { success: true, message: 'Room released successfully.' };
+    } catch (error) {
+        console.error('Failed to release room:', error);
         return { success: false, message: 'An internal error occurred.' };
     }
 }

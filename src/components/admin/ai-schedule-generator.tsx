@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Wand2, Eye } from 'lucide-react';
+import { Loader2, Sparkles, Upload, ChevronsUpDown, Check, Star, AlertCircle, User, Users, Hash, Wand2, Eye, Clock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -27,7 +27,6 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '../ui/textarea';
 import { ScheduleViewer } from './schedule-viewer';
 
 const assignmentSchema = z.object({
@@ -64,7 +63,7 @@ const ScheduleGeneratorSchema = z.object({
   endTime: z.string().min(1, 'End time is required.'),
   breakStart: z.string().min(1, 'Break start is required.'),
   breakEnd: z.string().min(1, 'Break end is required.'),
-  classDuration: z.coerce.number().min(10, 'Duration must be at least 10 minutes.'),
+  classDuration: z.coerce.number().min(30, 'Duration must be at least 30 mins.').max(120, 'Duration cannot exceed 120 mins.'),
   activeDays: z.array(z.string()).min(1, 'Select at least one active day.'),
 });
 
@@ -213,7 +212,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     })));
   };
 
-
   async function onSubmit(data: FormData) {
     setIsLoading(true);
     setGeneratedSchedule(null);
@@ -267,6 +265,13 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
     const selectedYear = availableYears.find(y => y.id === data.yearId)!;
     const selectedSections = availableSections.filter(s => data.sectionIds.includes(s.id));
 
+    const facultyForAI = faculty.map(f => ({
+        name: f.name,
+        abbreviation: f.abbreviation,
+        weeklyMaxHours: f.weeklyMaxHours,
+        weeklyOffDays: f.weeklyOffDays || [],
+    }));
+
     const input: GenerateScheduleInput = {
       academicInfo: {
         department: selectedDept.name,
@@ -275,7 +280,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       },
       sections: selectedSections.map(s => ({ name: s.name, studentCount: s.studentCount })),
       subjects: subjectsForAI,
-      faculty: faculty,
+      faculty: facultyForAI,
       availableRooms: data.availableRooms,
       availableLabs: data.availableLabs,
       timeSettings: {
@@ -402,7 +407,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                                     </div>
                                                     <div className="rounded-md border">
                                                         <Table>
-                                                            <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead><User className="h-4 w-4" /> Assigned Faculty</TableHead></TableRow></TableHeader>
+                                                            <TableHeader><TableRow><TableHead><Users className="h-4 w-4" /> Section</TableHead><TableHead className="flex items-center justify-between"><span><User className="h-4 w-4 inline-block mr-2" /> Assigned Faculty</span><Button type="button" variant="link" size="sm" className="p-0 h-auto" disabled={!item.potentialFaculty?.length} onClick={() => handleAutoAssign(index)}>Auto-Assign</Button></TableHead></TableRow></TableHeader>
                                                             <TableBody>
                                                                 {item.assignments.map((assignment, assignmentIndex) => (
                                                                     <TableRow key={assignment.sectionId}>
@@ -461,8 +466,8 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                             </div>
                         </div>
                         <Separator />
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                           <div className="md:col-span-1">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                           <div>
                                <FormLabel>Daily Timings</FormLabel>
                                <div className="grid grid-cols-2 gap-2 mt-2">
                                    <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
@@ -476,15 +481,24 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                                    <FormField control={form.control} name="breakEnd" render={({ field }) => (<FormItem><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                                </div>
                            </div>
-                            <FormField control={form.control} name="classDuration" render={({ field }) => (
-                                <FormItem className="md:col-span-1">
-                                    <FormLabel>Class Duration (mins)</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="e.g., 50" {...field} className="mt-2" />
-                                    </FormControl>
+                           <div>
+                                <FormField
+                                control={form.control}
+                                name="classDuration"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Class Duration (minutes)</FormLabel>
+                                    <div className="relative mt-2">
+                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <FormControl>
+                                        <Input type="number" step="5" {...field} className="pl-10" />
+                                        </FormControl>
+                                    </div>
                                     <FormMessage />
-                                </FormItem>
-                            )} />
+                                    </FormItem>
+                                )}
+                                />
+                            </div>
                         </div>
                          <FormField control={form.control} name="activeDays" render={({ field }) => (
                             <FormItem><FormLabel>Active Weekdays</FormLabel><div className="flex flex-wrap gap-4 pt-2">{allWeekdays.map((item) => (<FormField key={item} control={form.control} name="activeDays" render={({ field }) => { return (<FormItem key={item} className="flex flex-row items-start space-x-2 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...field.value, item]) : field.onChange(field.value?.filter((value) => value !== item))}} /></FormControl><FormLabel className="font-normal">{item}</FormLabel></FormItem>)}} />))}</div><FormMessage /></FormItem>
@@ -543,7 +557,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
           <p className="text-muted-foreground mb-4">
             Review the schedule below. If it looks correct, click "Publish Schedule" above to make it live for all faculty.
           </p>
-          <ScheduleViewer schedule={generatedSchedule.schedule} adminEmail={adminEmail} showControls={false} />
+          <ScheduleViewer schedule={generatedSchedule.schedule} adminEmail={adminEmail} allSubjects={subjects} allFaculty={faculty} allRooms={allRooms} />
         </div>
       )}
     </div>

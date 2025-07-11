@@ -5,13 +5,14 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Loader2, User, Mail, Lock, Eye, EyeOff, Building, Clock, Type } from 'lucide-react';
+import { Loader2, User, Mail, Lock, Eye, EyeOff, Building, Clock, Type, ShieldOff, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,6 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from '@/components/ui/separator';
+import { DisableFaculty2FADialog } from './disable-faculty-2fa-dialog';
+
 
 type FormData = z.infer<typeof UpdateFacultySchema>;
 
@@ -63,6 +67,9 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
       weeklyOffDays: faculty.weeklyOffDays ?? [],
       password: '',
       confirmPassword: '',
+      isTwoFactorEnabled: faculty.isTwoFactorEnabled,
+      twoFactorAttempts: faculty.twoFactorAttempts,
+      isLocked: faculty.isLocked,
     },
   });
   
@@ -300,78 +307,104 @@ export function EditFacultyForm({ faculty, onSuccess, departments, adminEmail }:
           )}
         />
         
-        {isChangingPassword ? (
-          <div className="space-y-6 rounded-md border p-4">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <FormControl>
-                      <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter a new password"
-                        {...field}
-                        className="pl-10 pr-10"
-                      />
-                    </FormControl>
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                    >
-                      <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm New Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <FormControl>
-                      <Input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="Confirm new password"
-                        {...field}
-                        className="pl-10 pr-10"
-                      />
-                    </FormControl>
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                    >
-                      <span className="sr-only">{showConfirmPassword ? 'Hide password' : 'Show password'}</span>
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => setIsChangingPassword(true)}
-          >
-            <Lock className="mr-2 h-4 w-4" />
-            Change Password
-          </Button>
-        )}
+        <Separator />
+        
+        <div className="space-y-4">
+             {isChangingPassword ? (
+              <div className="space-y-6 rounded-md border p-4">
+                 <h3 className="text-sm font-medium text-foreground">Change Password</h3>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New Password</FormLabel>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                          <Input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Enter a new password"
+                            {...field}
+                            className="pl-10 pr-10"
+                          />
+                        </FormControl>
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                        >
+                          <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm New Password</FormLabel>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                          <Input
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            placeholder="Confirm new password"
+                            {...field}
+                            className="pl-10 pr-10"
+                          />
+                        </FormControl>
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                        >
+                          <span className="sr-only">{showConfirmPassword ? 'Hide password' : 'Show password'}</span>
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsChangingPassword(true)}
+              >
+                <Lock className="mr-2 h-4 w-4" />
+                Change Password
+              </Button>
+            )}
+        </div>
+
+        <div className="space-y-4">
+            <Separator />
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                    <FormLabel>Two-Factor Authentication</FormLabel>
+                    <FormDescription>
+                        {faculty.isTwoFactorEnabled 
+                            ? "2FA is currently enabled for this user."
+                            : "2FA is currently disabled for this user."}
+                    </FormDescription>
+                </div>
+                {faculty.isTwoFactorEnabled && (
+                    <DisableFaculty2FADialog 
+                        faculty={faculty}
+                        adminEmail={adminEmail}
+                        onSuccess={() => onSuccess?.()}
+                    />
+                )}
+            </FormItem>
+        </div>
 
         <Button type="submit" className="w-full" disabled={isLoading || isCheckingAbbreviation}>
           {(isLoading || isCheckingAbbreviation) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

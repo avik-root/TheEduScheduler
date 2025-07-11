@@ -37,6 +37,9 @@ const SuggestScheduleImprovementsOutputSchema = z.object({
     .describe(
       'Explanation of why each improvement is suggested, based on identified conflicts, inefficiencies, or opportunities for optimization.'
     ),
+  correctedSchedule: z
+    .string()
+    .describe('The fully corrected, conflict-free schedule in Markdown format. This should be a complete schedule that can be used to replace the original.'),
 });
 export type SuggestScheduleImprovementsOutput = z.infer<
   typeof SuggestScheduleImprovementsOutputSchema
@@ -57,7 +60,8 @@ const prompt = ai.definePrompt({
 Schedule Details: {{{scheduleDetails}}}
 Constraints: {{{constraints}}}
 
-Provide a detailed list of suggested improvements and a rationale for each suggestion.`,
+First, provide a detailed list of suggested improvements and a rationale for each suggestion.
+Second, based on your analysis, generate and provide a complete, conflict-free, corrected schedule in the 'correctedSchedule' field. The corrected schedule must be in the exact same Markdown table format as the input.`,
 });
 
 const suggestScheduleImprovementsFlow = ai.defineFlow(

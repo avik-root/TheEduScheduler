@@ -1,4 +1,3 @@
-
 [
   {
     "name": "BP",
@@ -7,7 +6,8 @@
     "department": "CSE",
     "weeklyMaxHours": 24,
     "weeklyOffDays": [],
-    "abbreviation": "BP"
+    "abbreviation": "BP",
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Rohit Roy Choudhury ",
@@ -19,7 +19,12 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "twoFactorAttempts": 0,
+    "isTwoFactorEnabled": true,
+    "twoFactorPin": "$2a$10$kuQPYm9bg/prizjfHzhUVOcIlkKdPch.c9n35nd8Kt7vmrZwu3imq",
+    "isLocked": false,
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Rishika Roy",
@@ -31,7 +36,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Trishita Gautam",
@@ -43,7 +49,9 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "twoFactorAttempts": 0,
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Atreyee Mukherjee",
@@ -55,7 +63,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Rituparna Sarka",
@@ -67,7 +76,12 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "isTwoFactorEnabled": false,
+    "twoFactorAttempts": 0,
+    "isLocked": false,
+    "twoFactorDisabledByAdmin": false,
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Shiva Seth Alam",
@@ -79,31 +93,35 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "twoFactorAttempts": 0,
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Mehakdeep Kaur",
     "abbreviation": "MK",
     "email": "mehakdeep.c3a@themintfire.com",
-    "password": "$2b$10$Ae6EeW3Bp6QjM/FHAhZDnOXD4uCTS0eB8lvrYNSNQBpl7e1r164UC",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "C3A",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Meghna Ray",
     "abbreviation": "MR",
     "email": "meghna.c3a@themintfire.com",
-    "password": "$2b$10$UoZAE9F6FAZ.tkFaytqZ7OiV8ebgBL.VEwtYpGsNbNyGCc3RSkB1G",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "C3A",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Anirban Mitra",
@@ -115,7 +133,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Saikat Maity",
@@ -127,7 +146,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Mousumi Bhattacharyya",
@@ -139,7 +159,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Swarup Kr Ghosh",
@@ -151,19 +172,21 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Sadip Midya",
     "abbreviation": "SM",
     "email": "sadip.cse@themintfire.com",
-    "password": "$2b$10$jjKoRSszl8jpgG1bm2xnKOwoM0ucAnnd2mkZKXThEgpLc0/TAjYSa",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Soma Datta",
@@ -175,7 +198,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Souvik Pal",
@@ -187,7 +211,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Asmita Roy",
@@ -199,7 +224,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Indranil Sarkar",
@@ -211,19 +237,21 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Ankita Dhar",
     "abbreviation": "AKD",
     "email": "ankita.cse@themintfire.com",
-    "password": "$2b$10$dY8Jqs1o/TWk9VNbQdZ0ZOUb5zGziUjTYyOln9oJOQwe.Ie/TiRUK",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Alamgir Sardar",
@@ -235,7 +263,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Rana Majumdar ",
@@ -247,7 +276,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Pratik Bhattacharjee",
@@ -259,31 +289,34 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arkaprava Bhaduri Mandal",
     "abbreviation": "ABM",
     "email": "arkaprava.cse@themintfire.com",
-    "password": "$2b$10$t/ySRWcSi.gvF7WKEGdKr.6SdGUW2jBPatLWCgl6eANa8vt/7x9Vi",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Soma Hazra",
     "abbreviation": "SH",
     "email": "somah.cse@themintfire.com",
-    "password": "$2b$10$.BYTbFION1Kh9MhlMQ4gleyworOg2tjUnxUsrbr3zQpGn.8/DhBb.",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Basudev Saha",
@@ -295,19 +328,21 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Aritra Ghosh",
     "abbreviation": "ARG",
     "email": "aritra.cse@themintfire.com",
-    "password": "$2b$10$76IQMnN.KUCPv7nTJcotBOk1mMp.v7MuavV3RMJFzR2SEWGjossFa",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Parthasarathi De",
@@ -319,19 +354,21 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Soumi Dutta",
     "abbreviation": "SUD",
     "email": "soumi.cse@themintfire.com",
-    "password": "$2b$10$t2908JZ5xeWWI3ck488vz.2dEzJ12EiC344k.Q5q8haqzTiS9.O66",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Abhishek Bhattacharya",
@@ -343,7 +380,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Subhra Halder",
@@ -355,7 +393,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Biswaroop Maiti",
@@ -367,7 +406,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Pritam Goswami",
@@ -379,7 +419,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arkaprava Das",
@@ -391,7 +432,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Sourajit Maity",
@@ -403,7 +445,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Debasmita Bhoumik",
@@ -415,7 +458,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Aritra Sinha",
@@ -427,7 +471,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arijit Joardar",
@@ -439,7 +484,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Kritanta Saha",
@@ -451,31 +497,34 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Raina Paul",
     "abbreviation": "RNP",
     "email": "raina.cse@themintfire.com",
-    "password": "$2b$10$YcjaQXK7bEvlUEonz0nn9.y28R6odL6E9efwCA4CQAkBJnx1LBZji",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Sayani Mondal",
     "abbreviation": "SNM",
     "email": "sayani.cse@themintfire.com",
-    "password": "$2b$10$MMlr/oCPF2WF2tjBoSGeAO.bCGefesPWVvopCKEk/AJBGs47hWQyK",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Bhabani Prasad Sinha",
@@ -487,7 +536,8 @@
     "weeklyOffDays": [
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Atal Chowdhury",
@@ -499,7 +549,8 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Dr. Debasis Majumder",
@@ -511,31 +562,34 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Arijit Pal",
     "abbreviation": "ARP",
     "email": "arijitp.cse@themintfire.com",
-    "password": "$2b$10$JTtqI.ULhUE6AQ6QfKDBbO7CN8klTEGSkVShzMsHdIYbjLPJBtTX6",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Ditu Barai",
     "abbreviation": "DUB",
     "email": "ditu.cse@themintfire.com",
-    "password": "$2b$10$waiPBnFSi99tYyabAoIoiOuKC/2fOVzJrgTa4d71Bn0nPi/FWa23K",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Santlal Prajapati",
@@ -547,18 +601,21 @@
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   },
   {
     "name": "Bidyut Saha",
     "abbreviation": "BDS",
     "email": "bidyut.cse@themintfire.com",
-    "password": "$2b$10$kug2j541Bqra58GaWnplO..uXI9pRfIVBR1XulC4FzvXdMjj7Ccym",
+    "password": "$2b$10$E9.p3r02UjF/12r6t8wL6udtG6aO7gE/d0Y.a1e/n8rT/cO5WvWp6",
     "department": "CSE",
     "weeklyMaxHours": 40,
     "weeklyOffDays": [
       "Sunday",
       "Saturday"
-    ]
+    ],
+    "passwordLastChanged": "2025-07-21T12:00:00.000Z"
   }
 ]
+    

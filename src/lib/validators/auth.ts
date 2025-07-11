@@ -6,6 +6,10 @@ export const LoginSchema = z.object({
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
+export const TwoFactorSchema = z.object({
+  pin: z.string().length(6, { message: 'PIN must be 6 digits.' }).regex(/^\d+$/, { message: 'PIN must only contain numbers.' }),
+});
+
 export const SignupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -69,6 +73,12 @@ export const FacultySchema = z.object({
   department: z.string().min(1, { message: 'Please select a department.' }),
   weeklyMaxHours: z.coerce.number().min(0, { message: "Weekly max hours can't be negative." }),
   weeklyOffDays: z.array(z.string()).optional(),
+  isTwoFactorEnabled: z.boolean().optional(),
+  twoFactorPin: z.string().optional(),
+  twoFactorAttempts: z.number().optional(),
+  isLocked: z.boolean().optional(),
+  twoFactorDisabledByAdmin: z.boolean().optional(),
+  passwordLastChanged: z.string().optional(),
 });
 
 export const CreateFacultyFormSchema = z.object({
@@ -92,6 +102,10 @@ export const UpdateFacultySchema = z.object({
     weeklyOffDays: z.array(z.string()).optional(),
     password: z.string().min(8, { message: 'New password must be at least 8 characters.' }).optional().or(z.literal('')),
     confirmPassword: z.string().optional().or(z.literal('')),
+    isTwoFactorEnabled: z.boolean().optional(),
+    twoFactorAttempts: z.number().optional(),
+    isLocked: z.boolean().optional(),
+    passwordLastChanged: z.string().optional(),
 }).refine(data => {
     if (data.password && !data.confirmPassword) {
         return false;
@@ -120,6 +134,21 @@ export const FacultyChangePasswordSchema = z.object({
   message: "New passwords do not match.",
   path: ["confirmPassword"],
 });
+
+export const TwoFactorSettingsSchema = z.object({
+  isEnabled: z.boolean(),
+  pin: z.string().optional(),
+  currentPassword: z.string().min(1, { message: 'Your current password is required to save changes.' }),
+}).refine(data => {
+    if (data.isEnabled && (!data.pin || data.pin.length !== 6 || !/^\d+$/.test(data.pin))) {
+        return false;
+    }
+    return true;
+}, {
+    message: "A 6-digit PIN is required to enable 2FA.",
+    path: ["pin"],
+});
+
 
 export const BuildingSchema = z.object({
   name: z.string().min(2, { message: 'Building name must be at least 2 characters.' }),

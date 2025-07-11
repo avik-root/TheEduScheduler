@@ -50,7 +50,7 @@ const GenerateScheduleInputSchema = z.object({
         startTime: z.string(),
         endTime: z.string(),
         breakTime: z.string().describe('The time slot for the daily break (e.g., "13:00 - 14:00").'),
-        classDuration: z.number().describe("The duration of each class in minutes."),
+        classDuration: z.number().describe("The duration of a single class period in minutes."),
     }),
     activeDays: z.array(z.string()),
 });
@@ -72,22 +72,19 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateScheduleOutputSchema},
   prompt: `You are an AI assistant that creates a weekly class schedule. Your goal is to generate a conflict-free and optimal schedule based on the provided information and a strict set of rules.
 
-**--- CORE SCHEDULING RULES ---**
-You MUST adhere to the following rules without exception:
-1.  **Faculty Conflict**: No faculty member can be assigned to more than one class at the same time across any section. Classes with "(NF)" (No Faculty) are exempt from this rule and can be scheduled concurrently with other classes for different sections.
-2.  **Room Conflict**: No room or lab can be assigned to more than one class at the same time.
-3.  **Priority Subjects**: Subjects marked as 'isPriority: true' MUST be scheduled as double-duration sessions (two consecutive periods, e.g., "09:00-10:40").
-4.  **Daily Subject Limit (Theory)**: A single theory subject cannot be scheduled for more than one session (single or double) on the same day for the same section. This rule does not apply to lab subjects.
-5.  **Credit Distribution (Theory)**:
-    - 2-credit theory subjects require exactly two 50-minute classes per week.
-    - 3-credit theory subjects require exactly three 50-minute classes per week, distributed as one double-period (100 mins) and one single-period (50 mins).
-    - 4-credit theory subjects require exactly four 50-minute classes per week, distributed as two double-periods on two different days.
-6.  **Lab Scheduling**:
-    - Lab subjects (1 credit) MUST be scheduled as a single 100-minute double-period session once per week.
-    - If a section's student count is over 30, it MUST be split into 'Gp A' and 'Gp B' for labs. Each group gets its own separate 100-minute lab session once per week. To optimize lab utilization, try to schedule the other group's lab for a different subject at the same time if labs are available.
-7.  **Daily Class Distribution**: Ensure each section has classes scheduled every active day (e.g., Monday to Friday).
-8.  **Time Allocation**: Use the provided college operating hours. Stagger start times for different sections if necessary to resolve faculty or room conflicts. Do not schedule anything during the Break Slot.
-9.  **Room Allocation**: Room capacity and type (lab or class) must match the subject type. Labs must be assigned only to lab-type rooms.
+**--- CRITICAL DIRECTIVES: READ AND FOLLOW ALL ---**
+1.  **NO CONFLICTS (Most Important)**: There must be **ZERO** scheduling conflicts. This is your highest priority.
+    - **Faculty Conflict**: A faculty member **cannot** be assigned to two different sections at the same time.
+    - **Room Conflict**: A room or lab **cannot** be used by two different sections or for two different classes at the same time.
+    - **Section Conflict**: A section **cannot** attend two different classes at the same time.
+
+2.  **COMPLETE COVERAGE**: You **MUST** generate a full schedule table for **EVERY SINGLE SECTION** listed in the input. Do not omit any sections from the output.
+
+3.  **NO EMPTY DAYS**: Every section **MUST** have at least one class scheduled on every single 'Active Weekday'. It is not permissible to have a day with no classes for any section. This is a critical requirement.
+
+4.  **BALANCED DISTRIBUTION**: Distribute classes as evenly as possible across each day for each section.
+    - **Consecutive Class Limit**: **DO NOT** schedule more than three consecutive theory class slots. A double-length block counts as two consecutive slots.
+    - **Spread Subjects**: Classes for the same subject **MUST** be spread across different days. For example, a 4-credit subject scheduled as two double-length blocks **must** have them on separate days. A 3-credit subject scheduled as one double-length block and one single-length slot **must** also have them on separate days.
 
 **--- SCHEDULING CONTEXT ---**
 - Department: {{academicInfo.department}}
@@ -123,11 +120,28 @@ You MUST adhere to the following rules without exception:
   - For Sections: {{#each sections}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 {{/each}}
 
+**--- DETAILED SCHEDULING RULES ---**
+1.  **Credit Distribution & Duration**:
+    - **Theory**:
+        - 2-credit: two 50-min classes/week.
+        - 3-credit: one double-period (100 mins) and one single-period (50 mins)/week, on different days.
+        - 4-credit: two double-periods on two different days/week.
+    - **Lab**: 1-credit labs MUST be a single 100-minute double-period session once per week.
+    - **Priority Subjects**: Subjects marked as 'isPriority: true' MUST be scheduled as double-duration sessions (two consecutive periods, e.g., "09:00-10:40").
+2.  **Lab & Student Grouping**:
+    - **Student Splitting for Labs**: If a section's 'studentCount' is over 30, it must be split into 'Group A' and 'Group B' for labs. You must schedule **two separate double-length lab blocks** for that subject during the week, one for each group (e.g., "Computer Networks Lab (Sec A, Gp A)"). Try to schedule the other group's lab for a different subject at the same time if labs are available.
+    - Allocate labs only to rooms listed in 'Available Labs'.
+3.  **Faculty Constraints**:
+    - For subjects with 'assignedFaculty', pick one faculty member per class slot from the provided list.
+    - Strictly adhere to each faculty's 'weeklyOffDays' and do not exceed their 'weeklyMaxHours'.
+    - Subjects with "Taught by: NF" **MUST be scheduled**. Use \`(NF)\` for the faculty abbreviation.
+4.  **Room Optimization**: As a secondary goal (after ensuring no conflicts), try to use the **minimum number of unique rooms and labs** possible.
+
 **--- OUTPUT FORMATTING ---**
-1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: ## {{academicInfo.program}} - {{academicInfo.year}}.
-2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. Precede each table with a level 3 heading for the section name (e.g., ### Section 1).
-3.  **Table Structure**: The first column of each table must be 'Day'. The subsequent columns must be the {{timeSettings.classDuration}}-minute time slots (e.g., "09:00-09:50"). Double-periods should span two columns.
-4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., '(Gp A)'. For subjects with no faculty assigned, use '(NF)' for the faculty abbreviation.
+1.  **Main Heading**: The entire output string MUST start with a level 2 markdown heading containing the Program and Year, formatted exactly like this: \`## {{academicInfo.program}} - {{academicInfo.year}}\`.
+2.  **Section Tables**: Generate a **separate Markdown table for each section listed in the input**. This is not optional. Precede each table with a level 3 heading for the section name (e.g., \`### Section 1\`).
+3.  **Table Structure**: The first column of each table must be \`Day\`. The subsequent columns must be the **{{timeSettings.classDuration}}-minute time slots**. You must calculate these time slots yourself based on the daily start/end times. For example, if start time is "09:00" and duration is 50 minutes, the first time slot column is "09:00-09:50". The rows will represent each active day of the week.
+4.  **Cell Format**: Each class cell must be formatted as: **Subject Name (Faculty Abbreviation) in Room/Lab Name**. For split labs, add the group, e.g., \`(Gp A)\`. For no-faculty subjects: "Physics I (NF) in B_Room_101".
 
 **--- ERROR HANDLING ---**
 If you are completely unable to generate a valid schedule that satisfies all the core rules, you MUST set the 'schedule' output field to an empty string and provide a clear, user-friendly explanation in the 'errorReason' field. Describe the specific, most critical conflict you encountered (e.g., "Faculty Conflict: Dr. Alan Grant is double-booked on Monday at 10:00 AM for both 'Intro to AI' and 'Advanced Algorithms'.", or "Resource Shortage: Not enough lab rooms available on Tuesday afternoons to accommodate all required lab sessions.").
