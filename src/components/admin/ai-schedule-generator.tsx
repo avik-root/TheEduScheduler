@@ -333,7 +333,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                 <CardDescription>
                     {mode === 'ai' 
                         ? "A step-by-step guide to generating an optimal, conflict-free schedule."
-                        : "Directly edit the schedule in Markdown format. Use the AI checker to validate."
+                        : "Directly edit the schedule in a grid format. Use the AI checker to validate."
                     }
                 </CardDescription>
              </div>
@@ -529,9 +529,9 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             generatedSchedule={generatedSchedule}
             setGeneratedSchedule={setGeneratedSchedule}
             adminEmail={adminEmail}
-            subjects={subjects}
-            faculty={faculty}
             departments={departments}
+            faculty={faculty}
+            subjects={subjects}
             allRooms={allRooms}
           />
         )}
