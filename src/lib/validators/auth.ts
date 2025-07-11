@@ -78,6 +78,7 @@ export const FacultySchema = z.object({
   twoFactorAttempts: z.number().optional(),
   isLocked: z.boolean().optional(),
   twoFactorDisabledByAdmin: z.boolean().optional(),
+  passwordLastChanged: z.string().optional(),
 });
 
 export const CreateFacultyFormSchema = z.object({
@@ -104,6 +105,7 @@ export const UpdateFacultySchema = z.object({
     isTwoFactorEnabled: z.boolean().optional(),
     twoFactorAttempts: z.number().optional(),
     isLocked: z.boolean().optional(),
+    passwordLastChanged: z.string().optional(),
 }).refine(data => {
     if (data.password && !data.confirmPassword) {
         return false;

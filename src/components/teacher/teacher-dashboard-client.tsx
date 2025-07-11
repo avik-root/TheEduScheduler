@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { User, Clock, CalendarOff, Settings, ShieldAlert, CalendarCheck, ShieldCheck, ClipboardCheck, ClipboardX } from 'lucide-react';
+import { User, Clock, CalendarOff, Settings, ShieldAlert, CalendarCheck, ShieldCheck, ClipboardCheck, ClipboardX, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Faculty } from '@/lib/faculty';
 import type { Admin } from '@/lib/admin';
@@ -25,13 +25,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { UpcomingClasses, type UpcomingClass } from './upcoming-classes';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ConductStatusDialog } from './conduct-status-dialog';
 import { ReleaseRoomDialog } from './release-room-dialog';
 import { releaseRoom } from '@/lib/requests';
 import { useToast } from '@/hooks/use-toast';
 import { getConductLogForDay, setConductStatus, type ConductLogEntry } from '@/lib/conduct';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface TeacherDashboardClientProps {
     faculty: Faculty;
@@ -105,6 +106,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   const [dialogContent, setDialogContent] = React.useState<{ title: string; classes: UpcomingClass[] }>({ title: '', classes: [] });
   const [releaseDialogOpen, setReleaseDialogOpen] = React.useState(false);
   const [classToRelease, setClassToRelease] = React.useState<UpcomingClass | null>(null);
+  const [passwordDaysOld, setPasswordDaysOld] = React.useState<number | null>(null);
   const { toast } = useToast();
 
   const searchParams = useSearchParams();
@@ -119,7 +121,12 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
         setShow2FAPrompt(true);
          window.history.replaceState(null, '', window.location.pathname + window.location.search.replace(/&?prompt2FA=true/, ''));
     }
-  }, [searchParams]);
+    
+    if (faculty.passwordLastChanged) {
+        const days = differenceInDays(new Date(), new Date(faculty.passwordLastChanged));
+        setPasswordDaysOld(days);
+    }
+  }, [searchParams, faculty.passwordLastChanged]);
 
   React.useEffect(() => {
     const fetchTodaysClasses = async () => {
@@ -275,6 +282,31 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     }
   }, [parsedFullSchedule, faculty.abbreviation, showMyScheduleOnly]);
 
+  const passwordAlert = () => {
+    if (passwordDaysOld === null || passwordDaysOld <= 180) return null;
+    if (passwordDaysOld > 210) {
+        const daysRemaining = 217 - passwordDaysOld;
+        return (
+            <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Urgent: Password Change Required</AlertTitle>
+                <AlertDescription>
+                    Your password is {passwordDaysOld} days old. To avoid account lockout, you must change it within {daysRemaining} day(s).
+                </AlertDescription>
+            </Alert>
+        )
+    }
+    return (
+        <Alert>
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Security Reminder: Change Your Password</AlertTitle>
+            <AlertDescription>
+                Your password was last updated {passwordDaysOld} days ago. For security, we recommend changing it soon.
+            </AlertDescription>
+        </Alert>
+    );
+  }
+
   return (
      <>
         <AlertDialog open={show2FADisabledAlert} onOpenChange={setShow2FADisabledAlert}>
@@ -329,6 +361,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     Welcome back, {faculty.name}. View your schedule and manage your availability.
                 </p>
             </div>
+            {passwordAlert()}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 <Card className="lg:col-span-1">
                     <CardHeader>
@@ -399,6 +432,9 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     <CardContent className="space-y-2">
                         <ChangePasswordDialog facultyEmail={faculty.email} adminEmail={adminEmail} />
                         <TwoFactorSettingsDialog faculty={faculty} adminEmail={adminEmail} open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} />
+                        {passwordDaysOld !== null && (
+                            <p className="text-xs text-muted-foreground pt-2">Password last changed {passwordDaysOld} day(s) ago.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

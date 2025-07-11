@@ -10,6 +10,7 @@ import { getAdminDataPath } from './common';
 import { getAdminEmails } from './admin';
 import { addFacultyLog } from './logs';
 import { headers } from 'next/headers';
+import { differenceInDays } from 'date-fns';
 
 const facultyFileName = 'faculty.json';
 const securityKeysFilePath = path.join(process.cwd(), 'src', 'data', 'security-keys.json');
@@ -105,7 +106,7 @@ export async function createFaculty(adminEmail: string, data: Faculty): Promise<
     const facultyList = await readFacultyFile(adminEmail);
 
     const hashedPassword = await bcryptjs.hash(data.password, 10);
-    const newFaculty = { ...data, password: hashedPassword };
+    const newFaculty = { ...data, password: hashedPassword, passwordLastChanged: new Date().toISOString() };
 
     facultyList.push(newFaculty);
 
@@ -141,6 +142,7 @@ export async function updateFaculty(adminEmail: string, data: UpdateFacultyData)
     if (data.password) {
         const hashedPassword = await bcryptjs.hash(data.password, 10);
         facultyToUpdate.password = hashedPassword;
+        facultyToUpdate.passwordLastChanged = new Date().toISOString();
     }
     
     facultyList[facultyIndex] = facultyToUpdate;
@@ -258,6 +260,15 @@ export async function loginFaculty(credentials: LoginData): Promise<{ success: b
         
         if (facultyIndex !== -1) {
             const faculty = facultyList[facultyIndex];
+
+             if (faculty.passwordLastChanged) {
+                const daysOld = differenceInDays(new Date(), new Date(faculty.passwordLastChanged));
+                if (daysOld > 217) {
+                    facultyList[facultyIndex].isLocked = true;
+                    await writeFacultyFile(adminEmail, facultyList);
+                    return { success: false, message: 'This account is locked due to an expired password. Please contact an administrator.' };
+                }
+            }
             
             if (faculty.isLocked) {
                 return { success: false, message: 'This account is locked. Please contact an administrator.' };
@@ -442,6 +453,7 @@ export async function changeFacultyPassword(data: ChangePasswordData): Promise<{
     
     const hashedPassword = await bcryptjs.hash(newPassword, 10);
     facultyToUpdate.password = hashedPassword;
+    facultyToUpdate.passwordLastChanged = new Date().toISOString();
     
     facultyList[facultyIndex] = facultyToUpdate;
 
