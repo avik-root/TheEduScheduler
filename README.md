@@ -1,55 +1,118 @@
+![TheEduScheduler Logo](https://raw.githubusercontent.com/avik-root/TheEduScheduler/main/public/logo.png)
+
+# ✨ TheEduScheduler by MintFire
+
+![GitHub repo size](https://img.shields.io/github/repo-size/avik-root/TheEduScheduler?color=blue)
+![GitHub stars](https://img.shields.io/github/stars/avik-root/TheEduScheduler?style=social)
+![GitHub license](https://img.shields.io/github/license/avik-root/TheEduScheduler)
+![Next.js](https://img.shields.io/badge/Next.js-000?logo=next.js)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?logo=tailwind-css&logoColor=white)
+
+---
+
 ## 📚 Table of Contents
 
-1.  [Project Title](#-project-title)
-2.  [Description](#-description)
-3.  [Features](#-features)
-4.  [Technologies Used](#-technologies-used)
-5.  [Installation](#-installation)
-6.  [Usage](#-usage)
-7.  [Contributing](#-contributing)
-8.  [License](#-license)
-9.  [Contact](#-contact)
+1. [Project Title](#-project-title)  
+2. [Description](#-description)  
+3. [Features](#-features)  
+4. [Technologies Used](#-technologies-used)  
+5. [Installation](#-installation)  
+6. [Usage](#-usage)  
+7. [Contributing](#-contributing)   
+9. [Contact](#-contact)
+
+---
 
 ## 🚀 Project Title
 
-**University Resource Management System**
+**TheEduScheduler by MintFire**
+
+---
 
 ## ✨ Description
 
-The University Resource Management System is a comprehensive web application designed to streamline and optimize various administrative tasks within a university setting. It provides modules for managing buildings, rooms, departments, faculty, subjects, and class schedules. The system aims to improve efficiency, reduce scheduling conflicts, and provide a centralized platform for resource allocation and information access.
+**TheEduScheduler** is a smart university scheduling and resource management platform developed by **MintFire**. It automates and streamlines the process of managing classrooms, faculties, subjects, and academic schedules in an intuitive and conflict-free way.
 
-This project is built using NextJS and utilizes Firebase Studio for development and potentially hosting.
+The platform supports both administrators and faculty roles, and integrates AI (via Genkit) to generate intelligent class schedules while following institutional rules and constraints.
+
+---
 
 ## 🌟 Features
 
-*   **Building and Room Management:** Add, edit, and delete buildings, floors, and rooms with detailed information.
-*   **Department Management:** Manage departments, including programs and years within those programs.
-*   **Faculty Management:** Maintain faculty information, including details and potentially roles/permissions.
-*   **Subject Management:** Add, edit, and delete subjects offered by the university.
-*   **Schedule Management:** Create, view, and manage class schedules for different programs, years, and sections.
-*   **Room Availability Checking:** Easily check the availability of rooms for scheduling.
-*   **Schedule Conflict Detection:** Identify and prevent scheduling conflicts.
-*   **AI-Powered Scheduling (Under Development):** Potential integration of AI to assist with schedule generation and optimization.
-*   **Admin and Teacher Dashboards:** Separate dashboards with tailored functionalities for administrators and teachers.
-*   **User Authentication:** Secure login and signup for different user roles.
-*   **Two-Factor Authentication:** Enhanced security for user accounts.
-*   **Request Management:** Teachers can request rooms for specific purposes.
-*   **Activity Logging:** Track important actions within the system.
+- 🏢 **Building & Room Management**  
+- 🏫 **Department & Program Setup**  
+- 👨‍🏫 **Faculty & Subject Management**  
+- 🧠 **AI-Powered Smart Scheduling (Beta)**  
+- ⛔ **Conflict Detection Engine**  
+- 📏 **Schedule Rule Enforcement**  
+- 🔐 **Firebase Auth with Two-Factor Login**  
+- 🧾 **Class & Room Request System**  
+- 📊 **Timetable Visualization by Section/Faculty**  
+- 📝 **Action Logging for Auditing**
+
+---
 
 ## 💻 Technologies Used
 
-*   **Frontend:**
-    *   Next.js (React Framework)
-    *   TypeScript
-    *   Tailwind CSS (for styling)
-    *   Shadcn/ui (UI components)
-*   **Backend:**
-    *   Firebase (Potentially for database, authentication, and hosting)
-    *   Genkit (for AI integration)
-*   **Package Manager:** npm or yarn
-*   **Development Environment:** Firebase Studio, VS Code
+### 🧩 Frontend
+- **Next.js** (React Framework)  
+- **TypeScript**  
+- **Tailwind CSS**  
+- **Shadcn/ui**
 
-## 🛠️ Installation
+### 🔧 Backend
+- **Firebase Auth**  
+- **Firestore Database**  
+- **Firebase Hosting**  
+- **Genkit AI Scheduler**
 
-1.  **Clone the repository:**
+### 🛠 Dev Tools
+- **VS Code**  
+- **Firebase Studio**  
+- **npm / yarn**
 
+---
+
+
+## 🧪 Usage
+
+- 👑 **Admin Dashboard**  
+  - Add departments, rooms, faculties, subjects  
+  - Create and assign schedules  
+  - Review logs and handle teacher requests
+
+- 👨‍🏫 **Faculty Dashboard**  
+  - View timetable and allocations  
+  - Raise room/class requests  
+  - Access student & lab sessions
+
+- 🤖 **AI Scheduler**  
+  - Configure program-year-section  
+  - Click “Generate” to auto-build an optimized routine  
+  - Manually adjust and publish output  
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! 🙌
+
+1. Fork this repo  
+2. Create a branch: `git checkout -b feature/your-feature-name`  
+3. Make your changes  
+4. Commit: `git commit -m "Added new feature"`  
+5. Push: `git push origin feature/your-feature-name`  
+6. Open a Pull Request
+
+---
+
+## 📬 Contact
+
+**Avik Samanta**  && **Anusha Gupta**
+Founder & CEO, MintFire  
+📧 aviksamantaofficial@gmail.com.com  
+🌐 [https://github.com/avik-root](https://github.com/avik-root)
+🌐 [https://github.com/anushagupta11](https://github.com/anushagupta11)
+---
+
+> ⚡ Built with ❤️ by MintFire Team
