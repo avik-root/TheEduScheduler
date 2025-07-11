@@ -4,33 +4,65 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share } from 'lucide-react';
+import { Download, CalendarCheck, ChevronLeft, Search, Trash2, Share, FilePenLine, X, Loader2, Upload, Check } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DeleteScheduleDialog } from './delete-schedule-dialog';
 import { DeleteSingleScheduleDialog } from './delete-single-schedule-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ScheduleCheckerDialog } from './schedule-checker-dialog';
+import type { Department, Faculty, Subject, Room } from '@/lib/types';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
+import { cn } from '@/lib/utils';
+import { Separator } from '../ui/separator';
+import { publishSchedule } from '@/lib/schedule';
+
 
 interface ScheduleViewerProps {
-  schedule: string;
+  initialSchedule: string;
   adminEmail: string;
+  departments: Department[];
+  faculty: Faculty[];
+  subjects: Subject[];
+  allRooms: Room[];
 }
 
-interface SectionSchedule {
+export interface SectionSchedule {
   sectionName: string;
   header: string[];
-  rows: string[][];
+  rows: (string | ParsedCell)[][];
 }
 
-interface ParsedSchedule {
+export interface ParsedCell {
+    subject: string;
+    faculty: string;
+    room: string;
+}
+
+export interface ParsedSchedule {
     programYearTitle: string;
     sections: SectionSchedule[];
 }
 
-function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
+function parseCell(cell: string): string | ParsedCell {
+    if (cell === '-' || cell.toLowerCase().includes('break')) {
+        return cell;
+    }
+    const match = cell.match(/(.+) \((.+)\) in (.+)/);
+    if (match) {
+        return {
+            subject: match[1].trim(),
+            faculty: match[2].trim(),
+            room: match[3].trim()
+        };
+    }
+    return cell;
+}
+
+export function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     if (!markdown || markdown.trim() === '') return null;
 
-    // Normalize newlines and then split by the main schedule heading
     const scheduleParts = ('\n' + markdown.trim()).split(/\n## /).filter(s => s.trim() !== '');
 
     if (scheduleParts.length === 0) return null;
@@ -40,7 +72,6 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
         const programYearTitle = lines[0] || 'Schedule'; 
         const content = lines.slice(1).join('\n');
 
-        // Split sections by their '###' headings
         const sectionParts = content.trim().split(/###\s*(.*?)\s*\n/g).filter(Boolean);
         const parsedSections: SectionSchedule[] = [];
         
@@ -60,7 +91,7 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
             const header = headerLine.split('|').map(h => h.trim()).filter(Boolean);
             const rows = tableLines.slice(2).map(line =>
                 line.split('|').map(cell => cell.trim()).filter(Boolean)
-            ).filter(row => row.length === header.length);
+            ).map(row => row.map(parseCell)).filter(row => row.length === header.length);
 
             if (header.length > 0 && rows.length > 0) {
                 parsedSections.push({ sectionName, header, rows });
@@ -71,20 +102,85 @@ function parseMultipleSchedules(markdown: string): ParsedSchedule[] | null {
     }).filter(s => s.sections.length > 0);
 }
 
+function cellToMarkdown(cell: string | ParsedCell): string {
+    if (typeof cell === 'string') {
+        return cell;
+    }
+    if (!cell.subject) return '-';
+    return `${cell.subject} (${cell.faculty || 'NF'}) in ${cell.room || 'N/A'}`;
+}
 
-export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
+
+export function schedulesToMarkdown(schedules: ParsedSchedule[]): string {
+    return schedules.map(schedule => {
+        let markdown = `## ${schedule.programYearTitle}\n\n`;
+        schedule.sections.forEach(section => {
+            markdown += `### ${section.sectionName}\n`;
+            markdown += `| ${section.header.join(' | ')} |\n`;
+            markdown += `| ${section.header.map(() => '---').join(' | ')} |\n`;
+            section.rows.forEach(row => {
+                const rowContent = row.map(cellToMarkdown).join(' | ');
+                markdown += `| ${rowContent} |\n`;
+            });
+            markdown += '\n';
+        });
+        return markdown;
+    }).join('\n');
+}
+
+
+export function ScheduleViewer({ initialSchedule, adminEmail, departments, faculty, subjects, allRooms }: ScheduleViewerProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [popoverOpenStates, setPopoverOpenStates] = React.useState<Record<string, boolean>>({});
   const { toast } = useToast();
-  const parsedSchedules = React.useMemo(() => parseMultipleSchedules(schedule), [schedule]);
+  const [schedules, setSchedules] = React.useState(() => parseMultipleSchedules(initialSchedule));
   const dashboardPath = `/admin/dashboard?email=${adminEmail}`;
+  
+  const setPopoverOpen = (key: string, open: boolean) => {
+    setPopoverOpenStates(prev => ({ ...prev, [key]: open }));
+  }
+
+  const handleUpdateCell = (scheduleIdx: number, sectionIdx: number, rowIdx: number, cellIdx: number, newCell: Partial<ParsedCell> | null) => {
+    setSchedules(prevSchedules => {
+        if (!prevSchedules) return null;
+        const newSchedules = [...prevSchedules];
+        const currentCell = newSchedules[scheduleIdx].sections[sectionIdx].rows[rowIdx][cellIdx];
+
+        if (newCell === null) { // Clearing the cell
+             newSchedules[scheduleIdx].sections[sectionIdx].rows[rowIdx][cellIdx] = '-';
+        } else {
+             const updatedCell: ParsedCell = typeof currentCell === 'object' 
+                ? { ...currentCell, ...newCell }
+                : { subject: '', faculty: '', room: '', ...newCell };
+             newSchedules[scheduleIdx].sections[sectionIdx].rows[rowIdx][cellIdx] = updatedCell;
+        }
+        return newSchedules;
+    });
+  }
+
+  const handlePublish = async () => {
+    if (!schedules) return;
+    setIsLoading(true);
+    const markdown = schedulesToMarkdown(schedules);
+    const result = await publishSchedule(adminEmail, markdown);
+    if (result.success) {
+        toast({ title: 'Schedule Updated', description: 'The published schedule has been successfully updated.' });
+        setIsEditing(false);
+    } else {
+        toast({ variant: 'destructive', title: 'Update Failed', description: result.message });
+    }
+    setIsLoading(false);
+  }
 
   const filteredSchedules = React.useMemo(() => {
-    if (!parsedSchedules) return [];
-    if (!searchQuery.trim()) return parsedSchedules;
+    if (!schedules) return [];
+    if (!searchQuery.trim()) return schedules;
 
     const lowercasedQuery = searchQuery.toLowerCase();
     
-    return parsedSchedules.map(scheduleItem => {
+    return schedules.map(scheduleItem => {
         if (scheduleItem.programYearTitle.toLowerCase().includes(lowercasedQuery)) {
             return scheduleItem;
         }
@@ -94,7 +190,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
           if (sectionMatches) return true;
 
           const contentMatches = section.rows.some(row => 
-            row.some(cell => cell.toLowerCase().includes(lowercasedQuery))
+            row.some(cell => cellToMarkdown(cell).toLowerCase().includes(lowercasedQuery))
           );
           return contentMatches;
         });
@@ -105,7 +201,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
         return null;
     }).filter((s): s is ParsedSchedule => s !== null);
 
-  }, [parsedSchedules, searchQuery]);
+  }, [schedules, searchQuery]);
 
 
   const handleDownloadCsv = (scheduleToDownload?: ParsedSchedule) => {
@@ -130,9 +226,10 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
         return range;
     };
 
-    const formatCsvRow = (row: string[], isHeader = false) => {
+    const formatCsvRow = (row: (string | ParsedCell)[], isHeader = false) => {
         const formattedRow = row.map((cell, index) => {
-            const finalCell = (isHeader && index > 0) ? formatTimeRange(cell) : cell;
+            const cellText = isHeader ? cell as string : cellToMarkdown(cell);
+            const finalCell = (isHeader && index > 0) ? formatTimeRange(cellText) : cellText;
             const escapedCell = finalCell.replace(/"/g, '""');
             return `"${escapedCell}"`;
         });
@@ -186,13 +283,17 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
     scheduleToShare.sections.forEach(section => {
         shareText += `Section: ${section.sectionName}\n`;
         section.rows.forEach(row => {
-            shareText += `\n${row[0]}:\n`; // Day of the week
-            row.slice(1).forEach((cell, index) => {
-                if (cell !== '-') {
-                    const timeSlot = section.header[index + 1];
-                    shareText += `  - ${timeSlot}: ${cell}\n`;
-                }
-            });
+            const dayCell = row[0];
+            if (typeof dayCell === 'string') {
+                shareText += `\n${dayCell}:\n`; // Day of the week
+                 row.slice(1).forEach((cell, index) => {
+                    const cellText = cellToMarkdown(cell);
+                    if (cellText !== '-') {
+                        const timeSlot = section.header[index + 1];
+                        shareText += `  - ${timeSlot}: ${cellText}\n`;
+                    }
+                });
+            }
         });
         shareText += '\n---\n';
     });
@@ -229,7 +330,7 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
   };
 
 
-  const hasSchedule = parsedSchedules && parsedSchedules.length > 0;
+  const hasSchedule = schedules && schedules.length > 0;
 
   return (
     <Card>
@@ -245,15 +346,20 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                 <div className="grid gap-1">
                     <CardTitle className="flex items-center gap-2"><CalendarCheck /> Published Schedule</CardTitle>
                     <CardDescription>
-                        This is the currently active schedule. You can search, download, or delete it.
+                        This is the currently active schedule. You can search, download, or edit it.
                     </CardDescription>
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={() => handleDownloadCsv()} disabled={!hasSchedule}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download All Filtered
-                </Button>
+                <ScheduleCheckerDialog schedules={schedules || []} />
+                 {isEditing ? (
+                    <>
+                        <Button variant="outline" onClick={() => setIsEditing(false)}><X className="mr-2 h-4 w-4" /> Cancel</Button>
+                        <Button onClick={handlePublish} disabled={isLoading}>{isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />} Save & Publish</Button>
+                    </>
+                ) : (
+                    <Button onClick={() => setIsEditing(true)} disabled={!hasSchedule}><FilePenLine className="mr-2 h-4 w-4" /> Edit Schedule</Button>
+                )}
                  <DeleteScheduleDialog adminEmail={adminEmail} disabled={!hasSchedule} />
             </div>
         </div>
@@ -306,9 +412,52 @@ export function ScheduleViewer({ schedule, adminEmail }: ScheduleViewerProps) {
                                                     <TableBody>
                                                         {sectionSchedule.rows.map((row, rowIndex) => (
                                                             <TableRow key={rowIndex}>
-                                                                {row.map((cell, cellIndex) => (
-                                                                    <TableCell key={cellIndex} className="whitespace-nowrap">{cell}</TableCell>
-                                                                ))}
+                                                                {row.map((cell, cellIndex) => {
+                                                                    const cellContent = cellToMarkdown(cell);
+                                                                    const popoverKey = `${scheduleItem.programYearTitle}-${sectionSchedule.sectionName}-${rowIndex}-${cellIndex}`;
+
+                                                                    if (cellIndex === 0 || !isEditing || typeof cell !== 'object' && (cell.toLowerCase().includes('break') || cell === '-')) {
+                                                                        return <TableCell key={cellIndex} className="whitespace-nowrap">{cellContent}</TableCell>;
+                                                                    }
+                                                                    
+                                                                    const cellValue = cell as ParsedCell;
+                                                                    const program = departments.flatMap(d => d.programs).find(p => scheduleItem.programYearTitle.includes(p.name));
+                                                                    const year = program?.years.find(y => scheduleItem.programYearTitle.includes(y.name));
+                                                                    const yearSubjects = year ? subjects.filter(s => s.yearId === year.id) : [];
+
+
+                                                                    return (
+                                                                         <TableCell key={cellIndex} className="p-1">
+                                                                             <Popover open={popoverOpenStates[popoverKey]} onOpenChange={(open) => setPopoverOpen(popoverKey, open)}>
+                                                                                <PopoverTrigger asChild>
+                                                                                    <Button variant="ghost" className="h-auto p-1 text-xs w-full justify-start text-left min-h-[52px]">
+                                                                                        {cellValue.subject ? (
+                                                                                            <div>
+                                                                                                <p className="font-semibold">{cellValue.subject}</p>
+                                                                                                <p>{cellValue.faculty}</p>
+                                                                                                <p className="text-muted-foreground">{cellValue.room}</p>
+                                                                                            </div>
+                                                                                        ) : <span className="text-muted-foreground">Empty</span>}
+                                                                                    </Button>
+                                                                                </PopoverTrigger>
+                                                                                <PopoverContent className="w-64 p-0" align="start">
+                                                                                    <div className="p-2 space-y-2">
+                                                                                        <h4 className="font-medium text-sm">{cellToMarkdown(row[0])}, {sectionSchedule.header[cellIndex]}</h4>
+                                                                                        <Command><CommandInput placeholder="Search subject..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{yearSubjects.map(s => <CommandItem key={s.id} onSelect={() => { handleUpdateCell(scheduleIndex, sectionIndex, rowIndex, cellIndex, { subject: s.code }); setPopoverOpen(popoverKey, false); }}><Check className={cn("mr-2 h-4 w-4", cellValue?.subject === s.code ? "opacity-100" : "opacity-0")} />{s.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+                                                                                        <Command><CommandInput placeholder="Search faculty..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{faculty.map(f => <CommandItem key={f.email} onSelect={() => { handleUpdateCell(scheduleIndex, sectionIndex, rowIndex, cellIndex, { faculty: f.abbreviation }); setPopoverOpen(popoverKey, false);}}><Check className={cn("mr-2 h-4 w-4", cellValue?.faculty === f.abbreviation ? "opacity-100" : "opacity-0")} />{f.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+                                                                                        <Command><CommandInput placeholder="Search room..." /><CommandList><CommandEmpty>No results</CommandEmpty><CommandGroup>{allRooms.map(r => <CommandItem key={r.id} onSelect={() => { handleUpdateCell(scheduleIndex, sectionIndex, rowIndex, cellIndex, { room: r.name }); setPopoverOpen(popoverKey, false);}}><Check className={cn("mr-2 h-4 w-4", cellValue?.room === r.name ? "opacity-100" : "opacity-0")} />{r.name}</CommandItem>)}</CommandGroup></CommandList></Command>
+                                                                                    </div>
+                                                                                    <Separator />
+                                                                                    <div className="p-2">
+                                                                                        <Button variant="destructive" size="sm" className="w-full" onClick={() => { handleUpdateCell(scheduleIndex, sectionIndex, rowIndex, cellIndex, null); setPopoverOpen(popoverKey, false);}}>
+                                                                                            <X className="mr-2 h-4 w-4"/> Clear Cell
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                </PopoverContent>
+                                                                            </Popover>
+                                                                        </TableCell>
+                                                                    )
+                                                                })}
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
