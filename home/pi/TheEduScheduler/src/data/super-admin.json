@@ -1,0 +1,8 @@
+{
+  "name": "Anusha",
+  "email": "ag@gmail.com",
+  "password": "$2b$10$AGVCMSNArbVxW/FF5N/Qo.lpLZ7jRXtEiP/prpMzYdw1MCsR8tW0q",
+  "isTwoFactorEnabled": false,
+  "twoFactorAttempts": 0,
+  "isLocked": false
+}
