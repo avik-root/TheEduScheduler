@@ -16,6 +16,7 @@ export type Admin = z.infer<typeof SignupSchema> & {
     twoFactorPin?: string;
     twoFactorAttempts?: number;
     isLocked?: boolean;
+    passwordLastChanged?: string;
 };
 type UpdateAdminData = z.infer<typeof UpdateAdminSchema>;
 type LoginData = z.infer<typeof LoginSchema>;
@@ -79,12 +80,13 @@ export async function createAdmin(data: Admin): Promise<{ success: boolean; mess
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const newAdmin = { 
+    const newAdmin: Admin = { 
         ...data, 
         password: hashedPassword,
         isTwoFactorEnabled: false,
         twoFactorAttempts: 0,
-        isLocked: false
+        isLocked: false,
+        passwordLastChanged: new Date().toISOString()
     };
 
     admins.push(newAdmin);
@@ -122,6 +124,7 @@ export async function updateAdmin(data: UpdateAdminData): Promise<{ success: boo
 
         const hashedPassword = await bcrypt.hash(data.password, 10);
         adminToUpdate.password = hashedPassword;
+        adminToUpdate.passwordLastChanged = new Date().toISOString();
     }
     
     admins[adminIndex] = adminToUpdate;

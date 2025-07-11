@@ -11,6 +11,8 @@ import {
   CalendarCheck,
   ClipboardList,
   ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   Card,
@@ -30,6 +32,9 @@ import type { Department } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
 import type { Subject } from '@/lib/subjects';
 import { TwoFactorSettingsDialog } from './two-factor-settings-dialog';
+import { differenceInDays } from 'date-fns';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+
 
 interface DashboardClientProps {
     admin: Admin | null;
@@ -44,6 +49,39 @@ interface DashboardClientProps {
 
 export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, departments, faculty, subjects, publishedSchedule }: DashboardClientProps) {
     const [generatedSchedule, setGeneratedSchedule] = React.useState<GenerateScheduleOutput | null>(null);
+    const [passwordDaysOld, setPasswordDaysOld] = React.useState<number | null>(null);
+
+    React.useEffect(() => {
+        if (admin?.passwordLastChanged) {
+            const days = differenceInDays(new Date(), new Date(admin.passwordLastChanged));
+            setPasswordDaysOld(days < 0 ? 0 : days);
+        }
+    }, [admin]);
+
+    const passwordAlert = () => {
+        if (passwordDaysOld === null || passwordDaysOld <= 180) return null;
+        if (passwordDaysOld > 210) {
+            const daysRemaining = 217 - passwordDaysOld;
+            return (
+                <Alert variant="destructive" className="mb-6">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Urgent: Password Change Required</AlertTitle>
+                    <AlertDescription>
+                        Your password is {passwordDaysOld} days old. To avoid account lockout, you must change it within {daysRemaining} day(s).
+                    </AlertDescription>
+                </Alert>
+            )
+        }
+        return (
+            <Alert className="mb-6">
+                <ShieldAlert className="h-4 w-4" />
+                <AlertTitle>Security Reminder: Change Your Password</AlertTitle>
+                <AlertDescription>
+                    Your password was last updated {passwordDaysOld} days ago. For security, we recommend changing it soon.
+                </AlertDescription>
+            </Alert>
+        );
+    }
 
     return (
         <div className="mx-auto grid w-full max-w-6xl gap-6">
@@ -53,6 +91,7 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                     Welcome, {admin?.name}. Manage your institution's resources from here.
                 </p>
             </div>
+             {passwordAlert()}
              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               <Link href={`/admin/dashboard/faculty?email=${adminEmail}`}>
                   <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
@@ -130,6 +169,9 @@ export function DashboardClient({ admin, allRooms, adminEmail, roomRequests, dep
                         </CardHeader>
                         <CardContent>
                             <TwoFactorSettingsDialog admin={admin} />
+                            {passwordDaysOld !== null && (
+                                <p className="text-xs font-semibold text-muted-foreground pt-2">Password last changed {passwordDaysOld} day(s) ago.</p>
+                            )}
                         </CardContent>
                     </Card>
                 )}
