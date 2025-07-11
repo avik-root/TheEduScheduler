@@ -64,6 +64,20 @@ export const UpdateSuperAdminSchema = z.object({
     path: ["confirmPassword"],
 });
 
+export const SuperAdmin2FASchema = z.object({
+  isEnabled: z.boolean(),
+  pin: z.string().optional(),
+  currentPassword: z.string().min(1, { message: 'Your current password is required to save changes.' }),
+}).refine(data => {
+    if (data.isEnabled && (!data.pin || data.pin.length !== 6 || !/^\d+$/.test(data.pin))) {
+        return false;
+    }
+    return true;
+}, {
+    message: "A 6-digit PIN is required to enable 2FA.",
+    path: ["pin"],
+});
+
 
 export const FacultySchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),

@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { LogOut, School, Shield, UserCog, BookUser, Palette } from 'lucide-react';
+import { LogOut, School, Shield, UserCog, BookUser, Palette, ShieldCheck } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +21,7 @@ import { AppLogo } from '@/components/common/app-logo';
 import { getLogo } from '@/lib/logo';
 import { EditLogoDialog } from '@/components/super-admin/logo/edit-logo-dialog';
 import { ThemeToggle } from '@/components/common/theme-toggle';
+import { TwoFactorSettingsDialog } from '@/components/super-admin/two-factor-settings-dialog';
 
 
 export default async function SuperAdminDashboardPage() {
@@ -127,6 +128,22 @@ export default async function SuperAdminDashboardPage() {
                         <p className="text-sm text-muted-foreground">Change the main logo for the application.</p>
                     </CardContent>
                 </Card>
+                 {superAdmin && (
+                    <Card className="h-full flex flex-col">
+                        <CardHeader className="flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="rounded-full bg-primary/10 p-3">
+                                    <ShieldCheck className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Security</CardTitle>
+                            </div>
+                            <TwoFactorSettingsDialog superAdmin={superAdmin} />
+                        </CardHeader>
+                        <CardContent className="flex-grow">
+                            <p className="text-sm text-muted-foreground">Manage Two-Factor Authentication for your account.</p>
+                        </CardContent>
+                    </Card>
+                 )}
              </div>
           </div>
 
