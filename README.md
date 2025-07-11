@@ -102,17 +102,38 @@ An intelligent, scalable, and modular university scheduling system designed to e
 
 ## 📬 Contact
 
-### 👤 Avik Samanta  
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/avik-root)
-[![Email](https://img.shields.io/badge/Email-avik-0078D4?style=flat&logo=gmail&logoColor=white)](mailto:aviksamantaofficial@gmail.com)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/avik-samanta-root/)
+<div align="center">
 
----
+<table align="center" width="100%">
+  <tr>
+    <td align="center">
+      <h3>👨‍🚀 <strong>Avik Samanta</strong></h3>
+      <a href="https://github.com/avik-root" target="_blank">
+        <img src="https://img.shields.io/badge/GitHub-avik--root-181717?style=flat&logo=github&logoColor=white" alt="GitHub" />
+      </a>
+      <a href="mailto:aviksamantaofficial@gmail.com">
+        <img src="https://img.shields.io/badge/Email-avik-0078D4?style=flat&logo=gmail&logoColor=white" alt="Email" />
+      </a>
+      <a href="https://www.linkedin.com/in/avik-samanta-root/" target="_blank">
+        <img src="https://img.shields.io/badge/LinkedIn-avik--samanta--root-0A66C2?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn" />
+      </a>
+    </td>
+    <td align="center">
+      <h3>👩‍🚀 <strong>Anusha Gupta</strong></h3>
+      <a href="https://github.com/anushagupta11" target="_blank">
+        <img src="https://img.shields.io/badge/GitHub-anushagupta11-181717?style=flat&logo=github&logoColor=white" alt="GitHub" />
+      </a>
+      <a href="mailto:anusha73gupta@gmail.com">
+        <img src="https://img.shields.io/badge/Email-anusha-0078D4?style=flat&logo=gmail&logoColor=white" alt="Email" />
+      </a>
+      <a href="https://www.linkedin.com/in/anusha-gupta-ofc/" target="_blank">
+        <img src="https://img.shields.io/badge/LinkedIn-anusha--gupta--ofc-0A66C2?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn" />
+      </a>
+    </td>
+  </tr>
+</table>
 
-### 👤 Anusha Gupta  
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/anushagupta11)
-[![Email](https://img.shields.io/badge/Email-anusha-0078D4?style=flat&logo=gmail&logoColor=white)](mailto:anusha73gupta@gmail.com)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/anusha-gupta-ofc/)
+</div>
 
 ---
 
