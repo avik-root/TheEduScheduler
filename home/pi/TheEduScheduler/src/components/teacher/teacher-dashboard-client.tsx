@@ -106,7 +106,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   const [dialogContent, setDialogContent] = React.useState<{ title: string; classes: UpcomingClass[] }>({ title: '', classes: [] });
   const [releaseDialogOpen, setReleaseDialogOpen] = React.useState(false);
   const [classToRelease, setClassToRelease] = React.useState<UpcomingClass | null>(null);
-  const [passwordDaysOld, setPasswordDaysOld] = React.useState<number | null>(null);
+  const [passwordDaysUntilExpiry, setPasswordDaysUntilExpiry] = React.useState<number | null>(null);
   const { toast } = useToast();
 
   const searchParams = useSearchParams();
@@ -123,8 +123,10 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
     }
     
     if (faculty.passwordLastChanged) {
-        const days = differenceInDays(new Date(), new Date(faculty.passwordLastChanged));
-        setPasswordDaysOld(days);
+        const passwordDate = new Date(faculty.passwordLastChanged);
+        const expiryDate = new Date(passwordDate.setDate(passwordDate.getDate() + 217));
+        const daysUntilExpiry = differenceInDays(expiryDate, new Date());
+        setPasswordDaysUntilExpiry(daysUntilExpiry);
     }
   }, [searchParams, faculty.passwordLastChanged]);
 
@@ -283,15 +285,15 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   }, [parsedFullSchedule, faculty.abbreviation, showMyScheduleOnly]);
 
   const passwordAlert = () => {
-    if (passwordDaysOld === null || passwordDaysOld <= 180) return null;
-    if (passwordDaysOld > 210) {
-        const daysRemaining = 217 - passwordDaysOld;
+    if (passwordDaysUntilExpiry === null || passwordDaysUntilExpiry > 30) return null;
+    
+    if (passwordDaysUntilExpiry <= 7) {
         return (
             <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Urgent: Password Change Required</AlertTitle>
                 <AlertDescription>
-                    Your password is {passwordDaysOld} days old. To avoid account lockout, you must change it within {daysRemaining} day(s).
+                    Your password will expire in {passwordDaysUntilExpiry} day(s). To avoid account lockout, please change it now.
                 </AlertDescription>
             </Alert>
         )
@@ -301,7 +303,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
             <ShieldAlert className="h-4 w-4" />
             <AlertTitle>Security Reminder: Change Your Password</AlertTitle>
             <AlertDescription>
-                Your password was last updated {passwordDaysOld} days ago. For security, we recommend changing it soon.
+                Your password will expire in {passwordDaysUntilExpiry} days. For security, we recommend changing it soon.
             </AlertDescription>
         </Alert>
     );
@@ -432,8 +434,8 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                     <CardContent className="space-y-2">
                         <ChangePasswordDialog facultyEmail={faculty.email} adminEmail={adminEmail} />
                         <TwoFactorSettingsDialog faculty={faculty} adminEmail={adminEmail} open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} />
-                        {passwordDaysOld !== null && (
-                            <p className="text-sm font-semibold text-muted-foreground pt-2">Password last changed {passwordDaysOld} day(s) ago.</p>
+                        {passwordDaysUntilExpiry !== null && (
+                            <p className="text-sm font-semibold text-muted-foreground pt-2">Password expires in {passwordDaysUntilExpiry} day(s).</p>
                         )}
                     </CardContent>
                 </Card>
@@ -535,3 +537,5 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
      </>
   );
 }
+
+    
