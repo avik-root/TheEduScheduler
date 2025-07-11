@@ -127,5 +127,5 @@ An intelligent, scalable, and modular university scheduling system designed to e
 
 <p align="center">
   <strong>🚀 Built with precision & passion by <span style="color:#7F5AF0;">MintFire</span></strong><br />
-  <img src="https://media.giphy.com/media/UQZ3VZyK1p8MEgIhBJ/giphy.gif" width="300" alt="MintFire Animation" />
+  <img src="https://github.com/avik-root/TheEduScheduler/blob/master/public/logo/mf.png" width="300" alt="MintFire Animation" />
 </p>
