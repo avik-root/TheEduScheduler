@@ -103,25 +103,12 @@ An intelligent, scalable, and modular university scheduling system designed to e
 ## 📬 Contact
 
 <div align="center">
-
-## 📬 Contact
-
-### 👨‍🚀 Avik Samanta
-
-<table>
-<tr>
-<td width="60">
-  <img src="https://avatars.githubusercontent.com/u/180390314?s=100" width="60" height="60" alt="Avik Samanta Avatar"/>
-</td>
-<td>
-  <strong>Founder & CEO of MintFire</strong><br />
-  [![GitHub](https://img.shields.io/badge/GitHub-avik--root-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/avik-root)
-  [![Email](https://img.shields.io/badge/Email-avik-0078D4?style=flat-square&logo=gmail&logoColor=white)](mailto:aviksamantaofficial@gmail.com)
-  [![LinkedIn](https://img.shields.io/badge/LinkedIn-avik--samanta--root-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/avik-samanta-root/)
-</td>
-</tr>
-</table>
-
+![Avik Samanta Avatar](https://avatars.githubusercontent.com/u/180390314?s=400&u=93ed5b951067274f51137cb38197dbd1a010bc3c&v=4/u/85779970?v=4&s=50)
+### 👨‍🚀 Avik Samanta  
+**Founder & CEO of MintFire**  
+[![GitHub](https://img.shields.io/badge/GitHub-avik--root-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/avik-root)
+[![Email](https://img.shields.io/badge/Email-avik-0078D4?style=for-the-badge&logo=gmail&logoColor=white)](mailto:aviksamantaofficial@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-avik--samanta--root-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/avik-samanta-root/)
 
 ---
 
