@@ -1,6 +1,6 @@
 <!-- Futuristic Banner -->
 <p align="center">
-  <img src="https://raw.githubusercontent.com/avik-root/TheEduScheduler/main/public/logo.png" width="160" alt="TheEduScheduler Logo" />
+  <img src="https://github.com/avik-root/TheEduScheduler/blob/master/public/logo/logo.png" width="160" alt="TheEduScheduler Logo" />
 </p>
 
 <h1 align="center">
@@ -52,7 +52,7 @@ An intelligent, scalable, and modular university scheduling system designed to e
 |-----------------------------|----------------|
 | 🏢 Building & Room Management | Create, edit, organize physical spaces |
 | 👨‍🏫 Faculty Assignment        | Prevent scheduling overlaps & assign roles |
-| 📚 Subject Management        | Configure 2/3 credit theory & labs |
+| 📚 Subject Management        | Configure credit theory & labs |
 | 📆 Smart Scheduler           | Create visual timetables by section/year |
 | 🤖 AI-Powered Scheduling     | Generate optimized routines with Genkit |
 | 🔐 Auth & Role System        | Firebase login with 2FA and access control |
@@ -102,10 +102,17 @@ An intelligent, scalable, and modular university scheduling system designed to e
 
 ## 📬 Contact
 
-| 👤 Name            | 🔗 GitHub                                      | 📧 Email                        |
-|-------------------|-----------------------------------------------|---------------------------------|
-| Avik Samanta      | [avik-root](https://github.com/avik-root)     | aviksamantaofficial@gmail.com  |
-| Anusha Gupta      | [anushagupta11](https://github.com/anushagupta11) | —                            |
+### 👤 Avik Samanta  
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/avik-root)
+[![Email](https://img.shields.io/badge/Email-avik-0078D4?style=flat&logo=gmail&logoColor=white)](mailto:aviksamantaofficial@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/avik-samanta-root/)
+
+---
+
+### 👤 Anusha Gupta  
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/anushagupta11)
+[![Email](https://img.shields.io/badge/Email-anusha-0078D4?style=flat&logo=gmail&logoColor=white)](mailto:anusha73gupta@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/anusha-gupta-ofc/)
 
 ---
 
