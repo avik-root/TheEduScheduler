@@ -113,6 +113,8 @@ An intelligent, scalable, and modular university scheduling system designed to e
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-avik--samanta--root-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/avik-samanta-root/)
 
 ---
+![Anusha Gupta Avatar](https://avatars.githubusercontent.com/u/17426589?v=4&s=200)
+
 
 ### 👩‍🚀 Anusha Gupta  
 **Co-Founder & AI Architect at MintFire**  
@@ -120,8 +122,6 @@ An intelligent, scalable, and modular university scheduling system designed to e
 [![Email](https://img.shields.io/badge/Email-anusha-0078D4?style=for-the-badge&logo=gmail&logoColor=white)](mailto:anusha73gupta@gmail.com)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-anusha--gupta--ofc-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/anusha-gupta-ofc/)
   
-![Anusha Gupta Avatar](https://avatars.githubusercontent.com/u/17426589?v=4&s=200)
-
 </div>
 
 ---
