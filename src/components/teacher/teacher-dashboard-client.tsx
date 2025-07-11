@@ -433,7 +433,7 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
                         <ChangePasswordDialog facultyEmail={faculty.email} adminEmail={adminEmail} />
                         <TwoFactorSettingsDialog faculty={faculty} adminEmail={adminEmail} open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} />
                         {passwordDaysOld !== null && (
-                            <p className="text-xs text-muted-foreground pt-2">Password last changed {passwordDaysOld} day(s) ago.</p>
+                            <p className="text-sm font-semibold text-muted-foreground pt-2">Password last changed {passwordDaysOld} day(s) ago.</p>
                         )}
                     </CardContent>
                 </Card>
