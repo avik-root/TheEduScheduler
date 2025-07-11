@@ -3,28 +3,34 @@ import Link from 'next/link';
 import { LogOut, ChevronLeft, Building2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { getAdminByEmail } from '@/lib/admin';
+import { getAdminByEmail, getFirstAdminEmail } from '@/lib/admin';
 import { getBuildings, type Building } from '@/lib/buildings';
 import { CreateBuildingDialog } from '@/components/admin/buildings/create-building-dialog';
 import { notFound } from 'next/navigation';
 import { AppLogo } from '@/components/common/app-logo';
 
 export default async function BuildingsPage({ searchParams }: { searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
-  if (!adminEmail) {
+  const loggedInAdminEmail = searchParams.email;
+  if (!loggedInAdminEmail) {
     notFound();
   }
   
-  const admin = await getAdminByEmail(adminEmail);
-  const buildings = await getBuildings(adminEmail);
+  const loggedInAdmin = await getAdminByEmail(loggedInAdminEmail);
+  const primaryAdminEmail = await getFirstAdminEmail();
+
+  if (!primaryAdminEmail) {
+    notFound();
+  }
+  
+  const buildings = await getBuildings(primaryAdminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-         <AppLogo linkTo={`/admin/dashboard?email=${adminEmail}`} />
+         <AppLogo linkTo={`/admin/dashboard?email=${loggedInAdminEmail}`} />
           <div className="flex items-center gap-4">
             <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
-              {admin?.name || 'Admin'}
+              {loggedInAdmin?.name || 'Admin'}
             </span>
             <Button variant="outline" size="icon" asChild>
               <Link href="/admin/login">
@@ -41,7 +47,7 @@ export default async function BuildingsPage({ searchParams }: { searchParams: { 
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard?email=${adminEmail}`}>
+                        <Link href={`/admin/dashboard?email=${loggedInAdminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Dashboard</span>
                         </Link>
@@ -51,13 +57,13 @@ export default async function BuildingsPage({ searchParams }: { searchParams: { 
                         <CardDescription>Add, edit, and remove buildings, floors, and rooms.</CardDescription>
                       </div>
                     </div>
-                     <CreateBuildingDialog adminEmail={adminEmail} />
+                     <CreateBuildingDialog adminEmail={primaryAdminEmail} />
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {buildings.map((building: Building) => (
-                      <Link key={building.id} href={`/admin/dashboard/buildings/${building.id}?email=${adminEmail}`}>
+                      <Link key={building.id} href={`/admin/dashboard/buildings/${building.id}?email=${loggedInAdminEmail}`}>
                         <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="rounded-full bg-primary/10 p-3">

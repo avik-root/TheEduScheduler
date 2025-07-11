@@ -40,6 +40,11 @@ export async function getAdminEmails(): Promise<string[]> {
     return admins.map(admin => admin.email);
 }
 
+export async function getFirstAdminEmail(): Promise<string | null> {
+    const admins = await readAdminsFile();
+    return admins.length > 0 ? admins[0].email : null;
+}
+
 export async function getAdminByEmail(email: string): Promise<Admin | null> {
     const admins = await readAdminsFile();
     const admin = admins.find(a => a.email === email);
@@ -125,7 +130,7 @@ export async function deleteAdmin(email: string, password: string): Promise<{ su
         return { success: true, message: 'Admin account deleted successfully.' };
     } catch (error) {
         console.error('Failed to delete admin:', error);
-        return { success: false, message: 'An internal error occurred. Please try again.' };
+        return { success: false, message: 'An internal error occurred.' };
     }
 }
 

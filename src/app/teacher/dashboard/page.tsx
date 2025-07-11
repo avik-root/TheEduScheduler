@@ -3,7 +3,7 @@ import Link from 'next/link';
 import {
   Shield,
 } from 'lucide-react';
-import { getFacultyByEmail } from '@/lib/faculty';
+import { getFacultyByEmail, findAdminForFaculty } from '@/lib/faculty';
 import { notFound } from 'next/navigation';
 import { getAdminByEmail } from '@/lib/admin';
 import { TeacherDashboardClient } from '@/components/teacher/teacher-dashboard-client';
@@ -14,14 +14,19 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { AppLogo } from '@/components/common/app-logo';
 import { ThemeToggle } from '@/components/common/theme-toggle';
 
-export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string; adminEmail?: string } }) {
+export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
   const facultyEmail = searchParams.email;
-  const adminEmail = searchParams.adminEmail;
 
-  if (!facultyEmail || !adminEmail) {
+  if (!facultyEmail) {
       notFound();
   }
 
+  const adminEmail = await findAdminForFaculty(facultyEmail);
+
+  if (!adminEmail) {
+      notFound();
+  }
+  
   const faculty = await getFacultyByEmail(adminEmail, facultyEmail);
   const admin = await getAdminByEmail(adminEmail);
   const allRooms = await getAllRooms(adminEmail);
@@ -35,7 +40,7 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-         <AppLogo linkTo={`/teacher/dashboard?email=${facultyEmail}&adminEmail=${adminEmail}`} />
+         <AppLogo linkTo={`/teacher/dashboard?email=${facultyEmail}`} />
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <div className="text-right">

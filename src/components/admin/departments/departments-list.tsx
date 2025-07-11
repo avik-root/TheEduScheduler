@@ -11,9 +11,10 @@ import type { Department } from '@/lib/departments';
 interface DepartmentsListProps {
     initialDepartments: Department[];
     adminEmail: string;
+    loggedInAdminEmail: string;
 }
 
-export function DepartmentsList({ initialDepartments, adminEmail }: DepartmentsListProps) {
+export function DepartmentsList({ initialDepartments, adminEmail, loggedInAdminEmail }: DepartmentsListProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
 
     const filteredDepartments = initialDepartments.filter(department =>
@@ -33,7 +34,7 @@ export function DepartmentsList({ initialDepartments, adminEmail }: DepartmentsL
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredDepartments.map((department: Department) => (
-                   <Link key={department.id} href={`/admin/dashboard/departments/${department.id}?email=${adminEmail}`}>
+                   <Link key={department.id} href={`/admin/dashboard/departments/${department.id}?email=${loggedInAdminEmail}`}>
                         <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="rounded-full bg-primary/10 p-3">

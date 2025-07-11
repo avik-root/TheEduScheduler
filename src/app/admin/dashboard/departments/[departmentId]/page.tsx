@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { LogOut, ChevronLeft, BookCopy, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { getAdminByEmail } from '@/lib/admin';
+import { getAdminByEmail, getFirstAdminEmail } from '@/lib/admin';
 import { getDepartmentById, type Program } from '@/lib/departments';
 import { EditDepartmentDialog } from '@/components/admin/departments/edit-department-dialog';
 import { DeleteDepartmentDialog } from '@/components/admin/departments/delete-department-dialog';
@@ -12,13 +12,19 @@ import { CreateProgramDialog } from '@/components/admin/departments/programs/cre
 import { AppLogo } from '@/components/common/app-logo';
 
 export default async function DepartmentProgramsPage({ params, searchParams }: { params: { departmentId: string }, searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
-  if (!adminEmail) {
+  const loggedInAdminEmail = searchParams.email;
+  if (!loggedInAdminEmail) {
     notFound();
   }
 
-  const admin = await getAdminByEmail(adminEmail);
-  const department = await getDepartmentById(adminEmail, params.departmentId);
+  const loggedInAdmin = await getAdminByEmail(loggedInAdminEmail);
+  const primaryAdminEmail = await getFirstAdminEmail();
+
+  if (!primaryAdminEmail) {
+    notFound();
+  }
+
+  const department = await getDepartmentById(primaryAdminEmail, params.departmentId);
 
   if (!department) {
     notFound();
@@ -27,10 +33,10 @@ export default async function DepartmentProgramsPage({ params, searchParams }: {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-         <AppLogo linkTo={`/admin/dashboard?email=${adminEmail}`} />
+         <AppLogo linkTo={`/admin/dashboard?email=${loggedInAdminEmail}`} />
           <div className="flex items-center gap-4">
             <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
-              {admin?.name || 'Admin'}
+              {loggedInAdmin?.name || 'Admin'}
             </span>
             <Button variant="outline" size="icon" asChild>
               <Link href="/admin/login">
@@ -47,7 +53,7 @@ export default async function DepartmentProgramsPage({ params, searchParams }: {
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                        <Link href={`/admin/dashboard/departments?email=${adminEmail}`}>
+                        <Link href={`/admin/dashboard/departments?email=${loggedInAdminEmail}`}>
                           <ChevronLeft className="h-4 w-4" />
                           <span className="sr-only">Back to Departments</span>
                         </Link>
@@ -58,16 +64,16 @@ export default async function DepartmentProgramsPage({ params, searchParams }: {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <CreateProgramDialog departmentId={department.id} adminEmail={adminEmail} />
-                        <EditDepartmentDialog department={department} adminEmail={adminEmail} />
-                        <DeleteDepartmentDialog department={department} adminEmail={adminEmail} />
+                        <CreateProgramDialog departmentId={department.id} adminEmail={primaryAdminEmail} />
+                        <EditDepartmentDialog department={department} adminEmail={primaryAdminEmail} />
+                        <DeleteDepartmentDialog department={department} adminEmail={primaryAdminEmail} />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {department.programs.map((program: Program) => (
-                      <Link key={program.id} href={`/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${adminEmail}`}>
+                      <Link key={program.id} href={`/admin/dashboard/departments/${department.id}/programs/${program.id}?email=${loggedInAdminEmail}`}>
                         <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="rounded-full bg-primary/10 p-3">

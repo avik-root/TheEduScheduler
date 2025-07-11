@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LogOut, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getAdminByEmail } from '@/lib/admin';
+import { getAdminByEmail, getFirstAdminEmail } from '@/lib/admin';
 import { getPublishedSchedule } from '@/lib/schedule';
 import { AppLogo } from '@/components/common/app-logo';
 import { ScheduleViewer } from '@/components/admin/schedule-viewer';
@@ -12,24 +12,30 @@ import { getFaculty } from '@/lib/faculty';
 import { getAllRooms } from '@/lib/buildings';
 
 export default async function SchedulePage({ searchParams }: { searchParams: { email?: string } }) {
-  const adminEmail = searchParams.email;
-  if (!adminEmail) {
+  const loggedInAdminEmail = searchParams.email;
+  if (!loggedInAdminEmail) {
     notFound();
   }
   
-  const admin = await getAdminByEmail(adminEmail);
-  const publishedSchedule = await getPublishedSchedule(adminEmail);
-  const allSubjects = await getSubjects(adminEmail);
-  const allFaculty = await getFaculty(adminEmail);
-  const allRooms = await getAllRooms(adminEmail);
+  const loggedInAdmin = await getAdminByEmail(loggedInAdminEmail);
+  const primaryAdminEmail = await getFirstAdminEmail();
+
+  if (!primaryAdminEmail) {
+    notFound();
+  }
+
+  const publishedSchedule = await getPublishedSchedule(primaryAdminEmail);
+  const allSubjects = await getSubjects(primaryAdminEmail);
+  const allFaculty = await getFaculty(primaryAdminEmail);
+  const allRooms = await getAllRooms(primaryAdminEmail);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-         <AppLogo linkTo={`/admin/dashboard?email=${adminEmail}`} />
+         <AppLogo linkTo={`/admin/dashboard?email=${loggedInAdminEmail}`} />
           <div className="flex items-center gap-4">
             <span className="hidden text-sm font-medium text-muted-foreground sm:inline-block">
-              {admin?.name || 'Admin'}
+              {loggedInAdmin?.name || 'Admin'}
             </span>
             <Button variant="outline" size="icon" asChild>
               <Link href="/admin/login">
@@ -43,7 +49,8 @@ export default async function SchedulePage({ searchParams }: { searchParams: { e
         <div className="mx-auto grid w-full max-w-6xl gap-6 pt-8">
             <ScheduleViewer 
                 schedule={publishedSchedule} 
-                adminEmail={adminEmail}
+                adminEmail={primaryAdminEmail}
+                loggedInAdminEmail={loggedInAdminEmail}
                 allSubjects={allSubjects}
                 allFaculty={allFaculty}
                 allRooms={allRooms}
