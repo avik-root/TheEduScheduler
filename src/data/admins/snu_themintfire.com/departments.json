@@ -1,0 +1,310 @@
+
+[
+  {
+    "id": "1751057206136-pam9vej",
+    "name": "CSE",
+    "programs": [
+      {
+        "id": "1751057339642-xjm0gbd",
+        "name": "B. Tech CSE",
+        "years": [
+          {
+            "id": "1751057427398-c2131y5",
+            "name": "Year 1",
+            "sections": [
+              {
+                "id": "1751057453112-qsypp85",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-2k14wto",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-s1ifbdz",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-iowuh8r",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-ks6flhf",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-7v2pekd",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-tch7kp9",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-9b4vltt",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-fb6b9mg",
+                "name": "Section 9",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057453112-do3fz0g",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          },
+          {
+            "id": "1751057427398-1qlihcx",
+            "name": "Year 2",
+            "sections": [
+              {
+                "id": "1751057463836-gvh98nd",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-aky2sxv",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-2zya89e",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-3wpn4ya",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-c1mhb8z",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-3q4l4g3",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-tt2enk0",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-0desd0o",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-f88bwvg",
+                "name": "Section 9",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057463836-uy442lo",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          },
+          {
+            "id": "1751057427398-ipaxk5j",
+            "name": "Year 3",
+            "sections": [
+              {
+                "id": "1751057475178-45p82cc",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-tcskpa0",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-jb994p2",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-kxcac9h",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-d6rvuav",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-xm04xcw",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-uv0n377",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-1wse71k",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057475178-mkh642t",
+                "name": "Section 9",
+                "studentCount": 28
+              },
+              {
+                "id": "1751057475178-17gg1uk",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          },
+          {
+            "id": "1751057487225-xvhk3g0",
+            "name": "Year 4",
+            "sections": [
+              {
+                "id": "1751057532935-r90eit5",
+                "name": "Section 1",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-1nfgznf",
+                "name": "Section 2",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-o8bms21",
+                "name": "Section 3",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-6nnyfkl",
+                "name": "Section 4",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-u39vx5t",
+                "name": "Section 5",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-cuxmerk",
+                "name": "Section 6",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-c80n5lq",
+                "name": "Section 7",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-9vh2nz3",
+                "name": "Section 8",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-3pyceuw",
+                "name": "Section 9",
+                "studentCount": 60
+              },
+              {
+                "id": "1751057532935-4ulnx31",
+                "name": "Section 10",
+                "studentCount": 60
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "1751109393319-89sqwby",
+        "name": "M.Tech CSE",
+        "years": [
+          {
+            "id": "1751109420923-rmd3j72",
+            "name": "Year 1",
+            "sections": []
+          },
+          {
+            "id": "1751109429458-okobt9a",
+            "name": "Year 2",
+            "sections": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1751057708578-wndjwip",
+    "name": "ECE",
+    "programs": [
+      {
+        "id": "1751634554950-wicmk8l",
+        "name": "B.Tech ECE",
+        "years": [
+          {
+            "id": "1751634748879-5k6dgh2",
+            "name": "Year 1",
+            "sections": []
+          },
+          {
+            "id": "1751634748879-umrwdob",
+            "name": "Year 2",
+            "sections": []
+          },
+          {
+            "id": "1751634748879-v6cbdy3",
+            "name": "Year 3",
+            "sections": []
+          },
+          {
+            "id": "1751634748879-brjoz98",
+            "name": "Year 4",
+            "sections": []
+          }
+        ]
+      },
+      {
+        "id": "1751634565075-zt9wwe3",
+        "name": "M.Tech ECE",
+        "years": [
+          {
+            "id": "1751634764402-sxmw4am",
+            "name": "Year 1",
+            "sections": []
+          },
+          {
+            "id": "1751634773021-yj1nenv",
+            "name": "Year 2",
+            "sections": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1751639523860-izg6a3h",
+    "name": "C3A",
+    "programs": []
+  }
+]
+
+    
