@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { type GenerateScheduleOutput } from '@/ai/flows/generate-schedule';
 import { publishSchedule } from '@/lib/schedule';
-import { Loader2, Upload, Wand, X, ChevronsUpDown, Check, Clock, CalendarDays } from 'lucide-react';
+import { Loader2, Upload, X, Check, Clock, CalendarDays } from 'lucide-react';
 import type { Department, Program, Year, Section } from '@/lib/departments';
 import type { Faculty } from '@/lib/faculty';
 import type { Subject } from '@/lib/subjects';
@@ -62,10 +62,10 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
     const [isGridGenerated, setIsGridGenerated] = React.useState(false);
     
     // Time settings state
-    const [startTime, setStartTime] = React.useState('11:00');
-    const [endTime, setEndTime] = React.useState('18:20');
-    const [breakStart, setBreakStart] = React.useState('15:00');
-    const [breakEnd, setBreakEnd] = React.useState('15:30');
+    const [startTime, setStartTime] = React.useState('08:00');
+    const [endTime, setEndTime] = React.useState('13:00');
+    const [breakStart, setBreakStart] = React.useState('10:30');
+    const [breakEnd, setBreakEnd] = React.useState('11:20');
     const [classDuration, setClassDuration] = React.useState(50);
     
     const [popoverOpenStates, setPopoverOpenStates] = React.useState<Record<string, boolean>>({});
@@ -86,22 +86,18 @@ export function ManualScheduleEditor({ generatedSchedule, setGeneratedSchedule, 
         let breakAdded = false;
 
         while (currentTime < finalTime) {
-            const slotStart = currentTime;
-            const slotEnd = addMinutes(slotStart, classDuration);
-
-            // Check if current slot is within the main break time
-            if (slotStart < brkEnd && slotEnd > brkStart) {
-                if (!breakAdded) {
-                    slots.push(`${format(brkStart, 'HH:mm')}-${format(brkEnd, 'HH:mm')}`);
-                    breakAdded = true;
-                }
+            // Check if it's time for the main break
+            if (!breakAdded && currentTime >= brkStart && currentTime < brkEnd) {
+                slots.push(`${format(brkStart, 'HH:mm')}-${format(brkEnd, 'HH:mm')}`);
                 currentTime = brkEnd;
+                breakAdded = true;
                 continue;
             }
 
+            const slotEnd = addMinutes(currentTime, classDuration);
             if (slotEnd > finalTime) break;
             
-            slots.push(`${format(slotStart, 'HH:mm')}-${format(slotEnd, 'HH:mm')}`);
+            slots.push(`${format(currentTime, 'HH:mm')}-${format(slotEnd, 'HH:mm')}`);
             
             currentTime = slotEnd;
         }
