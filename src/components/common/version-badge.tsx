@@ -12,7 +12,7 @@ export async function VersionBadge() {
             "text-xs font-semibold border-2",
             isBeta ? "border-red-500/50 text-red-500" : "border-green-500/50 text-green-500"
         )}>
-            <span className="mr-1.5">V {version}</span>
+            <span className="mr-1.5">Ver {version}</span>
             <span className="flex items-center gap-1">
                 {isBeta ? <AlertTriangle className="h-3 w-3" /> : <ShieldCheck className="h-3 w-3" />}
                 {status}
