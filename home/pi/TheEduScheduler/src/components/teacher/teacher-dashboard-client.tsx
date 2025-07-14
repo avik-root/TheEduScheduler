@@ -287,6 +287,8 @@ export function TeacherDashboardClient({ faculty, admin, adminEmail, allRooms, s
   const passwordAlert = () => {
     if (passwordDaysUntilExpiry === null || passwordDaysUntilExpiry > 30) return null;
     
+    const daysSinceChange = 217 - passwordDaysUntilExpiry;
+
     if (passwordDaysUntilExpiry <= 7) {
         return (
             <Alert variant="destructive">
