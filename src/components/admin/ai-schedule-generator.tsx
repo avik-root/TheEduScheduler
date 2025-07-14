@@ -30,6 +30,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { ManualScheduleEditor } from './manual-schedule-editor';
+import { findAvailableRooms } from '@/ai/flows/find-available-rooms';
 
 const assignmentSchema = z.object({
   sectionId: z.string(),
@@ -80,13 +81,15 @@ interface AiScheduleGeneratorProps {
     departments: Department[];
     faculty: Faculty[];
     subjects: Subject[];
+    publishedSchedule: string;
 }
 
 const allWeekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule, adminEmail, departments, faculty, subjects }: AiScheduleGeneratorProps) {
+export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedSchedule, adminEmail, departments, faculty, subjects, publishedSchedule }: AiScheduleGeneratorProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPublishing, setIsPublishing] = React.useState(false);
+  const [isFindingRooms, setIsFindingRooms] = React.useState(false);
   const [mode, setMode] = React.useState<'ai' | 'manual'>('ai');
   const { toast } = useToast();
   
@@ -200,6 +203,28 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
         title: 'Faculty Auto-Assigned',
         description: `Faculty have been distributed among the sections for ${subjectConfig.name}.`
     });
+  };
+
+  const handleFindAndSelectRooms = async () => {
+    setIsFindingRooms(true);
+    toast({ title: 'AI Assistant', description: 'Finding all available rooms based on the current schedule and selected times...' });
+    try {
+        const data = getValues();
+        const result = await findAvailableRooms({
+            startTime: data.startTime,
+            endTime: data.endTime,
+            activeDays: data.activeDays,
+            allRooms: allRooms.map(r => r.name),
+            publishedSchedule: publishedSchedule
+        });
+        setValue('availableRooms', result.availableRooms, { shouldValidate: true });
+        setValue('availableLabs', result.availableLabs, { shouldValidate: true });
+        toast({ title: 'AI Assistant', description: `Found ${result.availableRooms.length} rooms and ${result.availableLabs.length} labs available.` });
+    } catch(e) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not automatically find rooms.' });
+    } finally {
+        setIsFindingRooms(false);
+    }
   };
 
 
@@ -321,9 +346,6 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
       setIsPublishing(false);
   }
   
-  const theoryRooms = React.useMemo(() => allRooms.filter(r => !r.name.toLowerCase().includes('lab')), [allRooms]);
-  const labRooms = React.useMemo(() => allRooms.filter(r => r.name.toLowerCase().includes('lab')), [allRooms]);
-
   return (
     <div className="grid gap-6">
        <Card>
@@ -436,11 +458,9 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                           <div className="flex items-center justify-between mb-2">
                               <FormLabel>Available Rooms & Labs</FormLabel>
                               <div className="flex items-center gap-2">
-                                  <Button type="button" variant="link" size="sm" className="p-0 h-auto" onClick={() => {
-                                      setValue('availableRooms', theoryRooms.map(r => r.name), { shouldValidate: true });
-                                      setValue('availableLabs', labRooms.map(r => r.name), { shouldValidate: true });
-                                  }}>
-                                      Auto-select Required
+                                  <Button type="button" variant="link" size="sm" className="p-0 h-auto" disabled={isFindingRooms} onClick={handleFindAndSelectRooms}>
+                                      {isFindingRooms ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
+                                      Find & Select Available
                                   </Button>
                                   <Separator orientation="vertical" className="h-4" />
                                     <Button type="button" variant="link" size="sm" className="p-0 h-auto text-destructive" onClick={() => {
@@ -454,10 +474,10 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
                           <FormDescription className="pb-2 text-sm text-muted-foreground">Select all rooms and labs available for this schedule, or use the auto-select option.</FormDescription>
                           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pt-2">
                               <FormField control={form.control} name="availableRooms" render={({ field }) => (
-                                <FormItem className="flex flex-col"><FormLabel className="text-sm">Classrooms</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{theoryRooms.map(room => <CommandItem key={room.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(room.name) ? selected.filter(r => r !== room.name) : [...selected, room.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(room.name) ? "opacity-100" : "opacity-0")}/>{room.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                <FormItem className="flex flex-col"><FormLabel className="text-sm">Classrooms</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(roomName => (<Badge key={roomName} variant="secondary">{roomName}</Badge>)) : "Select Rooms"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search rooms..." /><CommandList><CommandEmpty>No rooms found.</CommandEmpty><CommandGroup>{allRooms.filter(r => !r.name.toLowerCase().includes('lab')).map(room => <CommandItem key={room.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(room.name) ? selected.filter(r => r !== room.name) : [...selected, room.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(room.name) ? "opacity-100" : "opacity-0")}/>{room.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
                               )} />
                               <FormField control={form.control} name="availableLabs" render={({ field }) => (
-                                <FormItem className="flex flex-col"><FormLabel className="text-sm">Labs</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(labName => (<Badge key={labName} variant="secondary">{labName}</Badge>)) : "Select Labs"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search labs..." /><CommandList><CommandEmpty>No labs found.</CommandEmpty><CommandGroup>{labRooms.map(lab => <CommandItem key={lab.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(lab.name) ? selected.filter(r => r !== lab.name) : [...selected, lab.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(lab.name) ? "opacity-100" : "opacity-0")}/>{lab.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
+                                <FormItem className="flex flex-col"><FormLabel className="text-sm">Labs</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" role="combobox" className={cn("w-full justify-between h-auto min-h-10", field.value?.length === 0 && "text-muted-foreground")}><div className="flex flex-wrap gap-1">{field.value?.length > 0 ? field.value.map(labName => (<Badge key={labName} variant="secondary">{labName}</Badge>)) : "Select Labs"}</div><ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput placeholder="Search labs..." /><CommandList><CommandEmpty>No labs found.</CommandEmpty><CommandGroup>{allRooms.filter(r => r.name.toLowerCase().includes('lab')).map(lab => <CommandItem key={lab.id} onSelect={() => { const selected = field.value || []; const newSelected = selected.includes(lab.name) ? selected.filter(r => r !== lab.name) : [...selected, lab.name]; field.onChange(newSelected);}}><Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(lab.name) ? "opacity-100" : "opacity-0")}/>{lab.name}</CommandItem>)}</CommandGroup></CommandList></Command></PopoverContent></Popover><FormMessage /></FormItem>
                               )} />
                           </div>
                       </div>
@@ -534,6 +554,7 @@ export function AiScheduleGenerator({ allRooms, generatedSchedule, setGeneratedS
             faculty={faculty}
             subjects={subjects}
             allRooms={allRooms}
+            publishedSchedule={publishedSchedule}
           />
         )}
       </Card>

@@ -68,10 +68,6 @@ export function ScheduleCheckerDialog({ schedules, onApplyFixes }: ScheduleCheck
     if (result?.correctedSchedule && onApplyFixes) {
         onApplyFixes(result.correctedSchedule);
         setOpen(false);
-        toast({
-            title: "Fixes Applied",
-            description: "The AI's suggestions have been applied to the schedule. Remember to Save & Publish.",
-        });
     }
   };
 
