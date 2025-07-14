@@ -28,10 +28,11 @@ function SubmitButton() {
 }
 
 export function LogoutButton({ adminEmail, facultyName, facultyEmail }: LogoutButtonProps) {
-    const logoutAction = handleFacultyLogout.bind(null, adminEmail, facultyName, facultyEmail);
+    // The .bind call is correct for passing arguments to a server action
+    const logoutActionWithArgs = handleFacultyLogout.bind(null, adminEmail, facultyName, facultyEmail);
 
     return (
-        <form action={logoutAction}>
+        <form action={logoutActionWithArgs}>
             <SubmitButton />
         </form>
     );
