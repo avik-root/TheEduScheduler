@@ -324,3 +324,8 @@ export const LogoSchema = z.object({
     { message: 'Only PNG images are allowed.' }
   ),
 });
+
+export const VersionSchema = z.object({
+  version: z.string().min(1, "Version number is required.").regex(/^\d+\.\d+\.\d+\.\d+$/, { message: 'Version must be in X.X.X.X format.' }),
+  status: z.enum(['Beta', 'Stable'], { required_error: "You need to select a status." }),
+});

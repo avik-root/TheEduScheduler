@@ -5,6 +5,7 @@ import { AdminLoginForm } from "@/components/auth/admin-login-form";
 import { UserCog, Shield } from 'lucide-react';
 import { TypingAnimation } from "@/components/common/typing-animation";
 import { getLogo } from '@/lib/logo';
+import { VersionBadge } from '@/components/common/version-badge';
 
 export default async function AdminLoginPage() {
   const logoUrl = await getLogo();
@@ -49,7 +50,8 @@ export default async function AdminLoginPage() {
         </Card>
 
       </div>
-      <footer className="absolute bottom-6 w-full text-center">
+      <footer className="absolute bottom-6 w-full px-6 flex justify-between items-center">
+        <VersionBadge />
         <p className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <Shield className="h-4 w-4" />
             Secured by MintFire

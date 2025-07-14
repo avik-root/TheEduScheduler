@@ -6,6 +6,7 @@ import { TeacherLoginForm } from "@/components/auth/teacher-login-form";
 import { School, Shield } from 'lucide-react';
 import { TypingAnimation } from "@/components/common/typing-animation";
 import { getLogo } from '@/lib/logo';
+import { VersionBadge } from '@/components/common/version-badge';
 
 export default async function TeacherLoginPage() {
   const logoUrl = await getLogo();
@@ -50,7 +51,8 @@ export default async function TeacherLoginPage() {
         </Card>
 
       </div>
-      <footer className="absolute bottom-6 w-full text-center">
+      <footer className="absolute bottom-6 w-full px-6 flex justify-between items-center">
+        <VersionBadge />
         <p className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <Shield className="h-4 w-4" />
             Secured by MintFire

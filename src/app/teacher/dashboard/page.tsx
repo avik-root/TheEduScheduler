@@ -13,6 +13,7 @@ import { getFacultyRoomRequests } from '@/lib/requests';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { AppLogo } from '@/components/common/app-logo';
 import { ThemeToggle } from '@/components/common/theme-toggle';
+import { VersionBadge } from '@/components/common/version-badge';
 
 export default async function TeacherDashboardPage({ searchParams }: { searchParams: { email?: string } }) {
   const facultyEmail = searchParams.email;
@@ -65,7 +66,8 @@ export default async function TeacherDashboardPage({ searchParams }: { searchPar
         />
       </main>
        <footer className="mt-auto border-t bg-background px-4 py-4 md:px-6">
-        <div className="container mx-auto flex items-center justify-center">
+        <div className="container mx-auto flex items-center justify-between">
+            <VersionBadge />
             <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                 <Shield className="h-4 w-4" />
                 Secured by MintFire

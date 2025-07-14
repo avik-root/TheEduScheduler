@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { LogOut, School, Shield, UserCog, BookUser, Palette, ShieldCheck, Lock } from 'lucide-react';
+import { LogOut, School, Shield, UserCog, BookUser, Palette, ShieldCheck, Lock, Tag } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,12 +23,15 @@ import { EditLogoDialog } from '@/components/super-admin/logo/edit-logo-dialog';
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { TwoFactorSettingsDialog } from '@/components/super-admin/two-factor-settings-dialog';
 import { UnlockAdminDialog } from '@/components/super-admin/unlock-admin-dialog';
+import { getVersion } from '@/lib/version';
+import { EditVersionDialog } from '@/components/super-admin/version/edit-version-dialog';
 
 
 export default async function SuperAdminDashboardPage() {
   const admins = await getAdmins();
   const superAdmin = await getSuperAdmin();
   const currentLogo = await getLogo();
+  const currentVersion = await getVersion();
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-950">
@@ -154,6 +157,20 @@ export default async function SuperAdminDashboardPage() {
                         </CardContent>
                     </Card>
                  )}
+                 <Card className="h-full flex flex-col">
+                    <CardHeader className="flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="rounded-full bg-primary/10 p-3">
+                                <Tag className="h-6 w-6 text-primary" />
+                            </div>
+                            <CardTitle className="text-xl">Version Control</CardTitle>
+                        </div>
+                        <EditVersionDialog currentVersion={currentVersion} />
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                        <p className="text-sm text-muted-foreground">Manage the application version number and status.</p>
+                    </CardContent>
+                </Card>
              </div>
           </div>
 
