@@ -24,13 +24,23 @@ interface UpcomingClassesProps {
 }
 
 export function UpcomingClasses({ classes, onStatusChange }: UpcomingClassesProps) {
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    const title = isClient 
+        ? `Upcoming Classes for Today (${format(new Date(), 'PPP')})` 
+        : "Upcoming Classes for Today";
+
     if (classes.length === 0) {
         return (
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <CalendarIcon />
-                        Upcoming Classes for Today ({format(new Date(), 'PPP')})
+                        {title}
                     </CardTitle>
                     <CardDescription>
                         You have no classes scheduled for today.
@@ -45,7 +55,7 @@ export function UpcomingClasses({ classes, onStatusChange }: UpcomingClassesProp
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <CalendarIcon />
-                    Upcoming Classes for Today ({format(new Date(), 'PPP')})
+                    {title}
                 </CardTitle>
                 <CardDescription>
                     Mark the status of your classes for today.
@@ -96,4 +106,3 @@ export function UpcomingClasses({ classes, onStatusChange }: UpcomingClassesProp
         </Card>
     );
 }
-

@@ -38,7 +38,7 @@ export function ReleaseRoomDialog({ open, onOpenChange, classDetails, onConfirm 
              <div className="text-sm text-muted-foreground pt-2">
                 <p>You are marking the following class as 'Not Conducted':</p>
                 <div className="my-2 rounded-md border bg-muted p-3 text-sm text-foreground">
-                <strong>{classDetails.subject}</strong> at {classDetails.time} in {classDetails.room}
+                    <strong>{classDetails.subject}</strong> at {classDetails.time} in {classDetails.room}
                 </div>
                 <p>Would you like to release the room for this time slot, making it available for other faculty to request?</p>
             </div>
