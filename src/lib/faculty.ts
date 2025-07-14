@@ -151,6 +151,14 @@ export async function updateFaculty(adminEmail: string, data: UpdateFacultyData)
     facultyToUpdate.weeklyMaxHours = data.weeklyMaxHours;
     facultyToUpdate.weeklyOffDays = data.weeklyOffDays || [];
     
+    if (data.isTwoFactorEnabled !== undefined) {
+        facultyToUpdate.isTwoFactorEnabled = data.isTwoFactorEnabled;
+        if (!data.isTwoFactorEnabled) {
+            facultyToUpdate.twoFactorPin = undefined;
+            facultyToUpdate.twoFactorDisabledByAdmin = true;
+        }
+    }
+    
     if (data.password) {
         const hashedPassword = await bcryptjs.hash(data.password, 10);
         facultyToUpdate.password = hashedPassword;
