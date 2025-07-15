@@ -72,7 +72,7 @@ export function TeacherLoginForm() {
         setStep('twoFactor');
       } else {
          toast({ title: "Login Successful", description: "Welcome back! Redirecting..." });
-         let redirectUrl = `/teacher/dashboard?email=${encodeURIComponent(data.email)}&adminEmail=${encodeURIComponent(result.adminEmail!)}`;
+         let redirectUrl = `/teacher/dashboard?email=${encodeURIComponent(data.email)}`;
          if (result.show2FADisabledAlert) {
             redirectUrl += '&show2FADisabled=true';
          }
@@ -106,7 +106,7 @@ export function TeacherLoginForm() {
 
     if (result.success) {
         toast({ title: "Login Successful", description: "Welcome back! Redirecting..." });
-        router.push(`/teacher/dashboard?email=${encodeURIComponent(email)}&adminEmail=${encodeURIComponent(loginResult.adminEmail)}`);
+        router.push(`/teacher/dashboard?email=${encodeURIComponent(email)}`);
     } else {
         if (result.isLocked) {
             setStep('locked');
